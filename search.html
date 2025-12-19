@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>البحث عن الوظائف - LinkedOFF 𝓐𝓬𝓮𝓐𝓵𝓑𝓪𝓼𝓽𝓸𝓷𝓲</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/search.css">
+    <link rel="icon" type="image/svg+xml" href="img/icon-linkedoff.svg">
+
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="container">
+            <!-- <div class="nav-brand">
+                <a href="index.html" class="logo-img">
+                    <img src="img/logo-linkedoff.svg" alt="LinkedOFF AceAlBastoni Logo">
+                </a>
+            </div> -->
+            
+            <div class="nav-links">
+                <a href="index.html">الرئيسية</a>
+                <a href="search.html">البحث</a>
+                <a href="index.html#pricing">الباقات</a>
+                <a href="dashboard.html" class="btn-secondary">لوحة التحكم</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Search Section -->
+    <section class="search-section">
+        <div class="container">
+            <h1 class="page-title">🔍 ابحث عن وظيفة أحلامك</h1>
+            <p class="page-subtitle">أكثر من مليون وظيفة متاحة في السعودية</p>
+
+            <!-- Search Filters -->
+            <div class="search-filters">
+                <div class="filter-row">
+                    <input type="text" id="searchKeyword" placeholder="🔍 ابحث بالكلمات المفتاحية... (مثال: مهندس، محاسب، مبيعات)">
+                    <button class="btn-primary" onclick="searchJobs()">بحث</button>
+                </div>
+
+                <div class="advanced-filters" id="advancedFilters">
+                    <div class="filter-group">
+                        <label>📍 المدينة:</label>
+                        <select id="cityFilter">
+                            <option value="">جميع المدن</option>
+                            <option value="الرياض">الرياض</option>
+                            <option value="جدة">جدة</option>
+                            <option value="الدمام">الدمام</option>
+                            <option value="مكة">مكة المكرمة</option>
+                            <option value="المدينة">المدينة المنورة</option>
+                            <option value="الخبر">الخبر</option>
+                            <option value="الطائف">الطائف</option>
+                            <option value="تبوك">تبوك</option>
+                            <option value="أبها">أبها</option>
+                            <option value="حائل">حائل</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label>💼 المجال:</label>
+                        <select id="fieldFilter">
+                            <option value="">جميع المجالات</option>
+                            <option value="تقنية">تقنية المعلومات</option>
+                            <option value="مبيعات">المبيعات والتسويق</option>
+                            <option value="هندسة">الهندسة</option>
+                            <option value="محاسبة">المحاسبة والمالية</option>
+                            <option value="طب">الصحة والطب</option>
+                            <option value="تعليم">التعليم والتدريب</option>
+                            <option value="إدارة">الإدارة</option>
+                            <option value="موارد">الموارد البشرية</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label>💰 الراتب الأدنى:</label>
+                        <select id="salaryFilter">
+                            <option value="0">غير محدد</option>
+                            <option value="3000">3,000+ ريال</option>
+                            <option value="5000">5,000+ ريال</option>
+                            <option value="8000">8,000+ ريال</option>
+                            <option value="10000">10,000+ ريال</option>
+                            <option value="15000">15,000+ ريال</option>
+                            <option value="20000">20,000+ ريال</option>
+                        </select>
+                    </div>
+
+                    <div class="filter-group">
+                        <label>📅 نوع العقد:</label>
+                        <select id="contractFilter">
+                            <option value="">جميع الأنواع</option>
+                            <option value="دوام كامل">دوام كامل</option>
+                            <option value="دوام جزئي">دوام جزئي</option>
+                            <option value="مؤقت">مؤقت</option>
+                            <option value="عن بعد">عن بعد</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="filter-actions">
+                    <button onclick="toggleAdvancedFilters()" class="btn-outline">⚙️ فلتر متقدم</button>
+                    <button onclick="resetFilters()" class="btn-outline">🔄 إعادة تعيين</button>
+                    <button onclick="exportResults()" class="btn-outline">📥 تصدير النتائج</button>
+                </div>
+            </div>
+
+            <!-- Results Info -->
+            <div class="results-info" id="resultsInfo">
+                <p>جاري التحميل...</p>
+            </div>
+
+            <!-- Jobs List -->
+            <div class="jobs-container" id="jobsContainer">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>جاري تحميل الوظائف...</p>
+                </div>
+            </div>
+
+            <!-- Pagination -->
+            <div class="pagination" id="pagination"></div>
+        </div>
+    </section>
+
+    <!-- Subscription Modal -->
+    <div class="modal" id="subscriptionModal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2>🔒 محتوى حصري للمشتركين</h2>
+            <p>للوصول إلى كامل تفاصيل الوظيفة والتقديم المباشر، يجب الاشتراك في إحدى الباقات</p>
+            <div class="modal-plans">
+                <div class="modal-plan">
+                    <h3>Basic</h3>
+                    <p class="modal-price">99 ريال/شهر</p>
+                    <a href="index.html#pricing" class="btn-primary">اشترك الآن</a>
+                </div>
+                <div class="modal-plan popular-modal">
+                    <span class="popular-tag">الأكثر طلباً</span>
+                    <h3>Pro</h3>
+                    <p class="modal-price">199 ريال/شهر</p>
+                    <a href="index.html#pricing" class="btn-primary">اشترك الآن</a>
+                </div>
+                <div class="modal-plan">
+                    <h3>Premium</h3>
+                    <p class="modal-price">399 ريال/شهر</p>
+                    <a href="index.html#pricing" class="btn-primary">اشترك الآن</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>
+                        <img src="img/logo-linkedoff.svg"
+                             alt="LinkedOFF AceAlBastoni"
+                             style="height:40px; vertical-align:middle;">
+                    </h3>
+                    
+                    <p>أكبر منصة للوظائف في السعودية</p>
+                </div>
+                <div class="footer-section">
+                    <h4>تواصل معنا</h4>
+                    <p>📱 WhatsApp: 0566114725</p>
+                    <p>💚 STC Pay: 0566114725</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 LinkedOFF AceAlBastoni. جميع الحقوق محفوظة.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/search.js"></script>
+</body>
+</html>

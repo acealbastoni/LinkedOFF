@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8" />
+    <title>LinkedOFF Brand - AceAlBastoni</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+                         "Tahoma", sans-serif;
+        }
+
+        body {
+            margin: 0;
+            background: #f4f6fb;
+            direction: rtl;
+        }
+
+        /* شريط علوي يشبه الهيدر عندك */
+        .topbar {
+            background: #ffffff;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 10px 28px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 18px;
+            font-size: 14px;
+            color: #475569;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .nav-links a:hover {
+            color: #0a66c2;
+        }
+
+        /* بلوك البراند (الجزء المهم لك) */
+        .brand-stack {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;  /* لأن الموقع عربي */
+            gap: 2px;
+        }
+
+        .parent-brand {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: #94a3b8;
+        }
+
+        .parent-brand .ace {
+            color: #0f172a;
+        }
+
+        .child-brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .child-word {
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            color: #0f172a;
+        }
+
+        .child-box {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: 800;
+            letter-spacing: 0.09em;
+            text-transform: uppercase;
+            width: 54px;
+            height: 30px;
+            border-radius: 6px;
+            background: #0a66c2; /* لون قريب من لينكدإن */
+            color: #ffffff;
+        }
+
+        .child-tagline {
+            font-size: 11px;
+            color: #64748b;
+            margin-top: 2px;
+        }
+
+        /* محتوى تجريبي تحت الهيدر */
+        .hero {
+            max-width: 1100px;
+            margin: 30px auto;
+            padding: 0 18px;
+        }
+
+        .hero-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #16a34a;
+            margin-bottom: 8px;
+        }
+
+        .hero-sub {
+            font-size: 15px;
+            color: #475569;
+            margin-bottom: 16px;
+        }
+
+        .hero-box {
+            background: #ffffff;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+            padding: 18px 20px 22px;
+            box-shadow: 0 4px 10px rgba(15,23,42,0.03);
+        }
+
+        .hint {
+            font-size: 12px;
+            color: #64748b;
+            margin-top: 6px;
+        }
+        .topbar {
+    background: #ffffff;
+    border-bottom: 1px solid #e2e8f0;
+    padding: 10px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.nav-links {
+    display: flex;
+    gap: 18px;
+    font-size: 14px;
+    color: #475569;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: inherit;
+}
+.nav-links a:hover {
+    color: #0a66c2;
+}
+
+/* ===== Stack البراند كامل ===== */
+.brand-stack {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+}
+
+/* شارة المنظمة الأم */
+.org-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #0f172a, #1f2937);
+    color: #e5e7eb;
+    box-shadow: 0 4px 10px rgba(15,23,42,0.35);
+}
+
+.org-icon {
+    width: 22px;
+    height: 22px;
+    border-radius: 999px;
+    background: #0a66c2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 800;
+    color: #ffffff;
+}
+
+.org-text {
+    display: flex;
+    flex-direction: column;
+    text-align: right;
+}
+
+.org-title {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.org-sub {
+    font-size: 10px;
+    color: #cbd5f5;
+}
+
+/* لوجو LinkedOFF */
+.child-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.child-word {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: #0f172a;
+}
+
+.child-box {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    width: 54px;
+    height: 30px;
+    border-radius: 6px;
+    background: #0a66c2; /* نفس لون لينكدإن تقريبًا */
+    color: #ffffff;
+}
+
+.child-tagline {
+    font-size: 11px;
+    color: #64748b;
+}
+
+/* باقي التنسيق العام (لو مش عندك من قبل) */
+body {
+    margin: 0;
+    background: #f4f6fb;
+    direction: rtl;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+                 "Tahoma", sans-serif;
+}
+
+    </style>
+</head>
+<body>
+
+<!-- ========== الهيدر: استبدل هذا البلوك في موقعك ========== -->
+<!-- ========== الهيدر: AceAlBastoni + LinkedOFF ========== -->
+<div class="topbar">
+
+    <!-- روابط تجريبية -->
+    <nav class="nav-links">
+        <a href="#">الرئيسية</a>
+        <a href="#">البحث</a>
+        <a href="#">الباقات</a>
+        <a href="#">لوحة التحكم</a>
+    </nav>
+
+    <!-- ✅ بلوك البراند بعد التعديل -->
+    <div class="brand-stack">
+
+        <!-- شارة المنظمة الأم AceAlBastoni -->
+        <div class="org-badge">
+            <div class="org-icon">A</div>
+            <div class="org-text">
+                <div class="org-title">AceAlBastoni</div>
+                <div class="org-sub">Innovation & Job Networks</div>
+            </div>
+        </div>
+
+        <!-- لوجو LinkedOFF -->
+        <div class="child-brand">
+            <span class="child-word">Linked</span>
+            <span class="child-box">OFF</span>
+        </div>
+
+        <div class="child-tagline">
+            مركز التحكم في محركات إرسال السير الذاتية
+        </div>
+    </div>
+</div>
+
+
+<!-- ========== محتوى تجريبي تحت اللوجو (مش إلزامي) ========== -->
+<div class="hero">
+    <div class="hero-title">ابحث عن وظيفة أحلامك 🔍</div>
+    <div class="hero-sub">أكثر من مليون وظيفة متاحة في السعودية – عبر منصة LinkedOFF من AceAlBastoni.</div>
+
+    <div class="hero-box">
+        <strong>ملاحظة للمطوّر:</strong>
+        <p class="hint">
+            خذ كود الـ <code>.brand-stack</code> بالكامل، وضعه في الهيدر الحقيقي لموقعك
+            بدل النص <strong>LinkedOFF AceAlBastoni</strong> اللي ظاهر عندك في الصورة.
+            <br>لو محتاج نسخة أصغر للهيدر الداخلي أو للأخطار (notifications)،
+            نقدر نعمل نسخة ميني صغيرة بنفس الشكل.
+        </p>
+    </div>
+</div>
+
+</body>
+</html>

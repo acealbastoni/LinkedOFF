@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل الدخول - JobHub KSA</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        body {
+            background: #f5f7fb;
+        }
+        .auth-container {
+            max-width: 450px;
+            margin: 60px auto;
+            background: #fff;
+            border-radius: 16px;
+            padding: 30px 25px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.08);
+        }
+        .auth-title {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .auth-title h1 {
+            margin: 0;
+            font-size: 1.6rem;
+        }
+        .auth-tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-radius: 999px;
+            background: #f1f3f8;
+            padding: 4px;
+        }
+        .auth-tab {
+            flex: 1;
+            text-align: center;
+            padding: 8px 0;
+            border-radius: 999px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 0.95rem;
+        }
+        .auth-tab.active {
+            background: var(--primary-color, #0066FF);
+            color: #fff;
+        }
+        .auth-form {
+            display: none;
+        }
+        .auth-form.active {
+            display: block;
+        }
+        .auth-form .form-group {
+            margin-bottom: 15px;
+        }
+        .auth-form label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+        .auth-form input {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 8px;
+            border: 1px solid #d3d7e3;
+            font-family: inherit;
+        }
+        .auth-form button {
+            width: 100%;
+            padding: 12px;
+            border-radius: 12px;
+            border: none;
+            background: var(--primary-color, #0066FF);
+            color: #fff;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 5px;
+        }
+        .auth-footer-link {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 0.9rem;
+        }
+        .auth-footer-link a {
+            color: var(--primary-color, #0066FF);
+            text-decoration: none;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-title">
+            <h1>💼 JobHub KSA</h1>
+            <p>تسجيل الدخول / إنشاء حساب</p>
+        </div>
+
+        <div class="auth-tabs">
+            <div id="tab-login" class="auth-tab active" onclick="switchAuthTab('login')">تسجيل الدخول</div>
+            <div id="tab-register" class="auth-tab" onclick="switchAuthTab('register')">حساب جديد</div>
+        </div>
+
+        <!-- Login Form -->
+        <form id="loginForm" class="auth-form active" onsubmit="loginUserFromForm(event)">
+            <div class="form-group">
+                <label for="loginEmail">البريد الإلكتروني</label>
+                <input type="email" id="loginEmail" placeholder="example@email.com" required>
+            </div>
+            <div class="form-group">
+                <label for="loginPassword">كلمة المرور</label>
+                <input type="password" id="loginPassword" placeholder="********" required>
+            </div>
+            <button type="submit">دخول</button>
+        </form>
+
+        <!-- Register Form -->
+        <form id="registerForm" class="auth-form" onsubmit="registerUserFromForm(event)">
+            <div class="form-group">
+                <label for="regName">الاسم الكامل</label>
+                <input type="text" id="regName" placeholder="الاسم" required>
+            </div>
+            <div class="form-group">
+                <label for="regEmail">البريد الإلكتروني</label>
+                <input type="email" id="regEmail" placeholder="example@email.com" required>
+            </div>
+            <div class="form-group">
+                <label for="regPassword">كلمة المرور</label>
+                <input type="password" id="regPassword" placeholder="********" required>
+            </div>
+            <button type="submit">إنشاء حساب</button>
+        </form>
+
+        <div class="auth-footer-link">
+            <a href="index.html">⬅ العودة للصفحة الرئيسية</a>
+        </div>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script>
+        function switchAuthTab(tab) {
+            const loginTab     = document.getElementById('tab-login');
+            const registerTab  = document.getElementById('tab-register');
+            const loginForm    = document.getElementById('loginForm');
+            const registerForm = document.getElementById('registerForm');
+
+            if (tab === 'login') {
+                loginTab.classList.add('active');
+                registerTab.classList.remove('active');
+                loginForm.classList.add('active');
+                registerForm.classList.remove('active');
+            } else {
+                loginTab.classList.remove('active');
+                registerTab.classList.add('active');
+                loginForm.classList.remove('active');
+                registerForm.classList.add('active');
+            }
+        }
+    </script>
+</body>
+</html>

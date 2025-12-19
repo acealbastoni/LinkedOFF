@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التحكم - LinkedOFF KSA</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <a href="index.html"><h1>💼 LinkedOFF AceAlBastoni</h1></a>
+            </div>
+            <div class="nav-links">
+                <a href="search.html">البحث</a>
+                <a href="#" onclick="logout()">تسجيل الخروج</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="dashboard-container">
+        <div class="container">
+            <!-- Welcome Section -->
+            <div class="welcome-section">
+                <h1>مرحباً بك في لوحة التحكم 👋</h1>
+                <p>أنت الآن مشترك في باقة <strong id="currentPlan">...</strong></p>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">📊</div>
+                    <h3 id="jobsViewedCount">0</h3>
+                    <p>وظيفة تم مشاهدتها</p>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">💾</div>
+                    <h3 id="savedJobsCount">0</h3>
+                    <p>وظيفة محفوظة</p>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📧</div>
+                    <h3 id="appliedJobsCount">0</h3>
+                    <p>تقديم مرسل</p>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📱</div>
+                    <h3 id="alertsCount">0</h3>
+                    <p>تنبيه نشط</p>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="dashboard-content">
+                <!-- Saved Jobs Section -->
+                <div class="dashboard-section">
+                    <div class="section-header">
+                        <h2>💾 الوظائف المحفوظة</h2>
+                        <button class="btn-outline" onclick="loadSavedJobs()">تحديث</button>
+                    </div>
+                    <div id="savedJobsList" class="jobs-list">
+                        <p class="empty-state">لا توجد وظائف محفوظة حالياً</p>
+                    </div>
+                </div>
+
+                <!-- Subscription Info -->
+                <div class="dashboard-section">
+                    <div class="section-header">
+                        <h2>📦 معلومات الاشتراك</h2>
+                        <button class="btn-primary" onclick="upgradeSubscription()">ترقية الباقة</button>
+                    </div>
+                    <div class="subscription-info">
+                        <div class="info-row">
+                            <span>الباقة الحالية:</span>
+                            <strong id="planName">غير مفعل</strong>
+                        </div>
+                        <div class="info-row">
+                            <span>تاريخ الاشتراك:</span>
+                            <strong id="subscriptionDate">-</strong>
+                        </div>
+                        <div class="info-row">
+                            <span>تاريخ التجديد:</span>
+                            <strong id="renewalDate">-</strong>
+                        </div>
+                        <div class="info-row">
+                            <span>الحالة:</span>
+                            <strong id="subscriptionStatus" class="status-active">نشط</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Job Alerts -->
+                <div class="dashboard-section">
+                    <div class="section-header">
+                        <h2>🔔 تنبيهات الوظائف</h2>
+                        <button class="btn-primary" onclick="createAlert()">إنشاء تنبيه</button>
+                    </div>
+                    <div id="alertsList" class="alerts-list">
+                        <div class="alert-card">
+                            <div class="alert-info">
+                                <h4>مهندس برمجيات - الرياض</h4>
+                                <p>تنبيه نشط • آخر تحديث: اليوم</p>
+                            </div>
+                            <div class="alert-actions">
+                                <button class="btn-outline btn-sm" onclick="editAlert(1)">تعديل</button>
+                                <button class="btn-outline btn-sm" onclick="deleteAlert(1)">حذف</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contact Support -->
+                <div class="dashboard-section">
+                    <div class="section-header">
+                        <h2>📞 الدعم الفني</h2>
+                    </div>
+                    <div class="support-info">
+                        <p>هل تحتاج مساعدة؟ فريقنا جاهز لخدمتك</p>
+                        <div class="support-buttons">
+                            <a href="https://wa.me/966566114725" target="_blank" class="btn-primary">
+                                📱 WhatsApp: 0566114725
+                            </a>
+                            <a href="tel:0566114725" class="btn-outline">
+                                📞 اتصل بنا
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-bottom">
+                <p>&copy; 2024 LinkedOFF KSA. جميع الحقوق محفوظة.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Create Alert Modal -->
+    <div class="modal" id="createAlertModal">
+        <div class="modal-content">
+            <span class="close" onclick="closeAlertModal()">&times;</span>
+            <h2>🔔 إنشاء تنبيه جديد</h2>
+            <form onsubmit="saveAlert(event)">
+                <div class="form-group">
+                    <label>الكلمات المفتاحية:</label>
+                    <input type="text" id="alertKeywords" placeholder="مثال: مهندس برمجيات، developer" required>
+                </div>
+                <div class="form-group">
+                    <label>المدينة (اختياري):</label>
+                    <select id="alertCity">
+                        <option value="">جميع المدن</option>
+                        <option value="الرياض">الرياض</option>
+                        <option value="جدة">جدة</option>
+                        <option value="الدمام">الدمام</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>تلقي التنبيهات عبر:</label>
+                    <div class="checkbox-group">
+                        <label>
+                            <input type="checkbox" checked> WhatsApp
+                        </label>
+                        <label>
+                            <input type="checkbox" checked> Email
+                        </label>
+                    </div>
+                </div>
+                <button type="submit" class="btn-primary">حفظ التنبيه</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/dashboard.js"></script>
+</body>
+</html>
