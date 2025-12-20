@@ -1,0 +1,1342 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مركز التحكم في المحركات | AceAlBastoni</title>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #2563eb;
+            --primary-dark: #1e40af;
+            --success-color: #10b981;
+            --danger-color: #ef4444;
+            --warning-color: #f59e0b;
+            --text-primary: #111827;
+            --text-secondary: #6b7280;
+            --text-muted: #9ca3af;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f9fafb;
+            --bg-tertiary: #f3f4f6;
+            --border-color: #e5e7eb;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: 'IBM Plex Sans Arabic', sans-serif;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            direction: rtl;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 32px 24px;
+        }
+
+        /* Header */
+        .header {
+            background: var(--bg-primary);
+            border-bottom: 1px solid var(--border-color);
+            padding: 20px 32px;
+            margin: -32px -24px 32px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .brand-logo {
+            width: 48px;
+            height: 48px;
+            position: relative;
+        }
+
+        .brand-text h1 {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 2px;
+        }
+
+        .brand-text p {
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-weight: 400;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        /* Page Title */
+        .page-header {
+            margin-bottom: 32px;
+        }
+
+        .page-title {
+            font-size: 28px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+
+        .page-subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+
+        .stat-card {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            transition: all 0.2s ease;
+        }
+
+        .stat-card:hover {
+            box-shadow: var(--shadow-md);
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+        }
+
+        .stat-icon.primary {
+            background: #eff6ff;
+            color: var(--primary-color);
+        }
+
+        .stat-icon.success {
+            background: #f0fdf4;
+            color: var(--success-color);
+        }
+
+        .stat-icon.warning {
+            background: #fffbeb;
+            color: var(--warning-color);
+        }
+
+        .stat-trend {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            padding: 4px 8px;
+            border-radius: 6px;
+        }
+
+        .stat-trend.up {
+            background: #f0fdf4;
+            color: var(--success-color);
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: var(--text-secondary);
+            font-weight: 400;
+        }
+
+        /* Toolbar */
+        .toolbar {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px 24px;
+            margin-bottom: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .search-container {
+            flex: 1;
+            max-width: 400px;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 10px 16px 10px 40px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: 'IBM Plex Sans Arabic', sans-serif;
+            color: var(--text-primary);
+            background: var(--bg-secondary);
+            transition: all 0.2s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            background: var(--bg-primary);
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        .toolbar-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            font-family: 'IBM Plex Sans Arabic', sans-serif;
+            transition: all 0.2s ease;
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-secondary);
+        }
+
+        /* Engines Grid */
+        .engines-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 24px;
+        }
+
+        /* Engine Card */
+        .engine-card {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .engine-card:hover {
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary-color);
+        }
+
+        .engine-card.running {
+            border-color: var(--success-color);
+        }
+
+        .engine-header {
+            padding: 24px 24px 20px;
+            border-bottom: 1px solid var(--border-color);
+            position: relative;
+        }
+
+        .engine-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+
+        .engine-info {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .engine-logo-container {
+            width: 48px;
+            height: 48px;
+            position: relative;
+        }
+
+        .engine-name-text {
+            flex: 1;
+        }
+
+        .engine-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 6px;
+        }
+
+        .engine-email {
+            font-size: 13px;
+            color: var(--text-secondary);
+            direction: ltr;
+            text-align: right;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-badge.active {
+            background: #f0fdf4;
+            color: var(--success-color);
+        }
+
+        .status-badge.inactive {
+            background: #fef2f2;
+            color: var(--danger-color);
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: currentColor;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .engine-meta {
+            display: flex;
+            gap: 20px;
+            padding-top: 12px;
+        }
+
+        .meta-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .meta-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .meta-value {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        /* Engine Body */
+        .engine-body {
+            padding: 24px;
+        }
+
+        .progress-section {
+            margin-bottom: 24px;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .progress-label {
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .progress-value {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .progress-bar-wrapper {
+            height: 8px;
+            background: var(--bg-tertiary);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--primary-color);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        .progress-bar.success {
+            background: var(--success-color);
+        }
+
+        .progress-bar.warning {
+            background: var(--warning-color);
+        }
+
+        /* Metrics Grid */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .metric-item {
+            text-align: center;
+            padding: 16px;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .metric-value {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .metric-label {
+            font-size: 11px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Actions */
+        .engine-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .action-btn {
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            font-family: 'IBM Plex Sans Arabic', sans-serif;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .action-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .action-btn-stop {
+            background: transparent;
+            border: 1px solid var(--danger-color);
+            color: var(--danger-color);
+        }
+
+        .action-btn-stop:hover:not(:disabled) {
+            background: var(--danger-color);
+            color: white;
+        }
+
+        .action-btn-start {
+            background: transparent;
+            border: 1px solid var(--success-color);
+            color: var(--success-color);
+        }
+
+        .action-btn-start:hover:not(:disabled) {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .action-btn-settings {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+        }
+
+        .action-btn-settings:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        /* Last Activity */
+        .last-activity {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        /* Gear Animation */
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .gear-spinning {
+            animation: spin 2s linear infinite;
+        }
+
+        /* Notification Toast */
+        .notification {
+            position: fixed;
+            bottom: 24px;
+            left: 24px;
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px 20px;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 1000;
+            transform: translateY(120%);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateY(0);
+        }
+
+        .notification.success {
+            border-right: 4px solid var(--success-color);
+        }
+
+        .notification.error {
+            border-right: 4px solid var(--danger-color);
+        }
+
+        .notification-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .notification.success .notification-icon {
+            background: #f0fdf4;
+            color: var(--success-color);
+        }
+
+        .notification.error .notification-icon {
+            background: #fef2f2;
+            color: var(--danger-color);
+        }
+
+        .notification-content h4 {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .notification-content p {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        /* Modal */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .modal-close {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: var(--bg-tertiary);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            transition: all 0.2s ease;
+        }
+
+        .modal-close:hover {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+        .modal-body {
+            margin-bottom: 24px;
+        }
+
+        .modal-info-grid {
+            display: grid;
+            gap: 16px;
+        }
+
+        .modal-info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px;
+            background: var(--bg-secondary);
+            border-radius: 8px;
+        }
+
+        .modal-info-label {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .modal-info-value {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px 16px;
+            }
+
+            .header {
+                padding: 16px 20px;
+            }
+
+            .header-content {
+                flex-direction: column;
+                gap: 16px;
+                align-items: flex-start;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .toolbar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-container {
+                max-width: 100%;
+            }
+
+            .engines-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .notification {
+                left: 16px;
+                right: 16px;
+                bottom: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="header-content">
+            <div class="brand">
+                <div class="brand-logo">
+                    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect width="48" height="48" rx="10" fill="#2563eb"/>
+                        <path d="M14 32L18 16H22L26 32H22L21 28H19L18 32H14ZM19.5 25H20.5L20 20L19.5 25Z" fill="white"/>
+                        <path d="M26 16H30C32 16 34 17 34 20C34 23 32 24 30 24H26V16ZM30 16V24C31 24 32 23 32 20C32 17 31 16 30 16Z" fill="white"/>
+                    </svg>
+                </div>
+                <div class="brand-text">
+                    <h1>AceAlBastoni</h1>
+                    <p>مركز التحكم في المحركات</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <button class="btn btn-secondary" onclick="showAllSettings()">
+                    <i class="fas fa-cog"></i>
+                    <span>الإعدادات</span>
+                </button>
+                <div class="user-avatar" title="Admin">AB</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h2 class="page-title">لوحة التحكم في المحركات</h2>
+            <p class="page-subtitle">إدارة ومراقبة جميع محركات إرسال السير الذاتية في الوقت الفعلي</p>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon primary">
+                        <i class="fas fa-server"></i>
+                    </div>
+                    <div class="stat-trend up">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>12%</span>
+                    </div>
+                </div>
+                <div class="stat-value" id="active-engines-count">0</div>
+                <div class="stat-label">محركات نشطة</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon success">
+                        <i class="fas fa-paper-plane"></i>
+                    </div>
+                    <div class="stat-trend up">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>8.5%</span>
+                    </div>
+                </div>
+                <div class="stat-value" id="total-sent-today">0</div>
+                <div class="stat-label">إرسالات اليوم</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon warning">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="stat-trend up">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>23%</span>
+                    </div>
+                </div>
+                <div class="stat-value" id="success-rate">0%</div>
+                <div class="stat-label">معدل النجاح</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon primary">
+                        <i class="fas fa-briefcase"></i>
+                    </div>
+                    <div class="stat-trend up">
+                        <i class="fas fa-arrow-up"></i>
+                        <span>5.2%</span>
+                    </div>
+                </div>
+                <div class="stat-value">1.2M</div>
+                <div class="stat-label">وظائف متاحة</div>
+            </div>
+        </div>
+
+        <!-- Toolbar -->
+        <div class="toolbar">
+            <div class="search-container">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" class="search-input" placeholder="بحث في المحركات..." id="search-input" onkeyup="filterEngines()">
+            </div>
+            <div class="toolbar-actions">
+                <button class="btn btn-secondary">
+                    <i class="fas fa-filter"></i>
+                    <span>تصفية</span>
+                </button>
+                <button class="btn btn-primary" onclick="addNewEngine()">
+                    <i class="fas fa-plus"></i>
+                    <span>إضافة محرك</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Engines Grid -->
+        <div class="engines-grid" id="engines-grid">
+            <!-- Engines will be rendered here by JavaScript -->
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div class="notification" id="notification">
+        <div class="notification-icon">
+            <i class="fas fa-check"></i>
+        </div>
+        <div class="notification-content">
+            <h4 id="notification-title">نجح</h4>
+            <p id="notification-message">تمت العملية بنجاح</p>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal" id="settings-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">تفاصيل المحرك</h3>
+                <button class="modal-close" onclick="closeModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body" id="modal-body">
+                <!-- Modal content will be injected here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Engine Data
+        let engines = [
+            {
+                id: 1,
+                name: 'Engine Node 001',
+                email: 'node001@gmail.com',
+                type: 'Primary',
+                capacity: 100,
+                priority: 'عالية',
+                status: 'active',
+                progress: 95,
+                totalSent: 12500,
+                successRate: 96.8,
+                uptime: 28,
+                lastActivity: 5,
+                logo: 'primary'
+            },
+            {
+                id: 2,
+                name: 'Engine Node 002',
+                email: 'node002@gmail.com',
+                type: 'Primary',
+                capacity: 100,
+                priority: 'عالية',
+                status: 'active',
+                progress: 88,
+                totalSent: 11200,
+                successRate: 94.3,
+                uptime: 25,
+                lastActivity: 8,
+                logo: 'primary'
+            },
+            {
+                id: 3,
+                name: 'Engine Node 003',
+                email: 'node003@gmail.com',
+                type: 'Secondary',
+                capacity: 100,
+                priority: 'متوسطة',
+                status: 'active',
+                progress: 73,
+                totalSent: 9800,
+                successRate: 92.1,
+                uptime: 22,
+                lastActivity: 12,
+                logo: 'secondary'
+            },
+            {
+                id: 4,
+                name: 'Engine Node 004',
+                email: 'node004@gmail.com',
+                type: 'Backup',
+                capacity: 100,
+                priority: 'منخفضة',
+                status: 'inactive',
+                progress: 0,
+                totalSent: 8500,
+                successRate: 91.4,
+                uptime: 18,
+                lastActivity: 120,
+                logo: 'backup'
+            },
+            {
+                id: 5,
+                name: 'Engine Node 005',
+                email: 'node005@gmail.com',
+                type: 'Primary',
+                capacity: 100,
+                priority: 'عالية',
+                status: 'active',
+                progress: 81,
+                totalSent: 10100,
+                successRate: 93.7,
+                uptime: 20,
+                lastActivity: 3,
+                logo: 'primary'
+            },
+            {
+                id: 6,
+                name: 'Engine Node 006',
+                email: 'node006@gmail.com',
+                type: 'Secondary',
+                capacity: 100,
+                priority: 'متوسطة',
+                status: 'active',
+                progress: 67,
+                totalSent: 9200,
+                successRate: 95.1,
+                uptime: 19,
+                lastActivity: 7,
+                logo: 'secondary'
+            }
+        ];
+
+        // Engine Logo SVGs
+        const engineLogos = {
+            primary: `<svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect width="48" height="48" rx="10" fill="#2563eb"/>
+                <circle cx="24" cy="24" r="8" fill="none" stroke="white" stroke-width="2"/>
+                <path d="M24 16v-4M24 36v-4M16 24h-4M36 24h-4" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                <circle cx="24" cy="24" r="3" fill="white"/>
+            </svg>`,
+            secondary: `<svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect width="48" height="48" rx="10" fill="#10b981"/>
+                <circle cx="24" cy="24" r="8" fill="none" stroke="white" stroke-width="2"/>
+                <path d="M24 20v8M20 24h8" stroke="white" stroke-width="2" stroke-linecap="round"/>
+            </svg>`,
+            backup: `<svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect width="48" height="48" rx="10" fill="#f59e0b"/>
+                <circle cx="24" cy="24" r="8" fill="none" stroke="white" stroke-width="2"/>
+                <path d="M24 20v4l3 3" stroke="white" stroke-width="2" stroke-linecap="round"/>
+            </svg>`
+        };
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            renderEngines();
+            updateStats();
+            startAutoUpdate();
+        });
+
+        // Render Engines
+        function renderEngines() {
+            const grid = document.getElementById('engines-grid');
+            grid.innerHTML = '';
+
+            engines.forEach(engine => {
+                const card = createEngineCard(engine);
+                grid.appendChild(card);
+            });
+        }
+
+        // Create Engine Card
+        function createEngineCard(engine) {
+            const card = document.createElement('div');
+            card.className = `engine-card ${engine.status === 'active' ? 'running' : ''}`;
+            card.setAttribute('data-engine-id', engine.id);
+            card.setAttribute('data-engine-name', engine.name.toLowerCase());
+            
+            const progressClass = engine.progress >= 80 ? 'success' : engine.progress >= 50 ? 'warning' : '';
+            const gearClass = engine.status === 'active' ? 'gear-spinning' : '';
+            
+            card.innerHTML = `
+                <div class="engine-header">
+                    <div class="engine-top">
+                        <div class="engine-info">
+                            <div class="engine-logo-container ${gearClass}">
+                                ${engineLogos[engine.logo]}
+                            </div>
+                            <div class="engine-name-text">
+                                <div class="engine-name">${engine.name}</div>
+                                <div class="engine-email">${engine.email}</div>
+                            </div>
+                        </div>
+                        <span class="status-badge ${engine.status}">
+                            <span class="status-dot"></span>
+                            ${engine.status === 'active' ? 'نشط' : 'متوقف'}
+                        </span>
+                    </div>
+                    <div class="engine-meta">
+                        <div class="meta-item">
+                            <span class="meta-label">النوع</span>
+                            <span class="meta-value">${engine.type}</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">السعة</span>
+                            <span class="meta-value">${engine.capacity}/يوم</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">الأولوية</span>
+                            <span class="meta-value">${engine.priority}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="engine-body">
+                    <div class="progress-section">
+                        <div class="progress-header">
+                            <span class="progress-label">التقدم اليومي</span>
+                            <span class="progress-value">${engine.progress} / 100</span>
+                        </div>
+                        <div class="progress-bar-wrapper">
+                            <div class="progress-bar ${progressClass}" style="width: ${engine.progress}%"></div>
+                        </div>
+                    </div>
+
+                    <div class="metrics-grid">
+                        <div class="metric-item">
+                            <div class="metric-value">${formatNumber(engine.totalSent)}</div>
+                            <div class="metric-label">إجمالي الإرسال</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-value">${engine.successRate}%</div>
+                            <div class="metric-label">معدل النجاح</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-value">${engine.uptime} يوم</div>
+                            <div class="metric-label">وقت التشغيل</div>
+                        </div>
+                    </div>
+
+                    <div class="engine-actions">
+                        ${engine.status === 'active' ? 
+                            `<button class="action-btn action-btn-stop" onclick="stopEngine(${engine.id})">
+                                <i class="fas fa-stop"></i>
+                                إيقاف
+                            </button>` :
+                            `<button class="action-btn action-btn-start" onclick="startEngine(${engine.id})">
+                                <i class="fas fa-play"></i>
+                                تشغيل
+                            </button>`
+                        }
+                        <button class="action-btn action-btn-settings" onclick="showEngineSettings(${engine.id})">
+                            <i class="fas fa-cog"></i>
+                            إعدادات
+                        </button>
+                    </div>
+
+                    <div class="last-activity">
+                        <i class="fas fa-clock"></i>
+                        <span>آخر نشاط: ${formatLastActivity(engine.lastActivity)}</span>
+                    </div>
+                </div>
+            `;
+            
+            return card;
+        }
+
+        // Start Engine
+        function startEngine(id) {
+            const engine = engines.find(e => e.id === id);
+            if (!engine) return;
+            
+            engine.status = 'active';
+            engine.lastActivity = 0;
+            
+            renderEngines();
+            updateStats();
+            showNotification('success', 'تم التشغيل', `تم تشغيل ${engine.name} بنجاح`);
+        }
+
+        // Stop Engine
+        function stopEngine(id) {
+            const engine = engines.find(e => e.id === id);
+            if (!engine) return;
+            
+            engine.status = 'inactive';
+            
+            renderEngines();
+            updateStats();
+            showNotification('error', 'تم الإيقاف', `تم إيقاف ${engine.name}`);
+        }
+
+        // Show Engine Settings
+        function showEngineSettings(id) {
+            const engine = engines.find(e => e.id === id);
+            if (!engine) return;
+            
+            const modal = document.getElementById('settings-modal');
+            const modalBody = document.getElementById('modal-body');
+            
+            modalBody.innerHTML = `
+                <div class="modal-info-grid">
+                    <div class="modal-info-item">
+                        <span class="modal-info-label">اسم المحرك</span>
+                        <span class="modal-info-value">${engine.name}</span>
+                    </div>
+                    <div class="modal-info-item">
+                        <span class="modal-info-label">البريد الإلكتروني</span>
+                        <span class="modal-info-value">${engine.email}</span>
+                    </div>
+                    <div class="modal-info-item">
+                        <span class="modal-info-label">النوع</span>
+                        <span class="modal-info-value">${engine.type}</span>
+                    </div>
+                    <div class="modal-info-item">
+                        <span class="modal-info-label">الحالة</span>
+                        <span class="modal-info-value">${engine.status === 'active' ? 'نشط' : 'متوقف'}</span>
+                    </div>
+                    <div class="modal-info-item">
+                        <span class="modal-info-label">السعة اليومية</span>
+                        <span class="modal-info-value">${engine.capacity} إرسالية</span>
+                    </div>
+                    <div class="modal-info-item">
+                        <span class="modal-info-label">الأولوية</span>
+                        <span class="modal-info-value">${engine.priority}</span>
+                    </div>
+                    <div class="modal-info-item">
+                        <span class="modal-info-label">التقدم اليومي</span>
+                        <span class="modal-info-value">${engine.progress}/100</span>
+                    </div>
+                    <div class="modal-info-item">
+                        <span class="modal-info-label">إجمالي الإرسالات</span>
+                        <span class="modal-info-value">${formatNumber(engine.totalSent)}</span>
+                    </div>
+                    <div class="modal-info-item">
+                        <span class="modal-info-label">معدل النجاح</span>
+                        <span class="modal-info-value">${engine.successRate}%</span>
+                    </div>
+                    <div class="modal-info-item">
+                        <span class="modal-info-label">وقت التشغيل</span>
+                        <span class="modal-info-value">${engine.uptime} يوم</span>
+                    </div>
+                </div>
+            `;
+            
+            modal.classList.add('show');
+        }
+
+        // Close Modal
+        function closeModal() {
+            const modal = document.getElementById('settings-modal');
+            modal.classList.remove('show');
+        }
+
+        // Show All Settings
+        function showAllSettings() {
+            showNotification('success', 'الإعدادات', 'قريباً: صفحة الإعدادات العامة');
+        }
+
+        // Add New Engine
+        function addNewEngine() {
+            showNotification('success', 'إضافة محرك', 'قريباً: نموذج إضافة محرك جديد');
+        }
+
+        // Show Notification
+        function showNotification(type, title, message) {
+            const notification = document.getElementById('notification');
+            const notificationTitle = document.getElementById('notification-title');
+            const notificationMessage = document.getElementById('notification-message');
+            const icon = notification.querySelector('.notification-icon i');
+            
+            notification.className = `notification ${type}`;
+            notificationTitle.textContent = title;
+            notificationMessage.textContent = message;
+            
+            if (type === 'success') {
+                icon.className = 'fas fa-check';
+            } else if (type === 'error') {
+                icon.className = 'fas fa-exclamation';
+            }
+            
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Update Stats
+        function updateStats() {
+            const activeEngines = engines.filter(e => e.status === 'active').length;
+            const totalSent = engines.reduce((sum, e) => sum + (e.status === 'active' ? e.progress : 0), 0);
+            const avgSuccessRate = engines.reduce((sum, e) => sum + e.successRate, 0) / engines.length;
+            
+            document.getElementById('active-engines-count').textContent = activeEngines;
+            document.getElementById('total-sent-today').textContent = totalSent;
+            document.getElementById('success-rate').textContent = avgSuccessRate.toFixed(1) + '%';
+        }
+
+        // Filter Engines
+        function filterEngines() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            const cards = document.querySelectorAll('.engine-card');
+            
+            cards.forEach(card => {
+                const engineName = card.getAttribute('data-engine-name');
+                if (engineName.includes(searchTerm)) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        // Auto Update (Simulate real-time)
+        function startAutoUpdate() {
+            setInterval(() => {
+                engines.forEach(engine => {
+                    if (engine.status === 'active' && engine.progress < 100) {
+                        engine.progress = Math.min(100, engine.progress + Math.floor(Math.random() * 3));
+                        engine.lastActivity = Math.floor(Math.random() * 10);
+                    }
+                });
+                renderEngines();
+                updateStats();
+            }, 5000); // Update every 5 seconds
+        }
+
+        // Format Number
+        function formatNumber(num) {
+            if (num >= 1000) {
+                return (num / 1000).toFixed(1) + 'K';
+            }
+            return num;
+        }
+
+        // Format Last Activity
+        function formatLastActivity(minutes) {
+            if (minutes === 0) return 'الآن';
+            if (minutes < 60) return `منذ ${minutes} دقيقة`;
+            const hours = Math.floor(minutes / 60);
+            return `منذ ${hours} ساعة`;
+        }
+
+        // Close modal on outside click
+        document.getElementById('settings-modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>
