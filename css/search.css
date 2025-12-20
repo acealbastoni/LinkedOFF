@@ -572,7 +572,20 @@
 
 
 
-
+/* Inline email highlight inside job description */
+.job-description .email-inline {
+    color: #d32f2f;      /* أحمر */
+    font-weight: 800;    /* Bold قوي */
+    text-decoration: underline;
+    direction: ltr;
+    unicode-bidi: plaintext;
+  }
+  
+  /* اختياري: hover effect */
+  .job-description .email-inline:hover {
+    filter: brightness(0.9);
+  }
+  
 
 
 

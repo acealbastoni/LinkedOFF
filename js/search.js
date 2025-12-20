@@ -145,13 +145,13 @@ function createJobCard(job, isLocked = false) {
 
     // 🔹 تجهيز الوصف لعرضه في الـ HTML مع الهاشتاجات
     const descriptionHtml = highlightHashtags(
-        escapeHtml(description)
+        highlightEmails(escapeHtml(description))
     ).replace(/\n/g, '<br>');
-
+    
     const shortDescriptionHtml = highlightHashtags(
-        escapeHtml(shortDescription)
+        highlightEmails(escapeHtml(shortDescription))
     ).replace(/\n/g, '<br>');
-
+    
     // لو حابب في النسخة المجانية نظهر وصف مختصر
     const usedDescriptionHtml = isLocked ? shortDescriptionHtml : descriptionHtml;
 
@@ -197,7 +197,7 @@ function createJobCard(job, isLocked = false) {
                     📤 مشاركة
                 </button>
 
-                ${description.length > 200 ? `
+                ${true? `
                     <button class="btn-outline toggle-description-btn"
                             onclick="toggleDescription('${job.dkey}')">
                         👀 عرض المزيد
@@ -555,11 +555,16 @@ function toggleDescription(jobId) {
 
 //Added By Mohamed Abdelhamid 20251205
 function normalizeDescription(text) {
-    return text
+    text= text
         .split('\n')                        // نجزّئ النص لأسطر
         .map(line => line.trim())           // نشيل المسافات من بداية ونهاية السطر
         .filter(line => line.length > 0)    // نحذف الأسطر الفارغة
         .join('\n');                        // نرجّعها بسطر واحد بين كل سطرين
+
+        return text+`
+        
+        -------------
+        `
 }
 
 
@@ -1008,3 +1013,15 @@ function extractCity(description) {
     const found = cities.find(city => text.includes(city.toLowerCase()));
     return found || null;
 }
+
+
+// Highlight emails inside text (works on escaped HTML text)
+function highlightEmails(text) {
+    if (!text) return '';
+    // Basic email regex (good enough for job posts)
+    return text.replace(
+        /([A-Za-z0-9._%+-]+@(?:[A-Za-z0-9-]+\.)+[A-Za-z]{2,})/g,
+        '<span class="email-inline">$1</span>'
+    );
+}
+
