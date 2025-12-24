@@ -17,6 +17,12 @@
     </script>
 </head>
 <body>
+        <!-- 👈 هنا بالضبط، أول سطر! -->
+        <script>
+            if (!localStorage.getItem('linkedoff_user')) {
+                window.location.replace('login.html');
+            }
+            </script>
     <!-- Navbar -->
     <nav class="navbar">
         <div class="container">
