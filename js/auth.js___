@@ -1,0 +1,109 @@
+// =====================================
+// JobHub KSA - نظام الحماية
+// =====================================
+
+/**
+ * التحقق من تسجيل دخول المستخدم
+ * @returns {boolean} true إذا كان مسجلاً، false إذا لم يكن
+ */
+function isLoggedIn() {
+    const user = localStorage.getItem('jobhub_user');
+    return user !== null;
+}
+
+/**
+ * الحصول على بيانات المستخدم المسجل
+ * @returns {object|null} بيانات المستخدم أو null
+ */
+function getCurrentUser() {
+    const user = localStorage.getItem('jobhub_user');
+    return user ? JSON.parse(user) : null;
+}
+
+/**
+ * حماية الصفحة - إعادة التوجيه إذا لم يكن مسجلاً
+ */
+function requireAuth() {
+    if (!isLoggedIn()) {
+        // حفظ الصفحة المطلوبة
+        const currentPage = window.location.pathname + window.location.search;
+        localStorage.setItem('jobhub_intended_page', currentPage);
+        
+        // إعادة التوجيه لصفحة تسجيل الدخول
+        window.location.href = 'login.html';
+        return false;
+    }
+    return true;
+}
+
+/**
+ * التحقق من الاشتراك
+ * @param {string} minPlan - الباقة الدنيا المطلوبة (basic, pro, premium)
+ * @returns {boolean} true إذا كان الاشتراك كافياً
+ */
+function hasSubscription(minPlan = 'basic') {
+    const user = getCurrentUser();
+    if (!user || !user.subscription) {
+        return false;
+    }
+    
+    const planLevels = { basic: 1, pro: 2, premium: 3 };
+    const userLevel = planLevels[user.subscription] || 0;
+    const requiredLevel = planLevels[minPlan] || 1;
+    
+    return userLevel >= requiredLevel;
+}
+
+/**
+ * تسجيل الخروج
+ */
+function logout() {
+    localStorage.removeItem('jobhub_user');
+    window.location.href = 'index.html';
+}
+
+/**
+ * حماية تلقائية للصفحات المحمية
+ * يتم استدعاؤها تلقائياً عند تحميل الصفحة
+ */
+function autoProtectPage() {
+    const currentPage = window.location.pathname.split('/').pop();
+    
+    // قائمة الصفحات المحمية (تحتاج تسجيل دخول)
+    const protectedPages = [
+        'search.html',
+        'dashboard.html',
+        'jobs.html',
+        'profile.html'
+    ];
+    
+    // إذا كانت الصفحة محمية وغير مسجل
+    if (protectedPages.includes(currentPage) && !isLoggedIn()) {
+        // حفظ الصفحة المطلوبة
+        const currentPath = window.location.pathname + window.location.search;
+        localStorage.setItem('jobhub_intended_page', currentPath);
+        
+        // إعادة التوجيه
+        window.location.href = 'login.html';
+        return false;
+    }
+    
+    return true;
+}
+
+// تشغيل الحماية التلقائية عند تحميل أي صفحة
+if (typeof window !== 'undefined') {
+    window.addEventListener('DOMContentLoaded', autoProtectPage);
+}
+
+// تصدير الوظائف للاستخدام في ملفات أخرى
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = {
+        isLoggedIn,
+        getCurrentUser,
+        requireAuth,
+        hasSubscription,
+        logout,
+        autoProtectPage
+    };
+}
