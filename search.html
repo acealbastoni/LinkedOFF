@@ -9,6 +9,12 @@
     <link rel="stylesheet" href="css/search.css">
     <link rel="icon" type="image/svg+xml" href="img/icon-linkedoff.svg">
     <script src="js/auth.js"></script>
+    <script>
+    // حماية الصفحة - تحويل للـ login إذا لم يكن مسجل دخول
+    if (!isLoggedIn()) {
+        window.location.href = 'login.html';
+    }
+    </script>
 </head>
 <body>
     <!-- Navbar -->
