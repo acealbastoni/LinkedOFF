@@ -713,3 +713,60 @@ body {
     height: 40px;   /* جرّب 48 أو 52 وشوف الأنسب */
     display: block;
 }
+
+/* Version Badge - Fixed in corner */
+.version-badge {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    background: linear-gradient(135deg, #0A66C2, #004182);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    z-index: 9999;
+    box-shadow: 0 4px 12px rgba(10, 102, 194, 0.3);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: 'Cairo', sans-serif;
+    direction: ltr;
+    text-align: center;
+}
+
+.version-badge:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 20px rgba(10, 102, 194, 0.4);
+    background: linear-gradient(135deg, #004182, #0A66C2);
+}
+
+/* Footer Version Info */
+.footer-version {
+    font-size: 13px;
+    color: #999;
+    margin-top: 8px;
+    font-family: 'Cairo', sans-serif;
+}
+
+.footer-bottom {
+    text-align: center;
+}
+
+.footer-bottom p {
+    margin: 4px 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .version-badge {
+        bottom: 10px;
+        left: 10px;
+        padding: 6px 12px;
+        font-size: 11px;
+    }
+    
+    .footer-version {
+        font-size: 11px;
+    }
+}
+
