@@ -7,7 +7,7 @@
 
 const APP_CONFIG = {
     // Version Info
-    version: '1.2.1',
+    version: '1.2.2',
     releaseDate: '2025-12-25',
     buildNumber: '20251225',
     
@@ -18,7 +18,7 @@ const APP_CONFIG = {
     
     // Display Settings
     showVersionBadge: true,  // Show version badge in navbar
-    showBuildNumber: false,   // Show build number in footer
+    showBuildNumber: true ,   // Show build number in footer
     
     // Format: "v1.2.0 - 25 ديسمبر 2024"
     getVersionString: function() {
