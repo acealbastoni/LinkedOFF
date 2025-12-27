@@ -1,6 +1,7 @@
 // ===== AUTH CONFIG =====
 const AUTH_CONFIG = {
     baseURL: 'https://script.google.com/macros/s/AKfycbwJpiH3xUH2EjqR5V9UzjgqHppfxPu6Tr9GmU-IlFig28jyanGW4ATSQUy_THVcMByLtw/exec'
+    //baseURL: 'https://script.google.com/macros/s/AKfycbyF_dlTvBh0_xJO7be6qqS5zC_UTlbUyN3-7CnUaRaZ/dev'
     // لا تكتب أي query string هنا (زي ?hl=ar) خليه /exec فقط
 };
 
@@ -30,6 +31,7 @@ function setCurrentUser(user) {
 
 
 async function authRequest(action, payload) {
+    alert(`action is: ${action}`);
     const res = await fetch(AUTH_CONFIG.baseURL, {
         method: 'POST',
         headers: {
@@ -106,7 +108,7 @@ async function loginUserFromForm(event) {
         setCurrentUser(data.user);
 
         alert('✅ تم تسجيل الدخول بنجاح');
-        window.location.href = 'dashboard.html';
+        window.location.href = 'search.html';
     } catch (err) {
         alert('❌ فشل تسجيل الدخول: ' + err.message);
     }
@@ -125,6 +127,15 @@ function performLogout() {
     alert('👋 تم تسجيل الخروج بنجاح');
     window.location.href = 'index.html';
 }
+
+
+
+
+
+function isLoggedIn() {
+    return getCurrentUser() !== null;
+}
+
 
 // نعرّض الدوال للـ window عشان نقدر نستدعيها من الـ HTML
 window.getCurrentUser       = getCurrentUser;

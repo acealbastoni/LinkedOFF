@@ -7,9 +7,9 @@
 
 const APP_CONFIG = {
     // Version Info
-    version: '1.2.3',
-    releaseDate: '2025-12-25',
-    buildNumber: '20251225',
+    version: '1.2.4',
+    releaseDate: '2025-12-27',
+    buildNumber: '20251227',
     
     // App Info
     appName: 'LinkedOFF KSA',
@@ -36,7 +36,7 @@ const APP_CONFIG = {
     
     // Format: "v1.2.0"
     getVersionShort: function() {
-        return `v${this.version}`;
+        return `V ${this.version}` ;
     },
     
     // Format: "الإصدار 1.2.0"
