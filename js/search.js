@@ -174,10 +174,9 @@ function createJobCard(job, isLocked = false) {
             <span class="job-source">${source}</span>
         </div>
 
-        <div class="job-description ${isLocked ? 'locked' : ''}"
-             style="direction:${getDirection(description)}; text-align:${isArabic(description) ? 'right' : 'left'};">
-            <p>${usedDescriptionHtml}</p>
-        </div>
+        <div class="job-description ${isLocked ? 'locked' : ''}" dir="auto">
+        <p>${usedDescriptionHtml}</p>
+      </div>
 
         ${isLocked ? `
             <div class="unlock-overlay">
