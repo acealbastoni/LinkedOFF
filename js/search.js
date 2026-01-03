@@ -1,10 +1,42 @@
 
-// API Configuration
-const API_CONFIG = {
-    baseURL: 'https://script.google.com/macros/s/AKfycbyin6nA9tDwOkhDtl9h4WyTvdT6nvcY91yXfQmPzbXYcvUs1ASqLCnke93vNVHN_bVNTQ/exec',
-    apiKey: '447e152f-143f-4195-80fd-42b87d40af46-1764452322847'
-};
+// // API Configuration
+// const API_CONFIG = {
+//     baseURL: 'https://script.google.com/macros/s/AKfycbyin6nA9tDwOkhDtl9h4WyTvdT6nvcY91yXfQmPzbXYcvUs1ASqLCnke93vNVHN_bVNTQ/exec',
+//     apiKey: '447e152f-143f-4195-80fd-42b87d40af46-1764452322847'
+// };
 
+
+
+const API_CONFIG = {
+    baseURL: 'https://script.google.com/macros/s/AKfycbw6ctohJP85I1Jeo6p5z2EWyiFBEdavgX_TcWvlZtho--6j1SPr-xxtwLDZsgiYErqsKQ/exec',
+    apiKey: '447e152f-143f-4195-80fd-42b87d40af46-1764452322847' // أو خلي apiKey زي ما هو عندك
+  };
+  
+
+/**
+ * ✅ Session helper for JOBS API calls (loadJobs)
+ * Requires auth.fixed.js to be loaded (getCurrentUser/getCurrentSession/isLoggedIn/performLogout)
+ */
+function getJobsSessionQuery_() {
+    if (typeof window.getCurrentUser !== 'function' || typeof window.getCurrentSession !== 'function') return null;
+    const u = window.getCurrentUser();
+    const s = window.getCurrentSession();
+    if (!u || !s || !s.token) return null;
+    return `&email=${encodeURIComponent(u.email)}&sessionToken=${encodeURIComponent(s.token)}`;
+}
+
+function ensureSessionForActions_() {
+    if (typeof window.isLoggedIn === 'function' && !window.isLoggedIn()) {
+        if (typeof window.performLogout === 'function') {
+            window.performLogout('⏳ انتهت مدة الجلسة. برجاء تسجيل الدخول مرة أخرى.', true);
+        } else {
+            alert('⏳ انتهت مدة الجلسة. برجاء تسجيل الدخول مرة أخرى.');
+            window.location.href = 'login.html';
+        }
+        return false;
+    }
+    return true;
+}
 
 // State Management
 let currentPage = 1;
@@ -19,50 +51,198 @@ function checkSubscription() {
     return localStorage.getItem('subscription') === 'active';
 }
 
-// Load Jobs from API
+// // Load Jobs from API
+// async function loadJobs(page = 1) {
+//         if (!ensureSessionForActions_()) return;
+// const container = document.getElementById('jobsContainer');
+//     const resultsInfo = document.getElementById('resultsInfo');
+    
+//     // Show loading
+//     container.innerHTML = `
+//         <div class="loading">
+//             <div class="spinner"></div>
+//             <p>جاري تحميل الوظائف...</p>
+//         </div>
+//     `;
+
+//     try {
+//         const pageSize = isSubscribed ? 50 : 10; // المشتركون يحصلون على نتائج أكثر
+//         const sessQ = getJobsSessionQuery_();
+//         if (!sessQ) { ensureSessionForActions_(); throw new Error('Session missing'); }
+//         const url = `${API_CONFIG.baseURL}?key=${API_CONFIG.apiKey}&page=${page}&pageSize=${pageSize}${sessQ}`;
+        
+//         const response = await fetch(url);
+//         const data = await response.json();
+
+//         // ✅ If backend says session invalid/expired -> logout immediately
+//         if (!data.ok && (data.error === 'NO_SESSION' || data.error === 'INVALID_SESSION' || data.error === 'SESSION_EXPIRED')) {
+//             if (typeof window.performLogout === 'function') {
+//                 window.performLogout('⏳ انتهت مدة الجلسة. برجاء تسجيل الدخول مرة أخرى.', true);
+//             }
+//             throw new Error(data.message || 'Session expired');
+//         }
+
+//         if (data.ok) {
+//             jobsData = data.data;
+//             currentPage = data.page;
+//             totalPages = data.totalPages;
+//             totalJobs = data.totalRows;
+
+//             displayJobs(jobsData);
+//             updateResultsInfo();
+//             renderPagination();
+//         } else {
+//             throw new Error(data.message || 'فشل تحميل البيانات');
+//         }
+//     } catch (error) {
+//         console.error('Error loading jobs:', error);
+//         container.innerHTML = `
+//             <div class="no-results">
+//                 <div class="no-results-icon">❌</div>
+//                 <h3>حدث خطأ في تحميل الوظائف</h3>
+//                 <p>${error.message}</p>
+//                 <button class="btn-primary" onclick="loadJobs(${page})">إعادة المحاولة</button>
+//             </div>
+//         `;
+//     }
+// }
+
+
+
+
+// async function loadJobs(page = 1) {
+//     try {
+//       const pageSize = API_CONFIG.pageSize || 10;
+  
+//       // ✅ session data from auth.js
+//       const user = getCurrentUser?.();
+//       const sess = getCurrentSession?.();
+  
+//       if (!user || !sess || !sess.token || isSessionExpired?.(sess)) {
+//         performLogout?.('⏳ انتهت مدة الجلسة. برجاء تسجيل الدخول مرة أخرى.', true);
+//         return;
+//       }
+  
+//       const url =
+//         `${API_CONFIG.baseURL}?key=${encodeURIComponent(API_CONFIG.apiKey)}` +
+//         `&email=${encodeURIComponent(user.email)}` +
+//         `&sessionToken=${encodeURIComponent(sess.token)}` +
+//         `&page=${encodeURIComponent(page)}` +
+//         `&pageSize=${encodeURIComponent(pageSize)}`;
+  
+//       const response = await fetch(url, {method: 'GET',redirect: 'follow'});
+//       const text = await response.text();
+  
+//       let data;
+//       try { data = JSON.parse(text); }
+//       catch (e) {
+//         console.error('Non-JSON response:', text.slice(0, 300));
+//         throw new Error('Server returned non-JSON');
+//       }
+  
+//       // ✅ لو الباك-إند بيرجع {ok:false, code:'session_expired'} أو status error
+//       if (data.code === 'session_expired' || data.code === 'invalid_session' || data.code === 'no_session') {
+//         performLogout?.('⏳ انتهت مدة الجلسة. برجاء تسجيل الدخول مرة أخرى.', true);
+//         return;
+//       }
+  
+//       if (data.ok === false || data.status === 'error') {
+//         throw new Error(data.message || 'Load jobs failed');
+//       }
+  
+//       // ✅ كمل باقي منطقك الحالي لعرض الوظائف باستخدام data.data / data.totalPages ...
+//       // renderJobs(data.data); updatePagination(...); إلخ
+  
+//     } catch (err) {
+//       console.error('Error loading jobs:', err);
+//       alert('حدث خطأ أثناء تحميل الوظائف: ' + err.message);
+//     }
+//   }
+  
+
 async function loadJobs(page = 1) {
     const container = document.getElementById('jobsContainer');
-    const resultsInfo = document.getElementById('resultsInfo');
-    
-    // Show loading
+  
     container.innerHTML = `
-        <div class="loading">
-            <div class="spinner"></div>
-            <p>جاري تحميل الوظائف...</p>
-        </div>
+      <div class="loading">
+        <div class="spinner"></div>
+        <p>جاري تحميل الوظائف...</p>
+      </div>
     `;
-
+  
     try {
-        const pageSize = isSubscribed ? 50 : 10; // المشتركون يحصلون على نتائج أكثر
-        const url = `${API_CONFIG.baseURL}?key=${API_CONFIG.apiKey}&page=${page}&pageSize=${pageSize}`;
-        
-        const response = await fetch(url);
-        const data = await response.json();
-
-        if (data.ok) {
-            jobsData = data.data;
-            currentPage = data.page;
-            totalPages = data.totalPages;
-            totalJobs = data.totalRows;
-
-            displayJobs(jobsData);
-            updateResultsInfo();
-            renderPagination();
+      const pageSize = isSubscribed ? 50 : 10;
+  
+      // ✅ اجلب session من auth.js
+      const user = (typeof getCurrentUser === 'function') ? getCurrentUser() : null;
+      const sess = (typeof getCurrentSession === 'function') ? getCurrentSession() : null;
+  
+      if (!user || !sess || !sess.token || (typeof isSessionExpired === 'function' && isSessionExpired(sess))) {
+        if (typeof performLogout === 'function') {
+          performLogout('⏳ انتهت مدة الجلسة. برجاء تسجيل الدخول مرة أخرى.', true);
         } else {
-            throw new Error(data.message || 'فشل تحميل البيانات');
+          alert('⏳ انتهت مدة الجلسة. برجاء تسجيل الدخول مرة أخرى.');
+          window.location.replace('login.html');
         }
+        return;
+      }
+  
+      // ✅ لازم يكون baseURL هو /exec الجديد الصحيح
+      const url =
+        `${API_CONFIG.baseURL}?key=${encodeURIComponent(API_CONFIG.apiKey)}` +
+        `&email=${encodeURIComponent(user.email)}` +
+        `&sessionToken=${encodeURIComponent(sess.token)}` +
+        `&page=${encodeURIComponent(page)}` +
+        `&pageSize=${encodeURIComponent(pageSize)}`;
+  
+      const response = await fetch(url, { method: 'GET', redirect: 'follow' });
+  
+      // اقرأ كنص أولاً (عشان لو HTML نكشفه)
+      const text = await response.text();
+  
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch (e) {
+        console.error('Non-JSON response (first 300 chars):', text.slice(0, 300));
+        throw new Error('Server returned non-JSON (check deploy URL / permissions)');
+      }
+  
+        // ✅ لو السيرفر قال السيشن بايظة
+        if (data.code === 'session_expired' || data.code === 'invalid_session' || data.code === 'no_session') {
+            if (typeof performLogout === 'function')
+                performLogout('⏳ انتهت مدة الجلسة. برجاء تسجيل الدخول مرة أخرى.', true);
+            return;
+        }
+
+      if (!data.ok) throw new Error(data.message || 'فشل تحميل البيانات');
+  
+      jobsData = data.data;
+      currentPage = data.page;
+      totalPages = data.totalPages;
+      totalJobs = data.totalRows;
+  
+      displayJobs(jobsData);
+      updateResultsInfo();
+      renderPagination();
+  
     } catch (error) {
-        console.error('Error loading jobs:', error);
-        container.innerHTML = `
-            <div class="no-results">
-                <div class="no-results-icon">❌</div>
-                <h3>حدث خطأ في تحميل الوظائف</h3>
-                <p>${error.message}</p>
-                <button class="btn-primary" onclick="loadJobs(${page})">إعادة المحاولة</button>
-            </div>
-        `;
+      console.error('Error loading jobs:', error);
+      container.innerHTML = `
+        <div class="no-results">
+          <div class="no-results-icon">❌</div>
+          <h3>حدث خطأ في تحميل الوظائف</h3>
+          <p>${error.message}</p>
+          <button class="btn-primary" onclick="loadJobs(${page})">إعادة المحاولة</button>
+        </div>
+      `;
     }
-}
+  }
+  
+
+
+
+
 
 // Display Jobs
 function displayJobs(jobs) {
@@ -386,10 +566,21 @@ function applyJob(jobId, email) {
     }
 }
 
-// Save Job
+// Save Job (Session-protected)
 function saveJob(jobId) {
+    // ✅ Ensure session is still valid for ANY action
+    if (typeof window.isLoggedIn === 'function' && !window.isLoggedIn()) {
+        if (typeof window.performLogout === 'function') {
+            window.performLogout('⏳ انتهت مدة الجلسة. برجاء تسجيل الدخول مرة أخرى.', true);
+        } else {
+            alert('⏳ انتهت مدة الجلسة. برجاء تسجيل الدخول مرة أخرى.');
+            window.location.href = 'login.html';
+        }
+        return;
+    }
+
     let savedJobs = JSON.parse(localStorage.getItem('savedJobs') || '[]');
-    
+
     if (savedJobs.includes(jobId)) {
         savedJobs = savedJobs.filter(id => id !== jobId);
         localStorage.setItem('savedJobs', JSON.stringify(savedJobs));
@@ -400,6 +591,7 @@ function saveJob(jobId) {
         alert('💾 تم حفظ الوظيفة بنجاح!');
     }
 }
+
 
 // Share Job
 function shareJob(jobId, title) {

@@ -770,3 +770,151 @@ body {
     }
 }
 
+
+
+/* Session Modal */
+.session-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    font-family: 'Cairo', sans-serif;
+  }
+  
+  .session-modal.hidden {
+    display: none;
+  }
+  
+  .session-box {
+    background: #fff;
+    padding: 30px 35px;
+    border-radius: 14px;
+    text-align: center;
+    width: 90%;
+    max-width: 420px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+    animation: scaleIn 0.25s ease;
+  }
+  
+  .session-icon {
+    font-size: 48px;
+    margin-bottom: 10px;
+  }
+  
+  .session-box h3 {
+    margin: 10px 0;
+    color: #1b5e20;
+    font-size: 22px;
+  }
+  
+  .session-box p {
+    color: #555;
+    margin-bottom: 20px;
+    line-height: 1.6;
+  }
+  
+  .session-box button {
+    background: #1dbf73;
+    border: none;
+    color: #fff;
+    padding: 12px 26px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 15px;
+    transition: background 0.2s;
+  }
+  
+  .session-box button:hover {
+    background: #17a963;
+  }
+  
+  @keyframes scaleIn {
+    from {
+      transform: scale(0.85);
+      opacity: 0;
+    }
+    to {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+  
+
+
+
+
+
+
+
+
+
+
+  /* Button spinner */
+.btn-with-spinner {
+    position: relative;
+    display: inline-flex;
+    gap: 10px;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .btn-with-spinner[disabled] {
+    opacity: 0.75;
+    cursor: not-allowed;
+    filter: grayscale(0.1);
+  }
+  
+  .btn-spinner {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.55);
+    border-top-color: #fff;
+    display: none;
+    animation: spin 0.8s linear infinite;
+  }
+  
+  .btn-with-spinner.loading .btn-spinner {
+    display: inline-block;
+  }
+  
+  .btn-with-spinner.loading .btn-text {
+    opacity: 0.95;
+  }
+  
+  /* Inline status message */
+  .form-status {
+    margin-top: 12px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    display: none;
+  }
+  
+  .form-status.show { display: block; }
+  
+  .form-status.info {
+    background: #eef5ff;
+    color: #1d4ed8;
+    border: 1px solid rgba(29,78,216,0.15);
+  }
+  
+  .form-status.success {
+    background: #ecfdf5;
+    color: #047857;
+    border: 1px solid rgba(4,120,87,0.15);
+  }
+  
+  .form-status.error {
+    background: #fff1f2;
+    color: #be123c;
+    border: 1px solid rgba(190,18,60,0.15);
+  }
+  
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+  

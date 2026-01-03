@@ -1,0 +1,304 @@
+// ===== AUTH CONFIG =====
+const AUTH_CONFIG = {
+    baseURL: 'https://script.google.com/macros/s/AKfycbwJpiH3xUH2EjqR5V9UzjgqHppfxPu6Tr9GmU-IlFig28jyanGW4ATSQUy_THVcMByLtw/exec'
+    // لا تكتب أي query string هنا (زي ?hl=ar) خليه /exec فقط
+};
+
+// ===== LocalStorage Keys =====
+const LS_USER_KEY = 'linkedoff_user';
+const LS_SESSION_KEY = 'linkedoff_session';
+
+// ===== Helpers: User =====
+function getCurrentUser() {
+    const userStr = localStorage.getItem(LS_USER_KEY);
+    if (!userStr) return null;
+    try {
+        return JSON.parse(userStr);
+    } catch (e) {
+        console.error('Invalid user in localStorage', e);
+        return null;
+    }
+}
+
+function setCurrentUser(user) {
+    if (!user) localStorage.removeItem(LS_USER_KEY);
+    else localStorage.setItem(LS_USER_KEY, JSON.stringify(user));
+}
+
+// ===== Helpers: Session =====
+function getCurrentSession() {
+    const sessStr = localStorage.getItem(LS_SESSION_KEY);
+    if (!sessStr) return null;
+    try {
+        return JSON.parse(sessStr);
+    } catch (e) {
+        console.error('Invalid session in localStorage', e);
+        return null;
+    }
+}
+
+function setCurrentSession(sessionObj) {
+    if (!sessionObj) localStorage.removeItem(LS_SESSION_KEY);
+    else localStorage.setItem(LS_SESSION_KEY, JSON.stringify(sessionObj));
+}
+
+function isSessionExpired(sessionObj) {
+    if (!sessionObj || !sessionObj.expiresAtMs) return true;
+    return Date.now() > Number(sessionObj.expiresAtMs);
+}
+
+// ✅ This is the single source of truth for client-side login state
+function isLoggedIn() {
+    const user = getCurrentUser();
+    const sess = getCurrentSession();
+    if (!user || !sess) return false;
+    return !isSessionExpired(sess);
+}
+
+// ===== Network =====
+// async function authRequest(action, payload) {
+//     const res = await fetch(AUTH_CONFIG.baseURL, {
+//         method: 'POST',
+//         headers: {
+//             'Content-Type': 'text/plain;charset=utf-8' // علشان ما يعملش preflight
+//         },
+//         body: JSON.stringify({
+//             action,
+//             ...payload
+//         })
+//     });
+
+//     const text = await res.text(); // نقرأ النص الأول علشان لو فيه Error نقدر نطبعه
+//     let data;
+//     try {
+//         data = JSON.parse(text);
+//     } catch (e) {
+//         console.error('Raw response from Apps Script:', text);
+//         throw new Error('Invalid JSON from server');
+//     }
+
+//     // ملاحظة: الـ backend بيرجع status !== success في الخطأ
+//     if (data.status !== 'success') {
+//         const msg = data.message || 'Auth error';
+//         const err = new Error(msg);
+//         // لو backend بيرجع code (زي session_expired) نخليه متاح
+//         if (data.code) err.code = data.code;
+//         throw err;
+//     }
+
+//     return data;
+// }
+
+
+async function rawAuthRequest(action, payload) {
+    const res = await fetch(AUTH_CONFIG.baseURL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action, ...payload })
+    });
+  
+    const text = await res.text();
+    let data;
+    try { data = JSON.parse(text); }
+    catch (e) { console.error('Raw response:', text); throw new Error('Invalid JSON from server'); }
+  
+    if (data.status !== 'success') {
+      const err = new Error(data.message || 'Auth error');
+      if (data.code) err.code = data.code;
+      throw err;
+    }
+    return data;
+  }
+
+  
+  async function secureRequest(action, payload = {}) {
+    // ✅ اسمح للأكشنز العامة بدون Session
+    const PUBLIC = { login: true, register: true };
+    if (PUBLIC[String(action).toLowerCase()]) {
+      return rawAuthRequest(action, payload);
+    }
+  
+    // 1) تحقق سريع من local expiry
+    const user = getCurrentUser();
+    const sess = getCurrentSession();
+    if (!user || !sess || !sess.token || isSessionExpired(sess)) {
+      performLogout('⏳ انتهت مدة الجلسة. برجاء تسجيل الدخول مرة أخرى.');
+      throw new Error('Session expired');
+    }
+  
+    // 2) أرسل للـ backend ومعاه session
+    try {
+      return await rawAuthRequest(action, {
+        ...payload,
+        email: user.email,
+        sessionToken: sess.token
+      });
+    } catch (err) {
+      if (err.code === 'session_expired' || err.code === 'invalid_session' || err.code === 'no_session') {
+        performLogout('⏳ انتهت مدة الجلسة. برجاء تسجيل الدخول مرة أخرى.');
+      }
+      throw err;
+    }
+  }
+  
+
+
+
+
+
+
+
+/**
+ * ✅ Server-side session check (stronger than client clock only)
+ * Requires backend action: "check_session" and columns (Session Token, Session Expires At)
+ */
+async function checkSessionServer() {
+    const user = getCurrentUser();
+    const sess = getCurrentSession();
+    if (!user || !sess || !sess.token) return false;
+
+    try {
+        const data = await authRequest('check_session', {
+            email: user.email,
+            sessionToken: sess.token
+        });
+        return data.status === 'success';
+    } catch (e) {
+        return false;
+    }
+}
+
+// ===== Register =====
+async function registerUserFromForm(event) {
+    event.preventDefault();
+
+    const name     = document.getElementById('regName').value.trim();
+    const email    = document.getElementById('regEmail').value.trim();
+    const password = document.getElementById('regPassword').value.trim();
+
+    if (!name || !email || !password) {
+        alert('يرجى ملء جميع الحقول');
+        return;
+    }
+
+    try {
+        const data = await authRequest('register', { name, email, password });
+
+        // backend يعيد user في data.user
+        setCurrentUser(data.user);
+
+        // ⚠️ لو الـ backend ما بيرجع session في register، المستخدم لازم يعمل login
+        // لو أنت عدّلت الـ backend يرجع session هنا، هنحفظها تلقائيًا:
+        if (data.session && data.session.token) {
+            setCurrentSession({
+                token: data.session.token,
+                expiresAtMs: data.session.expiresAtMs
+            });
+        } else {
+            setCurrentSession(null);
+        }
+
+        alert('✅ تم التسجيل بنجاح! سيتم تحويلك للوحة التحكم');
+        window.location.href = 'dashboard.html';
+    } catch (err) {
+        alert('❌ فشل التسجيل: ' + err.message);
+    }
+}
+
+// ===== Login =====
+async function loginUserFromForm(event) {
+    event.preventDefault();
+
+    const email    = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPassword').value.trim();
+
+    if (!email || !password) {
+        alert('يرجى إدخال البريد وكلمة المرور');
+        return;
+    }
+
+    try {
+        const data = await authRequest('login', { email, password });
+
+        // backend يعيد user + session
+        setCurrentUser(data.user);
+
+        // ✅ session required for 1-minute forced re-login
+        if (data.session && data.session.token && data.session.expiresAtMs) {
+            setCurrentSession({
+                token: data.session.token,
+                expiresAtMs: data.session.expiresAtMs
+            });
+        } else {
+            // لو session مش موجودة => اعتبره غير مسجل (عشان الأمان)
+            setCurrentSession(null);
+            throw new Error('Server did not return session info. Please update backend.');
+        }
+
+        alert('✅ تم تسجيل الدخول بنجاح');
+        window.location.href = 'search.html';
+    } catch (err) {
+        alert('❌ فشل تسجيل الدخول: ' + err.message);
+    }
+}
+
+// ===== Logout (عام) =====
+function performLogout(message) {
+    setCurrentUser(null);
+    setCurrentSession(null);
+
+    // لو حابب تمسح بعض الإحصائيات مع الخروج:
+    // localStorage.removeItem('savedJobs');
+    // localStorage.removeItem('jobsViewed');
+
+    if (message) alert(message);
+    window.location.href = 'index.html';
+}
+
+/**
+ * ✅ Call this in protected pages to force logout after 1 minute
+ * - First: checks local expiry
+ * - Optional: also checks server every interval (stronger)
+ */
+function startSessionEnforcer(options = {}) {
+    const {
+        intervalMs = 5000,
+        checkServer = false,
+        redirectTo = 'login.html',
+        silent = false
+    } = options;
+
+    function kickOut() {
+        setCurrentUser(null);
+        setCurrentSession(null);
+        if (!silent) alert('⏳ انتهت مدة الجلسة (1 دقيقة). برجاء تسجيل الدخول مرة أخرى.');
+        window.location.replace(redirectTo);
+    }
+
+    // immediate check
+    if (!isLoggedIn()) {
+        kickOut();
+        return;
+    }
+
+    // watch
+    setInterval(async () => {
+        if (!isLoggedIn()) {
+            kickOut();
+            return;
+        }
+        if (checkServer) {
+            const ok = await checkSessionServer();
+            if (!ok) kickOut();
+        }
+    }, intervalMs);
+}
+
+// ===== Expose to window =====
+window.getCurrentUser       = getCurrentUser;
+window.registerUserFromForm = registerUserFromForm;
+window.loginUserFromForm    = loginUserFromForm;
+window.performLogout        = performLogout;
+window.isLoggedIn           = isLoggedIn;
+window.startSessionEnforcer = startSessionEnforcer;
+window.checkSessionServer   = checkSessionServer;

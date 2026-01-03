@@ -10,19 +10,12 @@
     <link rel="icon" type="image/svg+xml" href="img/icon-linkedoff.svg">
     <script src="js/auth.js"></script>
     <script>
-    // حماية الصفحة - تحويل للـ login إذا لم يكن مسجل دخول
-    if (!isLoggedIn()) {
-        window.location.href = 'login.html';
-    }
-    </script>
+        startSessionEnforcer(); // kicks user out when 1 minute expires
+      </script>
 </head>
+
 <body>
-        <!-- 👈 هنا بالضبط، أول سطر! -->
-        <script>
-            if (!localStorage.getItem('linkedoff_user')) {
-                window.location.replace('login.html');
-            }
-            </script>
+       
     <!-- Navbar -->
     <nav class="navbar">
         <div class="container">
@@ -196,5 +189,16 @@
 
     <!-- Version Badge -->
     <div class="version-badge" id="versionBadge">v1.2.0</div>
+<!-- Session Message Modal -->
+<div id="sessionModal" class="session-modal hidden">
+    <div class="session-box">
+      <div class="session-icon">⏳</div>
+      <h3 id="sessionTitle">انتهت الجلسة</h3>
+      <p id="sessionMessage"></p>
+      <button onclick="closeSessionModal()">تسجيل الدخول</button>
+    </div>
+  </div>
+  
+
 </body>
 </html>

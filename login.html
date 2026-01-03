@@ -112,7 +112,13 @@
                 <label for="loginPassword">كلمة المرور</label>
                 <input type="password" id="loginPassword" placeholder="********" required>
             </div>
-            <button type="submit">دخول</button>
+            <button type="submit" id="loginBtn" class="btn-with-spinner">
+                <span class="btn-text">دخول</span>
+                <span class="btn-spinner" aria-hidden="true"></span>
+              </button>
+              <div class="form-status" id="loginStatus" role="status" aria-live="polite"></div>
+
+              
         </form>
 
         <!-- Register Form -->
@@ -129,7 +135,13 @@
                 <label for="regPassword">كلمة المرور</label>
                 <input type="password" id="regPassword" placeholder="********" required>
             </div>
-            <button type="submit">إنشاء حساب</button>
+            <button type="submit" id="registerBtn" class="btn-with-spinner">
+                <span class="btn-text">إنشاء حساب</span>
+                <span class="btn-spinner" aria-hidden="true"></span>
+              </button>
+              <div class="form-status" id="registerStatus" role="status" aria-live="polite"></div>
+
+              
         </form>
 
         <div class="auth-footer-link">
