@@ -164,19 +164,20 @@ function upgradeSubscription() {
 
 // Logout
 // function logout() {
-//     if (confirm('هل أنت متأكد من تسجيل الخروج؟')) {
-//         // يمكن إضافة logout logic هنا
-//         showNotification('👋 تم تسجيل الخروج بنجاح', 'success');
-//         setTimeout(() => {
-//             window.location.href = 'index.html';
-//         }, 1500);
+  // Logout with a nice modal (from auth.js)
+  if (typeof performLogout === 'function') {
+    performLogout('👋 تم تسجيل الخروج', false);
+  } else {
+    // fallback
+    localStorage.removeItem('linkedoff_user');
+    localStorage.removeItem('linkedoff_session');
+    window.location.href = 'index.html';
+  }
+}
+
+, 1500);
 //     }
 // }
-function logout() {
-    if (confirm('هل أنت متأكد من تسجيل الخروج؟')) {
-        performLogout(); // من auth.js
-    }
-}
 
 // Notification System
 function showNotification(message, type = 'info') {

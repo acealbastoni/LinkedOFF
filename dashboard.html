@@ -8,22 +8,49 @@
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/dashboard.css">
     <script src="js/auth.js"></script>
+    <script>
+      startSessionEnforcer();
+    </script>
 </head>
-<body>
-    <!-- Navbar -->
-    <nav class="navbar">
-        <div class="container">
-            <div class="nav-brand">
-                <a href="index.html"><h1>💼 LinkedOFF AceAlBastoni</h1></a>
-            </div>
-            <div class="nav-links">
-                <a href="search.html">البحث</a>
-                <a href="#" onclick="logout()">تسجيل الخروج</a>
-            </div>
-        </div>
-    </nav>
+<body class="app-page" data-page="dashboard">
+<div class="app-shell">
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar(false)"></div>
+  <aside class="app-sidebar" id="appSidebar" aria-label="القائمة الجانبية">
+  <div class="sidebar-brand">
+    <a href="index.html" class="brand-link">
+      <span class="brand-mark">💼</span>
+      <span class="brand-text">LinkedOFF</span>
+      <span class="brand-sub">AceAlBastoni</span>
+    </a>
+  </div>
 
-    <div class="dashboard-container">
+  <nav class="sidebar-nav">
+    <a href="index.html" class="nav-item"><span class="nav-ic">🏠</span><span>الرئيسية</span></a>
+    <a href="search.html" class="nav-item"><span class="nav-ic">🔍</span><span>البحث عن الوظائف</span></a>
+    <a href="dashboard.html" class="nav-item"><span class="nav-ic">📊</span><span>لوحة التحكم</span></a>
+    <a href="engines-interactive.html" class="nav-item"><span class="nav-ic">⚙️</span><span>المحركات</span></a>
+    <a href="index.html#pricing" class="nav-item"><span class="nav-ic">💳</span><span>الباقات</span></a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <button class="sidebar-logout" type="button" onclick="performLogout('👋 تم تسجيل الخروج', false)">
+      <span class="nav-ic">🚪</span><span>تسجيل الخروج</span>
+    </button>
+  </div>
+</aside>
+  <div class="app-main">
+    <header class="app-topbar">
+      <button class="sidebar-toggle" type="button" aria-label="فتح/إغلاق القائمة" onclick="toggleSidebar()">
+        <span class="toggle-bars"></span>
+      </button>
+      <div class="topbar-title">📊 لوحة التحكم</div>
+      <div class="topbar-actions">
+        <a class="topbar-link" href="dashboard.html">لوحة التحكم</a>
+      </div>
+    </header>
+
+    <main class="app-content">
+<div class="dashboard-container">
         <div class="container">
             <!-- Welcome Section -->
             <div class="welcome-section">
@@ -185,5 +212,21 @@
 
     <!-- Version Badge -->
     <div class="version-badge" id="versionBadge">v1.2.0</div>
+    </main>
+  </div>
+</div>
+
+<script>
+  // Highlight active sidebar link
+  (function() {
+    try {
+      const current = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
+      document.querySelectorAll('.sidebar-nav .nav-item').forEach(a => {
+        const href = (a.getAttribute('href') || '').toLowerCase();
+        if (href === current) a.classList.add('active');
+      });
+    } catch(e) {}
+  })();
+</script>
 </body>
 </html>

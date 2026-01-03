@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>مركز التحكم في المحركات | AceAlBastoni</title>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="stylesheet" href="css/styles.css"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
             margin: 0;
@@ -782,9 +783,49 @@
             }
         }
     </style>
+
+    <script src="js/auth.js"></script>
+    <script>startSessionEnforcer();</script>
 </head>
-<body>
-    <!-- Header -->
+<body class="app-page" data-page="engines">
+<div class="app-shell">
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar(false)"></div>
+  <aside class="app-sidebar" id="appSidebar" aria-label="القائمة الجانبية">
+  <div class="sidebar-brand">
+    <a href="index.html" class="brand-link">
+      <span class="brand-mark">💼</span>
+      <span class="brand-text">LinkedOFF</span>
+      <span class="brand-sub">AceAlBastoni</span>
+    </a>
+  </div>
+
+  <nav class="sidebar-nav">
+    <a href="index.html" class="nav-item"><span class="nav-ic">🏠</span><span>الرئيسية</span></a>
+    <a href="search.html" class="nav-item"><span class="nav-ic">🔍</span><span>البحث عن الوظائف</span></a>
+    <a href="dashboard.html" class="nav-item"><span class="nav-ic">📊</span><span>لوحة التحكم</span></a>
+    <a href="engines-interactive.html" class="nav-item"><span class="nav-ic">⚙️</span><span>المحركات</span></a>
+    <a href="index.html#pricing" class="nav-item"><span class="nav-ic">💳</span><span>الباقات</span></a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <button class="sidebar-logout" type="button" onclick="performLogout('👋 تم تسجيل الخروج', false)">
+      <span class="nav-ic">🚪</span><span>تسجيل الخروج</span>
+    </button>
+  </div>
+</aside>
+  <div class="app-main">
+    <header class="app-topbar">
+      <button class="sidebar-toggle" type="button" aria-label="فتح/إغلاق القائمة" onclick="toggleSidebar()">
+        <span class="toggle-bars"></span>
+      </button>
+      <div class="topbar-title">⚙️ المحركات</div>
+      <div class="topbar-actions">
+        <a class="topbar-link" href="dashboard.html">لوحة التحكم</a>
+      </div>
+    </header>
+
+    <main class="app-content">
+<!-- Header -->
     <div class="header">
         <div class="header-content">
             <div class="brand">
@@ -1338,5 +1379,21 @@
             }
         });
     </script>
+    </main>
+  </div>
+</div>
+
+<script>
+  // Highlight active sidebar link
+  (function() {
+    try {
+      const current = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
+      document.querySelectorAll('.sidebar-nav .nav-item').forEach(a => {
+        const href = (a.getAttribute('href') || '').toLowerCase();
+        if (href === current) a.classList.add('active');
+      });
+    } catch(e) {}
+  })();
+</script>
 </body>
 </html>

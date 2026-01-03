@@ -407,3 +407,24 @@ function setFormLoading(formId, isLoading, btnId) {
     ]);
   }
   
+
+// ===== UI: Sidebar Toggle =====
+function toggleSidebar(forceOpen) {
+  const sidebar = document.getElementById('appSidebar');
+  const overlay = document.getElementById('sidebarOverlay');
+  if (!sidebar) return;
+
+  const willOpen = (typeof forceOpen === 'boolean') ? forceOpen : !sidebar.classList.contains('open');
+
+  sidebar.classList.toggle('open', willOpen);
+  if (overlay) overlay.classList.toggle('show', willOpen);
+}
+
+// Close sidebar when clicking a link (mobile UX)
+document.addEventListener('click', (e) => {
+  const a = e.target && e.target.closest ? e.target.closest('.sidebar-nav a') : null;
+  if (a && window.innerWidth <= 980) {
+    toggleSidebar(false);
+  }
+});
+
