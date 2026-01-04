@@ -323,7 +323,7 @@ function showSessionModal(title, message, redirectToLogin = true) {
   
     if (!modal) {
       // fallback في حالة نسيان HTML
-      alert(message || title);
+      //alert(message || title);
       if (redirectToLogin) window.location.replace('login.html');
       return;
     }

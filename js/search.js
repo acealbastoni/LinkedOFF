@@ -365,24 +365,27 @@ function createJobCard(job, isLocked = false) {
                 </button>
             </div>
         ` : `
-            <div class="job-actions">
-                <button class="btn-primary" onclick="applyJob('${job.dkey}', '${realEmail}')">
-                    📧 تقديم الآن
-                </button>
-                <button class="btn-save" onclick="saveJob('${job.dkey}')">
-                    💾 حفظ الوظيفة
-                </button>
-                <button class="btn-outline" onclick="shareJob('${job.dkey}', '${realEmail}')">
-                    📤 مشاركة
-                </button>
-
-                ${true? `
-                    <button class="btn-outline toggle-description-btn"
-                            onclick="toggleDescription('${job.dkey}')">
-                        👀 عرض المزيد
-                    </button>
-                ` : ''}
-            </div>
+        <div class="job-actions">
+        <button class="btn-primary" onclick="showComingSoon()">
+            📧 تقديم الآن
+        </button>
+    
+        <button class="btn-save" onclick="showComingSoon()">
+            💾 حفظ الوظيفة
+        </button>
+    
+        <button class="btn-outline" onclick="showComingSoon()">
+            📤 مشاركة
+        </button>
+    
+        ${true ? `
+            <button class="btn-outline toggle-description-btn"
+                    onclick="toggleDescription('${job.dkey}')">
+                👀 عرض المزيد
+            </button>
+        ` : ''}
+    </div>
+    
         `}
     </div>
     `;

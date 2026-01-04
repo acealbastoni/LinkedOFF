@@ -231,5 +231,32 @@
     } catch(e) {}
   })();
 </script>
+
+
+
+
+<!-- Coming Soon Modal -->
+<div id="comingSoonModal" class="modal-overlay">
+    <div class="modal-box">
+        <div class="modal-icon">🚧</div>
+        <h3>الميزة قيد التطوير</h3>
+        <p>
+            هذه الخاصية قيد التطوير حاليًا،
+            ويجري العمل عليها لتحسين تجربتك.
+        </p>
+        <button onclick="closeComingSoon()">حسنًا</button>
+    </div>
+</div>
+<script>
+    function showComingSoon() {
+        document.getElementById('comingSoonModal').style.display = 'flex';
+    }
+    
+    function closeComingSoon() {
+        document.getElementById('comingSoonModal').style.display = 'none';
+    }
+    </script>
+    </body>
+    
 </body>
 </html>
