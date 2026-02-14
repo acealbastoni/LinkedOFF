@@ -290,106 +290,109 @@ function getDirection(text) {
 function createJobCard(job, isLocked = false) {
     let description = convert(job.plainTextJobDescription) || 'لا يوجد وصف متاح';
     description = normalizeDescription(description);
-
-    const shortDescription = description.substring(0, 200) + (description.length > 200 ? '...' : '');
+  
+    const shortDescription =
+      description.substring(0, 200) + (description.length > 200 ? '...' : '');
+  
     const realEmail = job.attachedEmails || 'غير متوفر';
-    const email = blurEmail(realEmail);
-
-    const source =  job.source || 'LinkedIn';
-    const date = job.scrappedDate //? new Date(job.scrappedDate).toLocaleDateString('ar-SA') : 'غير محدد';
-
+  
+    const source = job.source || 'LinkedIn';
+    const date = job.scrappedDate;
+  
     // نحاول نجيب الإيميل من الـ attachedEmails أولاً، لو مش موجود ناخده من الوصف
     const extractedEmail = description.match(/[.\w-]+@([\w-]+\.)+[\w-]+/g);
-    const displayedEmail = (realEmail && realEmail !== 'غير متوفر')
+    const displayedEmail =
+      (realEmail && realEmail !== 'غير متوفر')
         ? realEmail
         : (extractedEmail ? extractedEmail[0] : null);
-
+  
     let jobTitleHtml = "وظيفة";
-
+  
     if (displayedEmail) {
-        const atIndex = displayedEmail.indexOf("@");
-        if (atIndex !== -1) {
-            const local = displayedEmail.substring(0, atIndex);
-            const domain = displayedEmail.substring(atIndex);
-
-            jobTitleHtml = `
-                <span class="email-blur">${local}</span><span>${domain}</span>
-            `;
-        } else {
-            jobTitleHtml = escapeHtml(displayedEmail);
-        }
+      const atIndex = displayedEmail.indexOf("@");
+      if (atIndex !== -1) {
+        const local = displayedEmail.substring(0, atIndex);
+        const domain = displayedEmail.substring(atIndex);
+  
+        jobTitleHtml = `
+          <span class="email-blur">${local}</span><span>${domain}</span>
+        `;
+      } else {
+        jobTitleHtml = escapeHtml(displayedEmail);
+      }
     }
-
+  
     const city = extractCity(description);
     const salary = extractSalary(description);
-
-    // 🔹 تجهيز الوصف لعرضه في الـ HTML مع الهاشتاجات
+  
     const descriptionHtml = highlightHashtags(
-        highlightEmails(escapeHtml(description))
+      highlightEmails(escapeHtml(description))
     ).replace(/\n/g, '<br>');
-    
+  
     const shortDescriptionHtml = highlightHashtags(
-        highlightEmails(escapeHtml(shortDescription))
+      highlightEmails(escapeHtml(shortDescription))
     ).replace(/\n/g, '<br>');
-    
-    // لو حابب في النسخة المجانية نظهر وصف مختصر
+  
     const usedDescriptionHtml = isLocked ? shortDescriptionHtml : descriptionHtml;
-
+  
     return `
-    <div class="job-card ${isLocked ? 'locked' : ''}" data-job-id="${job.dkey}">
+      <div class="job-card ${isLocked ? 'locked' : ''}" data-job-id="${job.dkey}">
         <div class="job-header">
-            <div>
-                <h3 class="job-title" style="direction:ltr; text-align:left;">
-                    ${isLocked ? '<span class="premium-badge">🔒 Premium</span>' : ''}
-                    ${jobTitleHtml}
-                </h3>
-
-                <div class="job-meta">
-                    ${city ? `<span>📍 ${city}</span>` : ''}
-                    ${salary ? `<span>💰 ${salary}</span>` : ''}
-                    <span>📅 ${date}</span>
-                </div>
+          <div>
+            <h3 class="job-title" style="direction:ltr; text-align:left;">
+              ${isLocked ? '<span class="premium-badge">🔒 Premium</span>' : ''}
+              ${jobTitleHtml}
+            </h3>
+  
+            <div class="job-meta">
+              ${city ? `<span>📍 ${city}</span>` : ''}
+              ${salary ? `<span>💰 ${salary}</span>` : ''}
+              <span>📅 ${date}</span>
             </div>
-
-            <span class="job-source">${source}</span>
+          </div>
+  
+          <span class="job-source">${source}</span>
         </div>
-
+  
         <div class="job-description ${isLocked ? 'locked' : ''}" dir="auto">
-        <p>${usedDescriptionHtml}</p>
-      </div>
-
+          <p>${usedDescriptionHtml}</p>
+        </div>
+  
         ${isLocked ? `
-            <div class="unlock-overlay">
-                <button onclick="showSubscriptionModal()">
-                    🔓 اشترك الآن لرؤية التفاصيل الكاملة
-                </button>
-            </div>
-        ` : `
-        <div class="job-actions">
-        <button class="btn-primary" onclick="showComingSoon()">
-            📧 تقديم الآن
-        </button>
-    
-        <button class="btn-save" onclick="showComingSoon()">
-            💾 حفظ الوظيفة
-        </button>
-    
-        <button class="btn-outline" onclick="showComingSoon()">
-            📤 مشاركة
-        </button>
-    
-        ${true ? `
-            <button class="btn-outline toggle-description-btn"
-                    onclick="toggleDescription('${job.dkey}')">
-                👀 عرض المزيد
+          <div class="unlock-overlay">
+            <button onclick="showSubscriptionModal()">
+              🔓 اشترك الآن لرؤية التفاصيل الكاملة
             </button>
-        ` : ''}
-    </div>
-    
+          </div>
+        ` : `
+          <div class="job-actions">
+            <button class="btn-primary"
+                    data-email="${escapeHtml(realEmail)}"
+                    onclick="applyNow(this)">
+              📧 تقديم الآن
+            </button>
+  
+            <button class="btn-save" onclick="showComingSoon()">
+              💾 حفظ الوظيفة
+            </button>
+  
+            <button class="btn-outline" onclick="showComingSoon()">
+              📤 مشاركة
+            </button>
+  
+            ${true ? `
+              <button class="btn-outline toggle-description-btn"
+                      onclick="toggleDescription('${job.dkey}')">
+                👀 عرض المزيد
+              </button>
+            ` : ''}
+          </div>
         `}
-    </div>
+      </div>
     `;
-}
+  }
+  
+  
 // تأمين النص من أي HTML
 function escapeHtml(text) {
     if (!text) return '';

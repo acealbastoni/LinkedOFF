@@ -248,10 +248,53 @@
     </div>
 </div>
 <script>
-    function showComingSoon() {
-        document.getElementById('comingSoonModal').style.display = 'flex';
-    }
-    
+     function showComingSoon() {
+         document.getElementById('comingSoonModal').style.display = 'flex';
+     }
+   
+     
+
+     async function applyNow(btn) {
+  const realEmail = btn?.dataset?.email;
+
+  if (!realEmail || realEmail === 'غير متوفر') {
+    alert("No email found for this job.");
+    return;
+  }
+
+  const url = "https://script.google.com/macros/s/AKfycbw6ctohJP85I1Jeo6p5z2EWyiFBEdavgX_TcWvlZtho--6j1SPr-xxtwLDZsgiYErqsKQ/exec";
+
+  const payload = {
+    action: "sendcv",
+    email: realEmail
+  };
+
+  try {
+    // UX: prevent double click
+    btn.disabled = true;
+
+    const res = await fetch(url, {
+      method: "POST",
+      // ✅ keep it as simple request (no preflight)
+      body: JSON.stringify(payload)
+    });
+
+    const text = await res.text();
+    let data;
+    try { data = JSON.parse(text); } catch (e) { data = { raw: text }; }
+
+    console.log("Response:", data);
+    alert("Done: " + (data.message || text));
+  } catch (err) {
+    console.error(err);
+    alert("Error: " + err.message);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+
+
     function closeComingSoon() {
         document.getElementById('comingSoonModal').style.display = 'none';
     }
