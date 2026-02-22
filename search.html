@@ -235,6 +235,25 @@
 
 
 
+<!-- Toast Notification -->
+<div id="appToast" style="
+  position:fixed; top:24px; left:50%; transform:translateX(-50%) translateY(-80px);
+  min-width:280px; max-width:420px; padding:14px 20px;
+  border-radius:12px; box-shadow:0 8px 28px rgba(0,0,0,.18);
+  display:flex; align-items:center; gap:12px;
+  font-family:'Cairo',sans-serif; font-size:15px; font-weight:600;
+  color:#fff; z-index:9999; transition:transform .35s cubic-bezier(.34,1.56,.64,1), opacity .3s;
+  opacity:0; pointer-events:none;
+">
+  <span id="appToastIcon" style="font-size:22px;flex-shrink:0;"></span>
+  <span id="appToastMsg" style="flex:1;line-height:1.5;"></span>
+  <button onclick="hideToast()" style="
+    background:rgba(255,255,255,.25); border:none; color:#fff;
+    border-radius:6px; padding:2px 8px; cursor:pointer; font-size:13px;
+    font-family:'Cairo',sans-serif; margin-right:4px;
+  ">✕</button>
+</div>
+
 <!-- Coming Soon Modal -->
 <div id="comingSoonModal" class="modal-overlay">
     <div class="modal-box">
@@ -247,39 +266,79 @@
         <button onclick="closeComingSoon()">حسنًا</button>
     </div>
 </div>
+
 <script>
-     function showComingSoon() {
-         document.getElementById('comingSoonModal').style.display = 'flex';
-     }
-   
-     
+  let _toastTimer = null;
 
-     async function applyNow(btn) {
-  const realEmail = btn?.dataset?.email;
+  function showToast(message, type = 'success') {
+    const toast   = document.getElementById('appToast');
+    const icon    = document.getElementById('appToastIcon');
+    const msg     = document.getElementById('appToastMsg');
 
-  if (!realEmail || realEmail === 'غير متوفر') {
-    alert("لا يوجد بريد إلكتروني لهذه الوظيفة.");
-    return;
+    const styles = {
+      success: { bg: '#1a7f4b', ico: '✔' },
+      error:   { bg: '#c0392b', ico: '✖' },
+      info:    { bg: '#1a5276', ico: 'ℹ' },
+    };
+    const s = styles[type] || styles.info;
+
+    toast.style.background = s.bg;
+    icon.textContent        = s.ico;
+    msg.textContent         = message;
+
+    toast.style.opacity     = '1';
+    toast.style.pointerEvents = 'auto';
+    toast.style.transform   = 'translateX(-50%) translateY(0)';
+
+    clearTimeout(_toastTimer);
+    _toastTimer = setTimeout(hideToast, 5000);
   }
 
-  try {
-    btn.disabled = true;
-    const data = await authRequest('sendcv', { toEmail: realEmail });
-    alert("تم الإرسال: " + (data.message || JSON.stringify(data)));
-  } catch (err) {
-    console.error(err);
-    alert("خطأ: " + err.message);
-  } finally {
-    btn.disabled = false;
+  function hideToast() {
+    const toast = document.getElementById('appToast');
+    toast.style.opacity     = '0';
+    toast.style.pointerEvents = 'none';
+    toast.style.transform   = 'translateX(-50%) translateY(-80px)';
   }
-}
 
+  function showComingSoon() {
+    document.getElementById('comingSoonModal').style.display = 'flex';
+  }
 
+  async function applyNow(btn) {
+    const realEmail = btn?.dataset?.email;
 
-    function closeComingSoon() {
-        document.getElementById('comingSoonModal').style.display = 'none';
+    if (!realEmail || realEmail === 'غير متوفر') {
+      showToast('لا يوجد بريد إلكتروني لهذه الوظيفة.', 'error');
+      return;
     }
-    </script>
+
+    const originalHTML = btn.innerHTML;
+    btn.disabled  = true;
+    btn.innerHTML = '<span style="display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:btnSpin .7s linear infinite;vertical-align:middle;margin-left:6px;"></span> جاري الإرسال...';
+
+    try {
+      const data = await authRequest('sendcv', { toEmail: realEmail });
+      showToast(data.message || 'تم إرسال السيرة الذاتية بنجاح!', 'success');
+    } catch (err) {
+      console.error(err);
+      showToast('فشل الإرسال: ' + err.message, 'error');
+    } finally {
+      btn.disabled  = false;
+      btn.innerHTML = originalHTML;
+    }
+  }
+
+  function closeComingSoon() {
+    document.getElementById('comingSoonModal').style.display = 'none';
+  }
+</script>
+
+<style>
+  @keyframes btnSpin {
+    to { transform: rotate(360deg); }
+  }
+</style>
     </body>
     
 </body>

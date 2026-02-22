@@ -76,7 +76,7 @@ async function rawAuthRequest(action, payload = {}) {
     throw new Error('Invalid JSON from server');
   }
 
-  if (data.status !== 'success') {
+  if ((data.status && data.status !== 'success') || data.success === false) {
     const err = new Error(data.message || 'Auth error');
     if (data.code) err.code = data.code;
     throw err;
