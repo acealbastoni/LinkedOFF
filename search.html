@@ -235,6 +235,27 @@
 
 
 
+<!-- Global Send Progress Bar -->
+<div id="sendProgressBar" style="
+  position:fixed; bottom:0; left:0; right:0; z-index:10000;
+  background:linear-gradient(90deg,#1a7f4b,#27ae60);
+  color:#fff; font-family:'Cairo',sans-serif; font-size:14px; font-weight:600;
+  display:flex; align-items:center; gap:12px; padding:10px 20px;
+  box-shadow:0 -3px 16px rgba(0,0,0,.2);
+  transform:translateY(100%); transition:transform .3s ease;
+  pointer-events:none;
+">
+  <span style="
+    width:18px;height:18px;flex-shrink:0;
+    border:3px solid rgba(255,255,255,.35);
+    border-top-color:#fff; border-radius:50%;
+    animation:btnSpin .7s linear infinite;
+    display:inline-block;
+  "></span>
+  <span id="sendProgressMsg">جاري إرسال السيرة الذاتية...</span>
+  <span style="margin-right:auto;font-size:12px;opacity:.8;">لا تغلق الصفحة</span>
+</div>
+
 <!-- Toast Notification -->
 <div id="appToast" style="
   position:fixed; top:24px; left:50%; transform:translateX(-50%) translateY(-80px);
@@ -268,6 +289,18 @@
 </div>
 
 <script>
+  function showSendProgress(toEmail) {
+    const bar = document.getElementById('sendProgressBar');
+    const msg = document.getElementById('sendProgressMsg');
+    const domain = toEmail ? '@' + toEmail.split('@')[1] : '';
+    msg.textContent = 'جاري إرسال السيرة الذاتية' + (domain ? ' إلى ' + domain : '') + '...';
+    bar.style.transform = 'translateY(0)';
+  }
+
+  function hideSendProgress() {
+    document.getElementById('sendProgressBar').style.transform = 'translateY(100%)';
+  }
+
   let _toastTimer = null;
 
   function showToast(message, type = 'success') {
@@ -317,15 +350,20 @@
     btn.disabled  = true;
     btn.innerHTML = '<span style="display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:btnSpin .7s linear infinite;vertical-align:middle;margin-left:6px;"></span> جاري الإرسال...';
 
+    showSendProgress(realEmail);
+
     try {
       const data = await authRequest('sendcv', { toEmail: realEmail });
-      showToast(data.message || 'تم إرسال السيرة الذاتية بنجاح!', 'success');
+      const quotaMsg = data.remainingQuota !== undefined ? ` — متبقي: ${data.remainingQuota} إيميل` : '';
+      showToast((data.message || 'تم إرسال السيرة الذاتية بنجاح!') + quotaMsg, 'success');
     } catch (err) {
       console.error(err);
-      showToast('فشل الإرسال: ' + err.message, 'error');
+      const quotaMsg = err.remainingQuota !== undefined ? ` — متبقي: ${err.remainingQuota} إيميل` : '';
+      showToast('فشل الإرسال: ' + err.message + quotaMsg, 'error');
     } finally {
       btn.disabled  = false;
       btn.innerHTML = originalHTML;
+      hideSendProgress();
     }
   }
 

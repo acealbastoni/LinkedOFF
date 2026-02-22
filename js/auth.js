@@ -79,6 +79,7 @@ async function rawAuthRequest(action, payload = {}) {
   if ((data.status && data.status !== 'success') || data.success === false) {
     const err = new Error(data.message || 'Auth error');
     if (data.code) err.code = data.code;
+    if (data.remainingQuota !== undefined) err.remainingQuota = data.remainingQuota;
     throw err;
   }
 
