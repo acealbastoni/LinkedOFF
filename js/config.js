@@ -7,9 +7,9 @@
 
 const APP_CONFIG = {
     // Version Info
-    version: '1.2.9',
-    releaseDate: '2026-02-14',
-    buildNumber: '20260214',
+    version: '1.3.0',
+    releaseDate: '2026-02-22',
+    buildNumber: '20260222',
     
     // App Info
     appName: 'LinkedOFF KSA',
