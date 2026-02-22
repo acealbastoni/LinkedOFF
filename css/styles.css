@@ -949,14 +949,24 @@ body.app-page{
 /* Sidebar */
 .app-sidebar{
   width: var(--sidebar-w);
-  min-height: 100vh;
-  position: sticky;
+  height: 100vh;
+  position: fixed;
   top: 0;
+  right: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
   padding: 18px 16px;
   background: rgba(255,255,255,0.04);
   border-left: 1px solid var(--panel-border);
   backdrop-filter: blur(10px);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
 }
+
+/* Sidebar scrollbar thin */
+.app-sidebar::-webkit-scrollbar { width: 4px; }
+.app-sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,.12); border-radius: 4px; }
 
 .sidebar-brand{
   padding: 10px 10px 16px;
@@ -1057,6 +1067,7 @@ body.app-page{
   min-width: 0;
   display:flex;
   flex-direction:column;
+  margin-right: var(--sidebar-w); /* compensate for fixed sidebar */
 }
 
 .app-topbar{
@@ -1154,6 +1165,10 @@ body.app-page{
     transform: translateX(105%);
     transition: transform .22s ease;
     z-index: 999;
+    overflow-y: auto;
+  }
+  .app-main{
+    margin-right: 0; /* on mobile sidebar is overlay, no compensation needed */
   }
   .app-sidebar.open{
     transform: translateX(0);

@@ -157,9 +157,20 @@ async function registerUserFromForm(event) {
     const password = document.getElementById('regPassword').value.trim();
   
     setFormStatus('registerStatus', 'info', 'جاري إنشاء الحساب...');
-  
+
     if (!name || !email || !password) {
       setFormStatus('registerStatus', 'error', 'يرجى ملء جميع الحقول.');
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+    if (!emailRegex.test(email)) {
+      setFormStatus('registerStatus', 'error', 'صيغة البريد الإلكتروني غير صحيحة.');
+      return;
+    }
+
+    if (password.length < 6) {
+      setFormStatus('registerStatus', 'error', 'كلمة المرور يجب أن تكون ٦ أحرف على الأقل.');
       return;
     }
   
@@ -242,9 +253,15 @@ async function loginUserFromForm(event) {
     const password = document.getElementById('loginPassword').value.trim();
   
     setFormStatus('loginStatus', 'info', 'جاري التحقق من بيانات الدخول...');
-  
+
     if (!email || !password) {
       setFormStatus('loginStatus', 'error', 'يرجى إدخال البريد وكلمة المرور.');
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+    if (!emailRegex.test(email)) {
+      setFormStatus('loginStatus', 'error', 'صيغة البريد الإلكتروني غير صحيحة.');
       return;
     }
   
@@ -305,11 +322,60 @@ function startSessionEnforcer(intervalMs = 5000) {
     performLogout(null, true);
     return;
   }
+
+  // Schedule a warning 2 minutes before session expiry
+  const sess = getCurrentSession();
+  if (sess && sess.expiresAtMs) {
+    const remaining = Number(sess.expiresAtMs) - Date.now();
+    const warnBefore = 2 * 60 * 1000; // 2 minutes
+    const warnDelay  = remaining - warnBefore;
+
+    if (warnDelay > 0) {
+      setTimeout(function () {
+        if (isLoggedIn()) _showSessionExpiryWarning();
+      }, warnDelay);
+    } else if (remaining > 0) {
+      // Less than 2 minutes already — show warning now
+      _showSessionExpiryWarning();
+    }
+  }
+
   setInterval(() => {
     if (!isLoggedIn()) {
       performLogout('⏳ انتهت مدة الجلسة. برجاء تسجيل الدخول مرة أخرى.', true);
     }
   }, intervalMs);
+}
+
+function _showSessionExpiryWarning() {
+  if (document.getElementById('_sessionExpiryBanner')) return; // already shown
+  const banner = document.createElement('div');
+  banner.id = '_sessionExpiryBanner';
+  banner.style.cssText = [
+    'position:fixed', 'bottom:70px', 'left:50%', 'transform:translateX(-50%)',
+    'background:#e65100', 'color:#fff', 'padding:12px 22px',
+    'border-radius:10px', 'font-family:Cairo,sans-serif', 'font-size:14px',
+    'font-weight:700', 'box-shadow:0 4px 20px rgba(0,0,0,.35)',
+    'z-index:9997', 'display:flex', 'align-items:center', 'gap:12px',
+    'animation:_fadeInUp .4s ease'
+  ].join(';');
+  banner.innerHTML = `
+    <span style="font-size:20px;">⚠️</span>
+    <span>ستنتهي جلستك خلال دقيقتين. احفظ عملك أو سيتم تسجيل خروجك تلقائياً.</span>
+    <button onclick="this.parentElement.remove()" style="
+      background:rgba(255,255,255,.2);border:none;color:#fff;
+      border-radius:6px;padding:4px 10px;cursor:pointer;font-family:Cairo,sans-serif;
+    ">✕</button>
+  `;
+  // Add keyframe if not already added
+  if (!document.getElementById('_sessionExpiryStyle')) {
+    const s = document.createElement('style');
+    s.id = '_sessionExpiryStyle';
+    s.textContent = '@keyframes _fadeInUp{from{opacity:0;transform:translateX(-50%) translateY(20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}';
+    document.head.appendChild(s);
+  }
+  document.body.appendChild(banner);
+  setTimeout(() => banner.remove(), 60000); // auto-remove after 1 minute
 }
 
 

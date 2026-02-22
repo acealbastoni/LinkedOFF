@@ -784,6 +784,25 @@
         }
     </style>
 
+    <!-- ═══ EARLY AUTH GUARD — runs before any HTML renders ═══ -->
+    <style>body { visibility: hidden; }</style>
+    <script>
+      (function () {
+        try {
+          var user = JSON.parse(localStorage.getItem('linkedoff_user') || 'null');
+          var sess = JSON.parse(localStorage.getItem('linkedoff_session') || 'null');
+          if (!user || !sess || !sess.token || Date.now() > Number(sess.expiresAtMs || 0)) {
+            window.location.replace('login.html');
+          } else {
+            document.addEventListener('DOMContentLoaded', function () {
+              document.body.style.visibility = 'visible';
+            });
+          }
+        } catch (e) { window.location.replace('login.html'); }
+      })();
+    </script>
+    <!-- ══════════════════════════════════════════════════════ -->
+
     <script src="js/auth.js"></script>
     <script>startSessionEnforcer();</script>
 </head>

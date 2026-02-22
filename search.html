@@ -8,10 +8,28 @@
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/search.css">
     <link rel="icon" type="image/svg+xml" href="img/icon-linkedoff.svg">
-    <script src="js/auth.js"></script>
+
+    <!-- ═══ EARLY AUTH GUARD — runs before any HTML renders ═══ -->
+    <style>body { visibility: hidden; }</style>
     <script>
-        startSessionEnforcer(); // kicks user out when 1 minute expires
-      </script>
+      (function () {
+        try {
+          var user = JSON.parse(localStorage.getItem('linkedoff_user') || 'null');
+          var sess = JSON.parse(localStorage.getItem('linkedoff_session') || 'null');
+          if (!user || !sess || !sess.token || Date.now() > Number(sess.expiresAtMs || 0)) {
+            window.location.replace('login.html');
+          } else {
+            document.addEventListener('DOMContentLoaded', function () {
+              document.body.style.visibility = 'visible';
+            });
+          }
+        } catch (e) { window.location.replace('login.html'); }
+      })();
+    </script>
+    <!-- ══════════════════════════════════════════════════════ -->
+
+    <script src="js/auth.js"></script>
+    <script>startSessionEnforcer();</script>
 </head>
 
 <body class="app-page" data-page="search">
@@ -34,6 +52,20 @@
     <a href="index.html#pricing" class="nav-item"><span class="nav-ic">💳</span><span>الباقات</span></a>
   </nav>
 
+  <!-- Daily Counter Widget -->
+  <div id="dailySentWidget" style="
+    margin:0 12px 10px;padding:10px 14px;
+    background:rgba(0,168,89,.13);border-radius:10px;
+    border:1px solid rgba(0,168,89,.25);
+    opacity:0.5;transition:opacity .3s;
+  ">
+    <div style="font-size:12px;color:#888;margin-bottom:4px;font-family:'Cairo',sans-serif;">إرسال اليوم</div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <span style="font-size:22px;font-weight:900;color:#00A859;font-family:'Cairo',sans-serif;" id="dailySentCount">0</span>
+      <span style="font-size:12px;color:#666;font-family:'Cairo',sans-serif;">سيرة ذاتية مرسلة</span>
+    </div>
+  </div>
+
   <div class="sidebar-footer">
     <button class="sidebar-logout" type="button" onclick="performLogout('👋 تم تسجيل الخروج', false)">
       <span class="nav-ic">🚪</span><span>تسجيل الخروج</span>
@@ -47,7 +79,11 @@
       </button>
       <!-- <div class="topbar-title">🔍 البحث عن الوظائف</div> -->
       <div class="topbar-actions">
-        <!-- <a class="topbar-link" href="dashboard.html">لوحة التحكم</a> -->
+        <button id="darkModeBtn" onclick="toggleDarkMode()" title="وضع ليلي" style="
+          background:none;border:1px solid #ddd;border-radius:8px;
+          padding:6px 10px;cursor:pointer;font-size:18px;line-height:1;
+          transition:background .2s,border-color .2s;
+        ">🌙</button>
       </div>
     </header>
 
@@ -61,7 +97,8 @@
             <!-- Search Filters -->
             <div class="search-filters">
                 <div class="filter-row">
-                    <input type="text" id="searchKeyword" placeholder="🔍 ابحث بالكلمات المفتاحية... (مثال: مهندس، محاسب، مبيعات)">
+                    <input type="text" id="searchKeyword" placeholder="🔍 ابحث بالكلمات المفتاحية... (مثال: مهندس، محاسب، مبيعات)"
+                           onkeydown="if(event.key==='Enter') searchJobs()">
                     <button class="btn-primary" onclick="searchJobs()">بحث</button>
                 </div>
 
@@ -230,6 +267,12 @@
       });
     } catch(e) {}
   })();
+
+  // Init dark mode + daily counter on load
+  document.addEventListener('DOMContentLoaded', function() {
+    if (typeof initDarkMode       === 'function') initDarkMode();
+    if (typeof updateDailyCounterUI === 'function') updateDailyCounterUI();
+  });
 </script>
 
 
@@ -356,13 +399,38 @@
       const data = await authRequest('sendcv', { toEmail: realEmail });
       const quotaMsg = data.remainingQuota !== undefined ? ` — متبقي: ${data.remainingQuota} إيميل` : '';
       showToast((data.message || 'تم إرسال السيرة الذاتية بنجاح!') + quotaMsg, 'success');
+
+      // ── Track applied job ──
+      if (typeof markJobAsApplied === 'function') markJobAsApplied(realEmail);
+      if (typeof incrementDailySent === 'function') incrementDailySent();
+
+      // ── Update button to "applied" state without re-rendering ──
+      btn.className   = 'btn-applied';
+      btn.innerHTML   = '✅ تم الإرسال — أعد الإرسال؟';
+      btn.disabled    = false;
+
+      // ── Add green border to card ──
+      const card = btn.closest('.job-card');
+      if (card) {
+        card.classList.add('applied');
+        const titleEl = card.querySelector('.job-title');
+        if (titleEl && !titleEl.querySelector('.applied-badge')) {
+          const badge = document.createElement('span');
+          badge.className   = 'applied-badge';
+          badge.textContent = '✅ تم الإرسال';
+          titleEl.prepend(badge);
+        }
+      }
+
     } catch (err) {
       console.error(err);
       const quotaMsg = err.remainingQuota !== undefined ? ` — متبقي: ${err.remainingQuota} إيميل` : '';
       showToast('فشل الإرسال: ' + err.message + quotaMsg, 'error');
     } finally {
-      btn.disabled  = false;
-      btn.innerHTML = originalHTML;
+      if (!btn.classList.contains('btn-applied')) {
+        btn.disabled  = false;
+        btn.innerHTML = originalHTML;
+      }
       hideSendProgress();
     }
   }
@@ -373,9 +441,64 @@
 </script>
 
 <style>
-  @keyframes btnSpin {
-    to { transform: rotate(360deg); }
+  @keyframes btnSpin { to { transform: rotate(360deg); } }
+
+  /* ── Applied Job Card ── */
+  .job-card.applied {
+    border-right: 4px solid #00A859 !important;
+    background: linear-gradient(135deg, #f0fff6 0%, #fff 60%) !important;
   }
+  .applied-badge {
+    display:inline-block;background:#00A859;color:#fff;
+    font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;
+    margin-left:6px;vertical-align:middle;
+  }
+  .applied-meta {
+    color:#00A859 !important;font-size:12px;font-weight:600;
+  }
+  .btn-applied {
+    background: linear-gradient(135deg,#e8f5e9,#c8e6c9);
+    color:#2e7d32;border:1.5px solid #a5d6a7;
+    padding:8px 16px;border-radius:8px;font-family:'Cairo',sans-serif;
+    font-size:13px;font-weight:700;cursor:pointer;
+    transition:all .2s;
+  }
+  .btn-applied:hover {
+    background:linear-gradient(135deg,#00A859,#00c86a);
+    color:#fff;border-color:#00A859;
+  }
+  .btn-copy-email {
+    padding:8px 12px !important;font-size:15px !important;min-width:unset !important;
+  }
+  .btn-copy-email:hover { background:#e3f2fd !important; }
+
+  /* ── Dark Mode ── */
+  body.dark-mode { background:#121212 !important; color:#e0e0e0 !important; }
+  body.dark-mode .app-sidebar     { background:#1e1e1e !important; border-color:#333 !important; }
+  body.dark-mode .app-topbar      { background:#1e1e1e !important; border-color:#333 !important; }
+  body.dark-mode .app-main        { background:#121212 !important; }
+  body.dark-mode .job-card        { background:#1e1e1e !important; border-color:#333 !important; color:#e0e0e0 !important; }
+  body.dark-mode .job-card.applied{ background:linear-gradient(135deg,#1a2e1e,#1e1e1e) !important; }
+  body.dark-mode .search-filters  { background:#1e1e1e !important; border-color:#333 !important; }
+  body.dark-mode input, body.dark-mode select {
+    background:#2a2a2a !important; color:#e0e0e0 !important;
+    border-color:#444 !important;
+  }
+  body.dark-mode .btn-outline     { border-color:#555 !important; color:#ccc !important; }
+  body.dark-mode .btn-outline:hover { background:#2a2a2a !important; }
+  body.dark-mode .job-description { color:#ccc !important; }
+  body.dark-mode .job-meta span   { color:#aaa !important; }
+  body.dark-mode .job-source      { background:#333 !important; color:#aaa !important; }
+  body.dark-mode .footer          { background:#1a1a1a !important; border-color:#333 !important; }
+  body.dark-mode #darkModeBtn     { border-color:#555 !important; }
+  body.dark-mode .nav-item        { color:#ccc !important; }
+  body.dark-mode .nav-item:hover,
+  body.dark-mode .nav-item.active { background:#2a2a2a !important; color:#00A859 !important; }
+  body.dark-mode #dailySentWidget { background:rgba(0,168,89,.08) !important; border-color:rgba(0,168,89,.2) !important; }
+  body.dark-mode .sidebar-logout  { color:#ccc !important; }
+  body.dark-mode .sidebar-logout:hover { background:#2a2a2a !important; }
+  body.dark-mode .page-title,
+  body.dark-mode .page-subtitle   { color:#e0e0e0 !important; }
 </style>
     </body>
     

@@ -335,29 +335,34 @@ function createJobCard(job, isLocked = false) {
   
     const usedDescriptionHtml = isLocked ? shortDescriptionHtml : descriptionHtml;
   
+    const alreadyApplied = !isLocked && displayedEmail && displayedEmail !== 'غير متوفر' && isJobApplied(displayedEmail);
+    const appliedInfo    = alreadyApplied ? getAppliedJobs()[displayedEmail] : null;
+
     return `
-      <div class="job-card ${isLocked ? 'locked' : ''}" data-job-id="${job.dkey}">
+      <div class="job-card ${isLocked ? 'locked' : ''} ${alreadyApplied ? 'applied' : ''}" data-job-id="${job.dkey}">
         <div class="job-header">
           <div>
             <h3 class="job-title" style="direction:ltr; text-align:left;">
-              ${isLocked ? '<span class="premium-badge">🔒 Premium</span>' : ''}
+              ${isLocked        ? '<span class="premium-badge">🔒 Premium</span>' : ''}
+              ${alreadyApplied  ? '<span class="applied-badge">✅ تم الإرسال</span>' : ''}
               ${jobTitleHtml}
             </h3>
-  
+
             <div class="job-meta">
-              ${city ? `<span>📍 ${city}</span>` : ''}
+              ${city   ? `<span>📍 ${city}</span>`   : ''}
               ${salary ? `<span>💰 ${salary}</span>` : ''}
               <span>📅 ${date}</span>
+              ${alreadyApplied && appliedInfo ? `<span class="applied-meta">📤 أُرسل ${appliedInfo.count > 1 ? appliedInfo.count + ' مرات' : 'مرة'} · آخرها ${appliedInfo.lastSent}</span>` : ''}
             </div>
           </div>
-  
+
           <span class="job-source">${source}</span>
         </div>
-  
+
         <div class="job-description ${isLocked ? 'locked' : ''}" dir="auto">
           <p>${usedDescriptionHtml}</p>
         </div>
-  
+
         ${isLocked ? `
           <div class="unlock-overlay">
             <button onclick="showSubscriptionModal()">
@@ -366,26 +371,33 @@ function createJobCard(job, isLocked = false) {
           </div>
         ` : `
           <div class="job-actions">
-            <button class="btn-primary"
-                    data-email="${escapeHtml(realEmail)}"
-                    onclick="applyNow(this)">
-              📧 تقديم الآن
-            </button>
-  
-            <button class="btn-save" onclick="showComingSoon()">
-              💾 حفظ الوظيفة
-            </button>
-  
-            <button class="btn-outline" onclick="showComingSoon()">
-              📤 مشاركة
-            </button>
-  
-            ${true ? `
-              <button class="btn-outline toggle-description-btn"
-                      onclick="toggleDescription('${job.dkey}')">
-                👀 عرض المزيد
+            ${alreadyApplied ? `
+              <button class="btn-applied" data-email="${escapeHtml(realEmail)}" onclick="applyNow(this)">
+                ✅ تم الإرسال — أعد الإرسال؟
+              </button>
+            ` : `
+              <button class="btn-primary"
+                      data-email="${escapeHtml(realEmail)}"
+                      onclick="applyNow(this)">
+                📧 تقديم الآن
+              </button>
+            `}
+
+            ${displayedEmail && displayedEmail !== 'غير متوفر' ? `
+              <button class="btn-outline btn-copy-email"
+                      onclick="copyEmail('${escapeHtml(displayedEmail)}')"
+                      title="نسخ الإيميل">
+                📋
               </button>
             ` : ''}
+
+            <button class="btn-save" onclick="showComingSoon()">💾 حفظ</button>
+            <button class="btn-outline" onclick="showComingSoon()">📤 مشاركة</button>
+
+            <button class="btn-outline toggle-description-btn"
+                    onclick="toggleDescription('${job.dkey}')">
+              👀 عرض المزيد
+            </button>
           </div>
         `}
       </div>
@@ -431,39 +443,201 @@ function extractSalary(description) {
     return match ? `${match[1]} ريال` : null;
 }
 
+// ===== Progressive All-Pages Search =====
+
+let _activeSearch = null; // cancellation token
+
+/** Private: fetch a single page from the API without touching global state */
+async function fetchJobsPageRaw_(page) {
+    const user = (typeof getCurrentUser  === 'function') ? getCurrentUser()  : null;
+    const sess = (typeof getCurrentSession === 'function') ? getCurrentSession() : null;
+    if (!user || !sess || !sess.token) throw new Error('Session missing');
+
+    const pageSize = isSubscribed ? 50 : 10;
+    const url =
+        `${API_CONFIG.baseURL}?key=${encodeURIComponent(API_CONFIG.apiKey)}` +
+        `&email=${encodeURIComponent(user.email)}` +
+        `&sessionToken=${encodeURIComponent(sess.token)}` +
+        `&page=${encodeURIComponent(page)}` +
+        `&pageSize=${encodeURIComponent(pageSize)}`;
+
+    const response = await fetch(url, { method: 'GET', redirect: 'follow' });
+    const text     = await response.text();
+    let data;
+    try { data = JSON.parse(text); } catch (e) { throw new Error('Server returned non-JSON'); }
+
+    if (data.code === 'session_expired' || data.code === 'invalid_session' || data.code === 'no_session') {
+        if (typeof performLogout === 'function')
+            performLogout('⏳ انتهت مدة الجلسة. برجاء تسجيل الدخول مرة أخرى.', true);
+        throw new Error('Session expired');
+    }
+    if (!data.ok) throw new Error(data.message || 'فشل تحميل البيانات');
+    return data;
+}
+
+/** Match a job against all active filters */
+function matchesFilters_(job, kwLower, city, field, salary, contract) {
+    const desc = (job.plainTextJobDescription || '').toLowerCase();
+    if (kwLower && !desc.includes(kwLower) && !(job.source || '').toLowerCase().includes(kwLower)) return false;
+    if (city     && !desc.includes(city))     return false;
+    if (field    && !desc.includes(field))    return false;
+    if (contract && !desc.includes(contract)) return false;
+    if (salary > 0) {
+        const s = extractSalary(job.plainTextJobDescription || '');
+        const num = s ? parseInt(s.replace(/[^0-9]/g, '')) : 0;
+        if (!num || num < salary) return false;
+    }
+    return true;
+}
+
+/** Progressive search across ALL pages — results appear as they're fetched */
+async function searchAllPages(keyword, filters = {}) {
+    // Cancel any previous search
+    if (_activeSearch) _activeSearch.cancelled = true;
+    const token = { cancelled: false };
+    _activeSearch = token;
+
+    const kwLower   = (keyword  || '').trim().toLowerCase();
+    const city      = filters.city     || '';
+    const field     = filters.field    || '';
+    const salary    = filters.salary   || 0;
+    const contract  = filters.contract || '';
+
+    const container  = document.getElementById('jobsContainer');
+    const resultsInfo = document.getElementById('resultsInfo');
+
+    // ── Build progress UI ──────────────────────────────────────────────────
+    container.innerHTML = '';
+    document.getElementById('_searchProgressWrap')?.remove();
+
+    const wrap = document.createElement('div');
+    wrap.id = '_searchProgressWrap';
+    wrap.style.cssText = 'margin-bottom:14px;';
+    wrap.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;font-family:Cairo,sans-serif;">
+        <span id="_spLabel" style="font-size:13px;color:#555;">
+          🔍 جاري البحث عن "<strong>${escapeHtml(keyword)}</strong>" في كل الصفحات...
+        </span>
+        <button onclick="cancelAllPagesSearch()" style="
+          background:#fff;border:1.5px solid #e74c3c;color:#e74c3c;
+          border-radius:6px;padding:3px 12px;cursor:pointer;
+          font-family:Cairo,sans-serif;font-size:12px;font-weight:700;
+        ">✕ إلغاء</button>
+      </div>
+      <div style="background:#eee;border-radius:8px;height:7px;overflow:hidden;">
+        <div id="_spBar" style="height:100%;width:0%;background:linear-gradient(90deg,#00A859,#27ae60);transition:width .4s ease;border-radius:8px;"></div>
+      </div>
+    `;
+    container.parentElement.insertBefore(wrap, container);
+    resultsInfo.innerHTML = `<p id="_spInfo" style="font-family:Cairo,sans-serif;">جاري البحث... <span style="color:#888;font-size:13px;">0 نتيجة حتى الآن</span></p>`;
+    // ──────────────────────────────────────────────────────────────────────
+
+    let allCount   = 0;
+    let pageNum    = 1;
+    let totalPagesCount = totalPages || 1; // start with known total, updates after first fetch
+
+    while (pageNum <= totalPagesCount && !token.cancelled) {
+        try {
+            const data = await fetchJobsPageRaw_(pageNum);
+            if (token.cancelled) break;
+
+            totalPagesCount = data.totalPages;
+
+            // Filter jobs on this page
+            const matches = (data.data || []).filter(job =>
+                matchesFilters_(job, kwLower, city, field, salary, contract)
+            );
+
+            // Append matching cards progressively (no full re-render)
+            if (matches.length > 0) {
+                allCount += matches.length;
+                const html = matches.map(j => createJobCard(j, false)).join('');
+                container.insertAdjacentHTML('beforeend', html);
+            }
+
+            // Update progress bar & label
+            const pct = Math.round((pageNum / totalPagesCount) * 100);
+            const bar   = document.getElementById('_spBar');
+            const lbl   = document.getElementById('_spLabel');
+            const info  = document.getElementById('_spInfo');
+            if (bar)  bar.style.width = pct + '%';
+            if (lbl)  lbl.innerHTML = `🔍 صفحة <strong>${pageNum}</strong> من <strong>${totalPagesCount}</strong> — جاري البحث...`;
+            if (info) info.innerHTML = `<strong>${allCount}</strong> نتيجة حتى الآن &nbsp;·&nbsp; <span style="color:#888;font-size:13px;">البحث جارٍ في الخلفية</span>`;
+
+            pageNum++;
+
+            // Small delay to avoid rate-limiting
+            if (pageNum <= totalPagesCount && !token.cancelled)
+                await new Promise(r => setTimeout(r, 180));
+
+        } catch (err) {
+            if (token.cancelled || err.message === 'Session expired') break;
+            console.warn('Search skip page', pageNum, err.message);
+            pageNum++; // skip failed page and continue
+        }
+    }
+
+    if (token.cancelled) return;
+    _activeSearch = null;
+
+    // ── Done ──────────────────────────────────────────────────────────────
+    document.getElementById('_searchProgressWrap')?.remove();
+
+    if (allCount === 0) {
+        container.innerHTML = `
+          <div class="no-results">
+            <div class="no-results-icon">🔍</div>
+            <h3>لم يتم العثور على وظائف</h3>
+            <p>لا توجد نتائج لـ "<strong>${escapeHtml(keyword)}</strong>" في كل الصفحات</p>
+            <button class="btn-primary" onclick="resetFilters()">إعادة تعيين</button>
+          </div>`;
+    }
+
+    resultsInfo.innerHTML = `
+      <p>✅ اكتمل البحث: <strong>${allCount}</strong> نتيجة لـ "<strong>${escapeHtml(keyword)}</strong>"
+      &nbsp;·&nbsp; <span style="color:#888;font-size:13px;">تم فحص ${totalPagesCount} صفحة</span></p>`;
+}
+
+/** Cancel ongoing progressive search */
+function cancelAllPagesSearch() {
+    if (_activeSearch) { _activeSearch.cancelled = true; _activeSearch = null; }
+    document.getElementById('_searchProgressWrap')?.remove();
+    document.getElementById('resultsInfo').innerHTML =
+        `<p>تم إلغاء البحث. <button onclick="resetFilters()" class="btn-outline" style="padding:4px 14px;margin-right:8px;">عودة لكل الوظائف</button></p>`;
+}
+
 // Search and Filter
 function searchJobs() {
-    const keyword = document.getElementById('searchKeyword').value.trim().toLowerCase();
-    const city = document.getElementById('cityFilter').value;
-    const field = document.getElementById('fieldFilter').value;
-    const salary = parseInt(document.getElementById('salaryFilter').value) || 0;
+    const keyword  = document.getElementById('searchKeyword').value.trim();
+    const city     = document.getElementById('cityFilter').value;
+    const field    = document.getElementById('fieldFilter').value;
+    const salary   = parseInt(document.getElementById('salaryFilter').value) || 0;
     const contract = document.getElementById('contractFilter').value;
+
+    // ── Keyword present → search across ALL pages progressively ──────────
+    if (keyword) {
+        searchAllPages(keyword, { city, field, salary, contract });
+        return;
+    }
+
+    // ── No keyword → filter current page locally (fast) ──────────────────
+    if (_activeSearch) { _activeSearch.cancelled = true; _activeSearch = null; }
+    document.getElementById('_searchProgressWrap')?.remove();
 
     let filtered = jobsData;
 
-    if (keyword) {
-        filtered = filtered.filter(job => 
-            (job.plainTextJobDescription || '').toLowerCase().includes(keyword) ||
-            (job.source || '').toLowerCase().includes(keyword)
-        );
-    }
+    if (city)     filtered = filtered.filter(job => (job.plainTextJobDescription || '').includes(city));
+    if (field)    filtered = filtered.filter(job => (job.plainTextJobDescription || '').includes(field));
+    if (contract) filtered = filtered.filter(job => (job.plainTextJobDescription || '').includes(contract));
 
-    if (city) {
-        filtered = filtered.filter(job => 
-            (job.plainTextJobDescription || '').includes(city)
-        );
-    }
-
-    if (field) {
-        filtered = filtered.filter(job => 
-            (job.plainTextJobDescription || '').includes(field)
-        );
-    }
-
-    if (contract) {
-        filtered = filtered.filter(job => 
-            (job.plainTextJobDescription || '').includes(contract)
-        );
+    // salary filter kept local (no API param for it)
+    if (salary > 0) {
+        filtered = filtered.filter(job => {
+            const s = extractSalary(job.plainTextJobDescription || '');
+            if (!s) return false;
+            const num = parseInt(s.replace(/[^0-9]/g, ''));
+            return num >= salary;
+        });
     }
 
     displayJobs(filtered);
@@ -1211,6 +1385,87 @@ function extractCity(description) {
     return found || null;
 }
 
+
+// ===== Applied Jobs Tracking =====
+function getAppliedJobs() {
+    try { return JSON.parse(localStorage.getItem('appliedJobs') || '{}'); } catch { return {}; }
+}
+
+function markJobAsApplied(email) {
+    if (!email || email === 'غير متوفر') return;
+    const applied = getAppliedJobs();
+    const today = new Date().toISOString().slice(0, 10);
+    if (!applied[email]) applied[email] = { firstSent: today, count: 0 };
+    applied[email].lastSent = today;
+    applied[email].count++;
+    localStorage.setItem('appliedJobs', JSON.stringify(applied));
+}
+
+function isJobApplied(email) {
+    if (!email || email === 'غير متوفر') return false;
+    return !!getAppliedJobs()[email];
+}
+
+// ===== Daily Sent Counter =====
+function getTodaySentCount() {
+    const today = new Date().toISOString().slice(0, 10);
+    try {
+        const data = JSON.parse(localStorage.getItem('dailySends') || '{}');
+        return data[today] || 0;
+    } catch { return 0; }
+}
+
+function incrementDailySent() {
+    const today = new Date().toISOString().slice(0, 10);
+    try {
+        const data = JSON.parse(localStorage.getItem('dailySends') || '{}');
+        data[today] = (data[today] || 0) + 1;
+        localStorage.setItem('dailySends', JSON.stringify(data));
+    } catch {}
+    updateDailyCounterUI();
+}
+
+function updateDailyCounterUI() {
+    const el = document.getElementById('dailySentCount');
+    if (!el) return;
+    const count = getTodaySentCount();
+    el.textContent = count;
+    const widget = document.getElementById('dailySentWidget');
+    if (widget) widget.style.opacity = count > 0 ? '1' : '0.5';
+}
+
+// ===== Copy Email =====
+function copyEmail(email) {
+    if (!email) return;
+    navigator.clipboard.writeText(email).then(() => {
+        if (typeof showToast === 'function') showToast('تم نسخ الإيميل: ' + email, 'info');
+    }).catch(() => {
+        // Fallback for older browsers
+        const el = document.createElement('textarea');
+        el.value = email;
+        document.body.appendChild(el);
+        el.select();
+        document.execCommand('copy');
+        document.body.removeChild(el);
+        if (typeof showToast === 'function') showToast('تم نسخ الإيميل', 'info');
+    });
+}
+
+// ===== Dark Mode =====
+function toggleDarkMode() {
+    const isDark = document.body.classList.toggle('dark-mode');
+    localStorage.setItem('darkMode', isDark ? '1' : '0');
+    const btn = document.getElementById('darkModeBtn');
+    if (btn) btn.textContent = isDark ? '☀️' : '🌙';
+}
+
+function initDarkMode() {
+    if (localStorage.getItem('darkMode') === '1') {
+        document.body.classList.add('dark-mode');
+        const btn = document.getElementById('darkModeBtn');
+        if (btn) btn.textContent = '☀️';
+    }
+}
 
 // Highlight emails inside text (works on escaped HTML text)
 function highlightEmails(text) {
