@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>الوظائف المحفوظة - LinkedOFF</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/enhancements.css">
+  <link rel="icon" type="image/svg+xml" href="img/icon-linkedoff.svg">
+
+  <!-- ═══ EARLY AUTH GUARD ═══ -->
+  <style>body { visibility: hidden; }</style>
+  <script>
+    (function () {
+      try {
+        var user = JSON.parse(localStorage.getItem('linkedoff_user') || 'null');
+        var sess = JSON.parse(localStorage.getItem('linkedoff_session') || 'null');
+        if (!user || !sess || !sess.token || Date.now() > Number(sess.expiresAtMs || 0)) {
+          window.location.replace('login.html');
+        } else {
+          document.addEventListener('DOMContentLoaded', function () {
+            document.body.style.visibility = 'visible';
+          });
+        }
+      } catch (e) { window.location.replace('login.html'); }
+    })();
+  </script>
+  <script src="js/auth.js"></script>
+  <script src="js/config.js"></script>
+  <script>startSessionEnforcer();</script>
+
+  <style>
+    /* ── Saved Jobs Page ──────────────────────────────────────── */
+    .sv-wrapper { max-width: 900px; margin: 0 auto; padding-bottom: 60px; }
+
+    /* Hero */
+    .sv-hero {
+      background: linear-gradient(135deg, #0d1f15 0%, #0a1628 100%);
+      border: 1px solid rgba(29,191,115,.2);
+      border-radius: 20px;
+      padding: 32px 36px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .sv-hero::before {
+      content: '';
+      position: absolute;
+      top: -50px; right: -50px;
+      width: 180px; height: 180px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(29,191,115,.12), transparent 70%);
+      pointer-events: none;
+    }
+
+    .sv-hero-text h1 {
+      font-size: 1.7rem;
+      font-weight: 900;
+      background: linear-gradient(90deg, #1dbf73, #60c8ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 6px;
+    }
+
+    .sv-hero-text p { color: #8899aa; font-size: 0.9rem; margin: 0; }
+
+    .sv-hero-count {
+      text-align: center;
+      background: rgba(29,191,115,.12);
+      border: 1px solid rgba(29,191,115,.25);
+      border-radius: 16px;
+      padding: 16px 28px;
+      min-width: 110px;
+    }
+
+    .sv-hero-count .num {
+      font-size: 2.4rem;
+      font-weight: 900;
+      color: #1dbf73;
+      line-height: 1;
+    }
+
+    .sv-hero-count .lbl {
+      font-size: 0.78rem;
+      color: #8899aa;
+      font-family: 'Cairo', sans-serif;
+      margin-top: 4px;
+    }
+
+    /* Toolbar */
+    .sv-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+    }
+
+    .sv-toolbar-info {
+      font-size: 0.85rem;
+      color: #8899aa;
+      font-family: 'Cairo', sans-serif;
+    }
+
+    .sv-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 9px 20px;
+      border-radius: 10px;
+      font-family: 'Cairo', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      transition: transform .15s, box-shadow .15s;
+    }
+
+    .sv-btn-primary {
+      background: linear-gradient(135deg, #1dbf73, #00D66F);
+      color: #fff;
+      box-shadow: 0 3px 12px rgba(29,191,115,.3);
+    }
+
+    .sv-btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(29,191,115,.4); }
+
+    .sv-btn-danger {
+      background: rgba(239,68,68,.1);
+      color: #ef4444;
+      border: 1px solid rgba(239,68,68,.3);
+    }
+
+    .sv-btn-danger:hover { background: rgba(239,68,68,.18); transform: translateY(-1px); }
+
+    /* List */
+    .sv-list { display: flex; flex-direction: column; gap: 10px; }
+
+    .sv-card {
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 14px;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      animation: _cardIn .3s ease both;
+      transition: border-color .2s, background .2s;
+    }
+
+    .sv-card:hover {
+      border-color: rgba(29,191,115,.3);
+      background: rgba(29,191,115,.04);
+    }
+
+    .sv-card-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .sv-card-icon {
+      width: 40px; height: 40px;
+      border-radius: 10px;
+      background: rgba(29,191,115,.12);
+      border: 1px solid rgba(29,191,115,.2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem;
+      flex-shrink: 0;
+    }
+
+    .sv-card-info { min-width: 0; }
+
+    .sv-card-id {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: #e0e0e0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-family: monospace;
+      letter-spacing: .5px;
+    }
+
+    .sv-card-date {
+      font-size: 0.76rem;
+      color: #6677aa;
+      margin-top: 3px;
+      font-family: 'Cairo', sans-serif;
+    }
+
+    .sv-card-actions { display: flex; gap: 8px; flex-shrink: 0; }
+
+    .sv-action-btn {
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-family: 'Cairo', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      border: 1px solid;
+      transition: all .15s;
+    }
+
+    .sv-action-btn-search {
+      background: rgba(29,191,115,.1);
+      border-color: rgba(29,191,115,.3);
+      color: #1dbf73;
+    }
+
+    .sv-action-btn-search:hover { background: rgba(29,191,115,.2); }
+
+    .sv-action-btn-remove {
+      background: rgba(239,68,68,.07);
+      border-color: rgba(239,68,68,.25);
+      color: #ef4444;
+    }
+
+    .sv-action-btn-remove:hover { background: rgba(239,68,68,.15); }
+
+    /* Empty state */
+    .sv-empty {
+      text-align: center;
+      padding: 64px 32px;
+      border: 2px dashed rgba(255,255,255,.1);
+      border-radius: 18px;
+    }
+
+    .sv-empty .sv-empty-icon { font-size: 3.5rem; margin-bottom: 16px; opacity: .5; }
+    .sv-empty h3 { font-size: 1.1rem; color: #8899aa; margin-bottom: 10px; }
+    .sv-empty p { font-size: 0.88rem; color: #556; margin-bottom: 24px; }
+
+    /* Dark mode compat — page already dark by default */
+    body.dark-mode .sv-card { background: rgba(255,255,255,.03); }
+
+    /* Pagination controls */
+    .sv-pagination {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 22px;
+      flex-wrap: wrap;
+    }
+
+    .sv-page-btn {
+      padding: 7px 16px;
+      border-radius: 8px;
+      font-family: 'Cairo', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 700;
+      cursor: pointer;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.1);
+      color: #ccc;
+      transition: all .15s;
+    }
+
+    .sv-page-btn:hover { background: rgba(29,191,115,.12); border-color: rgba(29,191,115,.3); color: #1dbf73; }
+    .sv-page-btn.active { background: rgba(29,191,115,.18); border-color: rgba(29,191,115,.4); color: #1dbf73; }
+
+    /* Saved-since badge */
+    .sv-since-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 0.75rem;
+      background: rgba(96,200,255,.08);
+      border: 1px solid rgba(96,200,255,.18);
+      color: #60c8ff;
+      padding: 2px 9px;
+      border-radius: 8px;
+      margin-top: 4px;
+      font-family: 'Cairo', sans-serif;
+    }
+
+    .sv-note-banner {
+      background: rgba(255,200,50,.07);
+      border: 1px solid rgba(255,200,50,.2);
+      border-radius: 12px;
+      padding: 12px 18px;
+      font-size: 0.83rem;
+      color: #c8a832;
+      font-family: 'Cairo', sans-serif;
+      line-height: 1.6;
+      margin-bottom: 18px;
+    }
+  </style>
+</head>
+
+<body class="app-page" data-page="saved">
+<div class="app-shell">
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar(false)"></div>
+
+  <!-- ─── Sidebar ──────────────────────────────────────────── -->
+  <aside class="app-sidebar" id="appSidebar" aria-label="القائمة الجانبية">
+    <div class="sidebar-brand">
+      <a href="index.html" class="brand-link">
+        <span class="brand-mark">💼</span>
+        <span class="brand-text">LinkedOFF</span>
+        <span class="brand-sub">AceAlBastoni</span>
+      </a>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a href="search.html"              class="nav-item"><span class="nav-ic">🏠</span><span>الرئيسية</span></a>
+      <a href="search.html"              class="nav-item"><span class="nav-ic">🔍</span><span>البحث عن الوظائف</span></a>
+      <a href="dashboard.html"           class="nav-item"><span class="nav-ic">📊</span><span>لوحة التحكم</span></a>
+      <a href="analytics.html"           class="nav-item"><span class="nav-ic">📈</span><span>تحليلات السوق</span></a>
+      <a href="saved.html"               class="nav-item active"><span class="nav-ic">💾</span><span>الوظائف المحفوظة</span></a>
+      <a href="history.html"             class="nav-item"><span class="nav-ic">📬</span><span>سجل الإرسال</span></a>
+      <a href="engines-interactive.html" class="nav-item"><span class="nav-ic">⚙️</span><span>المحركات</span></a>
+      <a href="about.html"               class="nav-item"><span class="nav-ic">👤</span><span>عن المطوّر</span></a>
+      <a href="pricing.html"             class="nav-item"><span class="nav-ic">💳</span><span>الباقات</span></a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="sidebar-logout" type="button" onclick="performLogout('👋 تم تسجيل الخروج', false)">
+        <span class="nav-ic">🚪</span><span>تسجيل الخروج</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- ─── Main ─────────────────────────────────────────────── -->
+  <div class="app-main">
+    <header class="app-topbar">
+      <button class="sidebar-toggle" type="button" aria-label="فتح/إغلاق القائمة" onclick="toggleSidebar()">
+        <span class="toggle-bars"></span>
+      </button>
+      <div class="topbar-title">💾 الوظائف المحفوظة</div>
+      <div class="topbar-actions">
+        <button id="darkModeBtn" onclick="toggleDarkMode()" title="وضع ليلي" style="
+          background:none;border:1px solid #ddd;border-radius:8px;
+          padding:6px 10px;cursor:pointer;font-size:18px;line-height:1;
+          transition:background .2s,border-color .2s;
+        ">🌙</button>
+      </div>
+    </header>
+
+    <main class="app-content" style="padding:24px 20px;">
+      <div class="sv-wrapper">
+
+        <!-- Hero -->
+        <div class="sv-hero">
+          <div class="sv-hero-text">
+            <h1>💾 الوظائف المحفوظة</h1>
+            <p>الوظائف التي حفظتها للرجوع إليها لاحقاً</p>
+          </div>
+          <div class="sv-hero-count">
+            <div class="num" id="svTotalCount">0</div>
+            <div class="lbl">وظيفة محفوظة</div>
+          </div>
+        </div>
+
+        <!-- Note -->
+        <div class="sv-note-banner">
+          💡 يتم حفظ الوظائف محلياً على جهازك. لعرض تفاصيل أي وظيفة كاملة، توجّه إلى صفحة البحث.
+        </div>
+
+        <!-- Toolbar -->
+        <div class="sv-toolbar">
+          <div class="sv-toolbar-info" id="svRangeInfo">عرض الكل</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <a href="search.html" class="sv-btn sv-btn-primary">🔍 العودة للبحث</a>
+            <button class="sv-btn sv-btn-danger" onclick="clearAllSaved()">🗑️ حذف الكل</button>
+          </div>
+        </div>
+
+        <!-- List -->
+        <div class="sv-list" id="svList"></div>
+
+        <!-- Pagination -->
+        <div class="sv-pagination" id="svPagination"></div>
+
+      </div>
+    </main>
+  </div>
+</div>
+
+<div class="version-badge" id="versionBadge">v 1.3.2</div>
+
+<script>
+  /* ── Constants ── */
+  var PAGE_SIZE = 20;
+  var currentPage = 1;
+
+  /* ── Load & Render ── */
+  function getSaved() {
+    try { return JSON.parse(localStorage.getItem('savedJobs') || '[]'); } catch { return []; }
+  }
+
+  function renderPage(page) {
+    var saved = getSaved();
+    var total = saved.length;
+    var totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+    page = Math.max(1, Math.min(page, totalPages));
+    currentPage = page;
+
+    document.getElementById('svTotalCount').textContent = total;
+
+    var list = document.getElementById('svList');
+    var pagination = document.getElementById('svPagination');
+    var rangeInfo = document.getElementById('svRangeInfo');
+
+    if (total === 0) {
+      list.innerHTML = `
+        <div class="sv-empty">
+          <div class="sv-empty-icon">💾</div>
+          <h3>لا توجد وظائف محفوظة بعد</h3>
+          <p>احفظ الوظائف التي تهمك من صفحة البحث لتجدها هنا.</p>
+          <a href="search.html" class="sv-btn sv-btn-primary" style="display:inline-flex;text-decoration:none;">🔍 ابدأ البحث الآن</a>
+        </div>`;
+      pagination.innerHTML = '';
+      rangeInfo.textContent = 'لا توجد نتائج';
+      return;
+    }
+
+    var start = (page - 1) * PAGE_SIZE;
+    var end   = Math.min(start + PAGE_SIZE, total);
+    var slice = saved.slice(start, end);
+
+    rangeInfo.textContent = 'عرض ' + (start + 1) + ' – ' + end + ' من أصل ' + total + ' وظيفة';
+
+    list.innerHTML = slice.map(function(id, i) {
+      var shortId = String(id).length > 30 ? String(id).substring(0, 30) + '…' : String(id);
+      return `
+        <div class="sv-card" style="animation-delay:${i * 0.04}s">
+          <div class="sv-card-left">
+            <div class="sv-card-icon">💼</div>
+            <div class="sv-card-info">
+              <div class="sv-card-id" title="${escHtml(String(id))}">${escHtml(shortId)}</div>
+              <div class="sv-since-badge">🔑 معرّف الوظيفة</div>
+            </div>
+          </div>
+          <div class="sv-card-actions">
+            <button class="sv-action-btn sv-action-btn-search"
+              onclick="window.location.href='search.html'">🔍 بحث</button>
+            <button class="sv-action-btn sv-action-btn-remove"
+              onclick="removeOne('${escHtml(String(id))}')">🗑️ حذف</button>
+          </div>
+        </div>`;
+    }).join('');
+
+    /* Pagination */
+    if (totalPages <= 1) {
+      pagination.innerHTML = '';
+      return;
+    }
+
+    var pages = [];
+    for (var p = 1; p <= totalPages; p++) {
+      pages.push('<button class="sv-page-btn' + (p === page ? ' active' : '') +
+        '" onclick="renderPage(' + p + ')">' + p + '</button>');
+    }
+
+    pagination.innerHTML =
+      (page > 1 ? '<button class="sv-page-btn" onclick="renderPage(' + (page - 1) + ')">→ السابق</button>' : '') +
+      pages.join('') +
+      (page < totalPages ? '<button class="sv-page-btn" onclick="renderPage(' + (page + 1) + ')">التالي ←</button>' : '');
+  }
+
+  function escHtml(s) {
+    return String(s)
+      .replace(/&/g,'&amp;')
+      .replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;');
+  }
+
+  function removeOne(id) {
+    var saved = getSaved().filter(function(x) { return String(x) !== String(id); });
+    localStorage.setItem('savedJobs', JSON.stringify(saved));
+    renderPage(currentPage);
+  }
+
+  function clearAllSaved() {
+    if (!confirm('هل تريد حذف جميع الوظائف المحفوظة؟')) return;
+    localStorage.setItem('savedJobs', '[]');
+    renderPage(1);
+  }
+
+  /* ── Dark mode ── */
+  function initDarkMode() {
+    if (localStorage.getItem('linkedoff_darkMode') === 'true') {
+      document.body.classList.add('dark-mode');
+      var btn = document.getElementById('darkModeBtn');
+      if (btn) btn.textContent = '☀️';
+    }
+  }
+
+  function toggleDarkMode() {
+    var isDark = document.body.classList.toggle('dark-mode');
+    localStorage.setItem('linkedoff_darkMode', isDark);
+    var btn = document.getElementById('darkModeBtn');
+    if (btn) btn.textContent = isDark ? '☀️' : '🌙';
+  }
+
+  /* ── User chip ── */
+  function injectUserChip() {
+    try {
+      var user = JSON.parse(localStorage.getItem('linkedoff_user') || 'null');
+      if (!user) return;
+      var name = user.name || user.email || '';
+      var initial = name.trim().charAt(0).toUpperCase() || '?';
+      var actions = document.querySelector('.topbar-actions');
+      if (!actions) return;
+      var chip = document.createElement('div');
+      chip.id = 'topbarUserChip';
+      chip.innerHTML = '<span class="avatar">' + initial + '</span><span>' + name + '</span>';
+      actions.insertBefore(chip, actions.firstChild);
+    } catch(e) {}
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    initDarkMode();
+    injectUserChip();
+    renderPage(1);
+  });
+</script>
+</body>
+</html>

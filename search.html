@@ -7,6 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/search.css">
+  <link rel="stylesheet" href="css/enhancements.css">
     <link rel="icon" type="image/svg+xml" href="img/icon-linkedoff.svg">
 
     <!-- ═══ EARLY AUTH GUARD — runs before any HTML renders ═══ -->
@@ -45,12 +46,15 @@
   </div>
 
   <nav class="sidebar-nav">
-    <a href="search.html" class="nav-item"><span class="nav-ic">🏠</span><span>الرئيسية</span></a>
-    <a href="search.html" class="nav-item"><span class="nav-ic">🔍</span><span>البحث عن الوظائف</span></a>
-    <a href="dashboard.html" class="nav-item"><span class="nav-ic">📊</span><span>لوحة التحكم</span></a>
+    <a href="search.html"              class="nav-item active"><span class="nav-ic">🏠</span><span>الرئيسية</span></a>
+    <a href="search.html"              class="nav-item"><span class="nav-ic">🔍</span><span>البحث عن الوظائف</span></a>
+    <a href="dashboard.html"           class="nav-item"><span class="nav-ic">📊</span><span>لوحة التحكم</span></a>
+    <a href="analytics.html"           class="nav-item"><span class="nav-ic">📈</span><span>تحليلات السوق</span></a>
+    <a href="saved.html"               class="nav-item"><span class="nav-ic">💾</span><span>الوظائف المحفوظة</span></a>
+    <a href="history.html"             class="nav-item"><span class="nav-ic">📬</span><span>سجل الإرسال</span></a>
     <a href="engines-interactive.html" class="nav-item"><span class="nav-ic">⚙️</span><span>المحركات</span></a>
-    <a href="about.html" class="nav-item"><span class="nav-ic">👤</span><span>عن المطوّر</span></a>
-    <a href="pricing.html" class="nav-item"><span class="nav-ic">💳</span><span>الباقات</span></a>
+    <a href="about.html"               class="nav-item"><span class="nav-ic">👤</span><span>عن المطوّر</span></a>
+    <a href="pricing.html"             class="nav-item"><span class="nav-ic">💳</span><span>الباقات</span></a>
   </nav>
 
   <!-- Daily Counter Widget -->
@@ -515,7 +519,24 @@
   body.dark-mode .page-title,
   body.dark-mode .page-subtitle   { color:#e0e0e0 !important; }
 </style>
-    </body>
+    <script>
+  /* ── Show user first name in topbar ── */
+  (function () {
+    try {
+      var user = JSON.parse(localStorage.getItem('linkedoff_user') || 'null');
+      if (!user) return;
+      var name = (user.name || user.email || '').split(' ')[0].split('@')[0];
+      if (!name) return;
+      var actions = document.querySelector('.topbar-actions');
+      if (!actions) return;
+      var chip = document.createElement('div');
+      chip.id = 'topbarUserChip';
+      chip.innerHTML = '<span class="avatar">👤</span><span>' + name + '</span>';
+      actions.insertBefore(chip, actions.firstChild);
+    } catch (e) {}
+  })();
+</script>
+</body>
     
 </body>
 </html>

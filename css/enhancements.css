@@ -1,0 +1,433 @@
+/* ═══════════════════════════════════════════════════════════════
+   LinkedOFF — UI Enhancements Layer
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Smooth scrolling & base ─────────────────────────────────── */
+html { scroll-behavior: smooth; }
+
+*, *::before, *::after { box-sizing: border-box; }
+
+/* ── Custom scrollbar (WebKit) ───────────────────────────────── */
+::-webkit-scrollbar              { width: 6px; height: 6px; }
+::-webkit-scrollbar-track        { background: transparent; }
+::-webkit-scrollbar-thumb        { background: rgba(0,168,89,.35); border-radius: 6px; }
+::-webkit-scrollbar-thumb:hover  { background: rgba(0,168,89,.6); }
+
+/* ── Sidebar: richer active state ───────────────────────────── */
+.sidebar-nav .nav-item {
+  position: relative;
+  font-family: 'Cairo', sans-serif;
+  font-size: 0.93rem;
+  font-weight: 600;
+  letter-spacing: .1px;
+  transition: background .18s, border-color .18s, transform .15s, color .18s !important;
+}
+
+.sidebar-nav .nav-item.active {
+  background: linear-gradient(135deg,
+    rgba(29,191,115,.22) 0%,
+    rgba(29,191,115,.08) 100%) !important;
+  border-color: rgba(29,191,115,.4) !important;
+  color: #1dbf73 !important;
+  font-weight: 800;
+  box-shadow: 0 2px 12px rgba(29,191,115,.12);
+}
+
+/* glowing dot before active item */
+.sidebar-nav .nav-item.active::before {
+  content: '';
+  position: absolute;
+  right: -16px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 60%;
+  background: linear-gradient(180deg, #1dbf73, #00A859);
+  border-radius: 4px 0 0 4px;
+  box-shadow: 0 0 8px rgba(29,191,115,.6);
+}
+
+.sidebar-nav .nav-item.active .nav-ic {
+  background: rgba(29,191,115,.2) !important;
+  border-color: rgba(29,191,115,.4) !important;
+}
+
+.sidebar-nav .nav-item:hover:not(.active) {
+  background: rgba(255,255,255,.08) !important;
+  transform: translateX(-3px);
+}
+
+/* ── Sidebar brand: animated glow ───────────────────────────── */
+.brand-mark {
+  background: linear-gradient(135deg,rgba(29,191,115,.2),rgba(0,102,204,.15)) !important;
+  border-color: rgba(29,191,115,.35) !important;
+  animation: _brandPulse 4s ease-in-out infinite;
+}
+
+@keyframes _brandPulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(29,191,115,.0); }
+  50%      { box-shadow: 0 0 10px 3px rgba(29,191,115,.18); }
+}
+
+.brand-text { letter-spacing: .8px !important; }
+
+/* ── Topbar: gradient bottom border + user chip ─────────────── */
+.app-topbar {
+  border-bottom: none !important;
+  box-shadow: 0 1px 0 0 rgba(29,191,115,.18),
+              0 4px 20px rgba(0,0,0,.18) !important;
+}
+
+.topbar-title {
+  font-size: 15px !important;
+  letter-spacing: .3px !important;
+  background: linear-gradient(90deg, #1dbf73, #60c8ff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* user chip that JS fills in */
+#topbarUserChip {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: rgba(29,191,115,.1);
+  border: 1px solid rgba(29,191,115,.22);
+  border-radius: 20px;
+  padding: 4px 12px 4px 6px;
+  font-size: 0.82rem;
+  font-family: 'Cairo', sans-serif;
+  font-weight: 700;
+  color: #1dbf73;
+}
+
+#topbarUserChip .avatar {
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: rgba(29,191,115,.25);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px;
+}
+
+/* ── Job cards: entrance animation + better hover ───────────── */
+.job-card {
+  animation: _cardIn .35s ease both;
+  border-radius: 16px !important;
+  border-right: 3px solid transparent !important;
+  box-shadow: 0 2px 12px rgba(0,0,0,.06) !important;
+  transition: transform .22s ease, box-shadow .22s ease,
+              border-color .22s ease !important;
+}
+
+@keyframes _cardIn {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* stagger first 10 cards */
+.job-card:nth-child(1)  { animation-delay: .04s; }
+.job-card:nth-child(2)  { animation-delay: .08s; }
+.job-card:nth-child(3)  { animation-delay: .12s; }
+.job-card:nth-child(4)  { animation-delay: .16s; }
+.job-card:nth-child(5)  { animation-delay: .20s; }
+.job-card:nth-child(6)  { animation-delay: .24s; }
+.job-card:nth-child(7)  { animation-delay: .28s; }
+.job-card:nth-child(8)  { animation-delay: .32s; }
+.job-card:nth-child(9)  { animation-delay: .36s; }
+.job-card:nth-child(10) { animation-delay: .40s; }
+
+.job-card:hover {
+  transform: translateY(-4px) !important;
+  border-right-color: var(--primary-color) !important;
+  box-shadow: 0 8px 32px rgba(0,168,89,.15) !important;
+}
+
+/* applied card shimmer */
+.job-card.applied {
+  border-right-color: #00A859 !important;
+  background: linear-gradient(
+    135deg,
+    #fff 0%,
+    rgba(0,168,89,.04) 100%
+  ) !important;
+}
+
+body.dark-mode .job-card.applied {
+  background: linear-gradient(
+    135deg,
+    #1e1e2e 0%,
+    rgba(0,168,89,.07) 100%
+  ) !important;
+}
+
+/* applied badge pulse */
+.applied-badge {
+  animation: _appliedPulse 2.5s ease-in-out infinite !important;
+}
+
+@keyframes _appliedPulse {
+  0%,100% { box-shadow: 0 0 0 0 rgba(0,168,89,.0); }
+  50%     { box-shadow: 0 0 0 5px rgba(0,168,89,.18); }
+}
+
+/* ── Search box: glow on focus ───────────────────────────────── */
+.filter-row input:focus {
+  box-shadow: 0 0 0 4px rgba(0,168,89,.12) !important;
+  border-color: var(--primary-color) !important;
+}
+
+.filter-row button {
+  background: linear-gradient(135deg, #00A859, #00D66F) !important;
+  border: none !important;
+  color: #fff !important;
+  border-radius: 10px !important;
+  font-weight: 900 !important;
+  letter-spacing: .3px;
+  box-shadow: 0 4px 14px rgba(0,168,89,.3) !important;
+  transition: transform .15s, box-shadow .15s !important;
+}
+
+.filter-row button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 22px rgba(0,168,89,.4) !important;
+}
+
+/* ── Search filter card ──────────────────────────────────────── */
+.search-filters {
+  border-radius: 18px !important;
+  box-shadow: 0 4px 24px rgba(0,0,0,.08) !important;
+  border: 1px solid rgba(0,168,89,.1);
+}
+
+.advanced-filters {
+  border-top: 2px dashed rgba(0,168,89,.2) !important;
+}
+
+/* filter buttons */
+.filter-actions .btn-outline {
+  border-radius: 10px !important;
+  font-size: 0.88rem !important;
+  padding: 9px 18px !important;
+  transition: all .18s !important;
+}
+
+/* ── Results info: pill style ────────────────────────────────── */
+.results-info {
+  border-radius: 12px !important;
+  background: linear-gradient(135deg,
+    rgba(0,168,89,.07) 0%,
+    rgba(0,168,89,.02) 100%) !important;
+  border: 1px solid rgba(0,168,89,.15) !important;
+  box-shadow: none !important;
+}
+
+.results-info p { font-weight: 700 !important; }
+
+/* ── Page title gradient text ────────────────────────────────── */
+.page-title {
+  background: linear-gradient(135deg, #00A859 30%, #0066CC 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Apply button shine animation ────────────────────────────── */
+.btn-primary {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -60%;
+  width: 40%;
+  height: 200%;
+  background: rgba(255,255,255,.18);
+  transform: skewX(-20deg);
+  transition: right .5s ease;
+  pointer-events: none;
+}
+
+.btn-primary:hover::after {
+  right: 120%;
+}
+
+/* ── Logout button: red glow on hover ────────────────────────── */
+.sidebar-logout:hover {
+  background: rgba(239,68,68,.1) !important;
+  border-color: rgba(239,68,68,.4) !important;
+  color: #ef4444 !important;
+}
+
+.sidebar-logout:hover .nav-ic {
+  background: rgba(239,68,68,.15) !important;
+}
+
+/* ── Spinner: colored ─────────────────────────────────────────── */
+.spinner {
+  border-color: rgba(0,168,89,.15) !important;
+  border-top-color: #00A859 !important;
+  box-shadow: 0 0 12px rgba(0,168,89,.2);
+}
+
+/* ── Version badge: more style ───────────────────────────────── */
+.version-badge {
+  background: linear-gradient(135deg, #1a1a2e, #16213e) !important;
+  border: 1px solid rgba(29,191,115,.25) !important;
+  box-shadow: 0 4px 16px rgba(0,0,0,.25),
+              0 0 0 1px rgba(29,191,115,.1) !important;
+  font-size: 10px !important;
+  letter-spacing: 1px !important;
+}
+
+/* ── Dark mode: improved job cards ──────────────────────────── */
+body.dark-mode .job-card {
+  background: #1e1e2e !important;
+  box-shadow: 0 2px 16px rgba(0,0,0,.3) !important;
+  border: 1px solid rgba(255,255,255,.06);
+}
+
+body.dark-mode .job-card:hover {
+  box-shadow: 0 8px 32px rgba(0,0,0,.4),
+              0 0 0 1px rgba(0,168,89,.2) !important;
+}
+
+body.dark-mode .search-filters {
+  background: #1e1e2e !important;
+  border-color: rgba(255,255,255,.07) !important;
+}
+
+body.dark-mode .results-info {
+  background: rgba(0,168,89,.06) !important;
+  border-color: rgba(0,168,89,.2) !important;
+}
+
+body.dark-mode .filter-group select,
+body.dark-mode .filter-row input {
+  background: #252535 !important;
+  border-color: #383858 !important;
+  color: #f0f0f0 !important;
+}
+
+body.dark-mode .filter-group label { color: #ccc !important; }
+
+body.dark-mode .page-title {
+  background: linear-gradient(135deg, #1dbf73 30%, #60c8ff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+body.dark-mode .job-description::after {
+  background: linear-gradient(transparent, #1e1e2e) !important;
+}
+
+body.dark-mode .job-title { color: #f0f0f0 !important; }
+body.dark-mode .job-source { background: #252535 !important; color: #aaa !important; }
+body.dark-mode .job-meta span { color: #999 !important; }
+body.dark-mode .job-description p { color: #bbb !important; }
+
+body.dark-mode .modal-content { background: #1e1e2e !important; }
+body.dark-mode .topbar-title {
+  background: linear-gradient(90deg, #1dbf73, #60c8ff) !important;
+}
+
+/* ── Topbar dark mode button ─────────────────────────────────── */
+#darkModeBtn {
+  font-size: 16px !important;
+  width: 36px; height: 36px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 10px !important;
+  transition: background .2s, transform .15s !important;
+}
+
+#darkModeBtn:hover {
+  transform: rotate(20deg) scale(1.1);
+  background: rgba(255,255,255,.1) !important;
+}
+
+/* ── Login form: extra polish ────────────────────────────────── */
+.auth-card { animation: _cardIn .4s ease both; }
+
+/* ── About hero: shimmer on avatar ──────────────────────────── */
+.about-avatar {
+  animation: _avatarFloat 4s ease-in-out infinite;
+}
+
+@keyframes _avatarFloat {
+  0%,100% { transform: translateY(0); }
+  50%     { transform: translateY(-6px); }
+}
+
+/* skill tags on hover */
+.skill-tag {
+  transition: transform .15s, box-shadow .15s !important;
+  cursor: default;
+}
+
+.skill-tag:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,.1);
+}
+
+/* cert cards entrance */
+.cert-card {
+  animation: _cardIn .35s ease both;
+}
+
+/* ── Pricing cards: glow on popular ─────────────────────────── */
+.pricing-card.popular {
+  box-shadow: 0 8px 32px rgba(0,168,89,.2) !important;
+  animation: _popularGlow 3s ease-in-out infinite;
+}
+
+@keyframes _popularGlow {
+  0%,100% { box-shadow: 0 8px 32px rgba(0,168,89,.2); }
+  50%     { box-shadow: 0 12px 40px rgba(0,168,89,.35); }
+}
+
+/* ── Feature cards hover ─────────────────────────────────────── */
+.feature-card {
+  border: 1px solid rgba(0,168,89,.08) !important;
+  transition: transform .2s, box-shadow .2s, border-color .2s !important;
+}
+
+.feature-card:hover {
+  transform: translateY(-6px) !important;
+  box-shadow: 0 8px 24px rgba(0,168,89,.12) !important;
+  border-color: rgba(0,168,89,.25) !important;
+}
+
+/* ── Topbar sidebar-toggle animation ────────────────────────── */
+.sidebar-toggle { transition: background .2s, transform .15s !important; }
+.sidebar-toggle:hover { transform: scale(1.07); }
+
+/* ── Timeline dots: pulse on current ────────────────────────── */
+.tl-item:first-child .tl-dot {
+  animation: _dotPulse 2s ease-in-out infinite;
+}
+
+@keyframes _dotPulse {
+  0%,100% { box-shadow: 0 0 0 2px #00A859; }
+  50%     { box-shadow: 0 0 0 5px rgba(0,168,89,.25); }
+}
+
+/* ── No-results & empty states ───────────────────────────────── */
+.no-results { animation: _cardIn .4s ease both; }
+
+/* ── Page-level fade-in on load ──────────────────────────────── */
+.app-content { animation: _pageFadeIn .4s ease both; }
+
+@keyframes _pageFadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Responsive tweaks ───────────────────────────────────────── */
+@media (max-width: 768px) {
+  .page-title { font-size: 2rem !important; }
+  .job-card   { border-radius: 12px !important; }
+}

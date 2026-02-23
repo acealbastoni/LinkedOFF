@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>تحليلات السوق - LinkedOFF</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/enhancements.css">
+  <link rel="icon" type="image/svg+xml" href="img/icon-linkedoff.svg">
+
+  <!-- ═══ EARLY AUTH GUARD ═══ -->
+  <style>body { visibility: hidden; }</style>
+  <script>
+    (function () {
+      try {
+        var user = JSON.parse(localStorage.getItem('linkedoff_user') || 'null');
+        var sess = JSON.parse(localStorage.getItem('linkedoff_session') || 'null');
+        if (!user || !sess || !sess.token || Date.now() > Number(sess.expiresAtMs || 0)) {
+          window.location.replace('login.html');
+        } else {
+          document.addEventListener('DOMContentLoaded', function () {
+            document.body.style.visibility = 'visible';
+          });
+        }
+      } catch (e) { window.location.replace('login.html'); }
+    })();
+  </script>
+  <script src="js/auth.js"></script>
+  <script src="js/config.js"></script>
+  <script>startSessionEnforcer();</script>
+
+  <style>
+    /* ── Analytics Page ──────────────────────────────────────── */
+    .an-wrapper { max-width: 1100px; margin: 0 auto; padding-bottom: 60px; }
+
+    /* Hero launch card */
+    .an-launch {
+      background: linear-gradient(135deg, #0d1f15 0%, #0a1628 100%);
+      border: 1px solid rgba(29,191,115,.2);
+      border-radius: 20px;
+      padding: 40px 36px;
+      text-align: center;
+      margin-bottom: 28px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .an-launch::before {
+      content: '';
+      position: absolute;
+      top: -60px; right: -60px;
+      width: 220px; height: 220px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(29,191,115,.15), transparent 70%);
+      pointer-events: none;
+    }
+
+    .an-launch h1 {
+      font-size: 1.9rem;
+      font-weight: 900;
+      background: linear-gradient(90deg, #1dbf73, #60c8ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 10px;
+    }
+
+    .an-launch p { color: #8899aa; font-size: 0.95rem; margin-bottom: 28px; }
+
+    .an-pages-control {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      margin-bottom: 22px;
+      flex-wrap: wrap;
+    }
+
+    .an-pages-control label {
+      color: #aaa;
+      font-size: 0.88rem;
+      font-weight: 700;
+      font-family: 'Cairo', sans-serif;
+    }
+
+    .an-pages-control select {
+      background: rgba(255,255,255,.07);
+      border: 1px solid rgba(255,255,255,.15);
+      color: #f0f0f0;
+      border-radius: 10px;
+      padding: 8px 14px;
+      font-family: 'Cairo', sans-serif;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+
+    .an-start-btn {
+      background: linear-gradient(135deg, #1dbf73, #00D66F);
+      color: #fff;
+      border: none;
+      border-radius: 14px;
+      padding: 14px 40px;
+      font-family: 'Cairo', sans-serif;
+      font-size: 1rem;
+      font-weight: 900;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(29,191,115,.35);
+      transition: transform .15s, box-shadow .15s;
+      letter-spacing: .3px;
+    }
+
+    .an-start-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(29,191,115,.45); }
+    .an-start-btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+
+    /* Progress */
+    .an-progress-wrap {
+      display: none;
+      margin-top: 20px;
+    }
+
+    .an-progress-wrap.show { display: block; }
+
+    .an-progress-label {
+      font-size: 0.85rem;
+      color: #8899aa;
+      margin-bottom: 8px;
+      font-family: 'Cairo', sans-serif;
+    }
+
+    .an-progress-bar-bg {
+      background: rgba(255,255,255,.08);
+      border-radius: 8px;
+      height: 8px;
+      overflow: hidden;
+    }
+
+    .an-progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #1dbf73, #00D66F);
+      border-radius: 8px;
+      width: 0%;
+      transition: width .4s ease;
+    }
+
+    /* Stats row */
+    .an-stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .an-stat-card {
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 16px;
+      padding: 20px;
+      text-align: center;
+      animation: _cardIn .35s ease both;
+    }
+
+    .an-stat-card .an-stat-num {
+      font-size: 2rem;
+      font-weight: 900;
+      color: #1dbf73;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+
+    .an-stat-card .an-stat-label {
+      font-size: 0.82rem;
+      color: #8899aa;
+      font-family: 'Cairo', sans-serif;
+    }
+
+    /* Section cards */
+    .an-section {
+      background: rgba(255,255,255,.03);
+      border: 1px solid rgba(255,255,255,.07);
+      border-radius: 18px;
+      padding: 24px 26px;
+      margin-bottom: 20px;
+      animation: _cardIn .35s ease both;
+    }
+
+    .an-section-title {
+      font-size: 1rem;
+      font-weight: 900;
+      color: #f0f0f0;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(255,255,255,.07);
+    }
+
+    .an-section-title .badge {
+      font-size: 0.72rem;
+      background: rgba(29,191,115,.15);
+      color: #1dbf73;
+      border: 1px solid rgba(29,191,115,.25);
+      padding: 2px 10px;
+      border-radius: 10px;
+      font-weight: 700;
+    }
+
+    /* Bar chart rows */
+    .an-bar-list { display: flex; flex-direction: column; gap: 10px; }
+
+    .an-bar-item {
+      display: grid;
+      grid-template-columns: 160px 1fr 50px;
+      align-items: center;
+      gap: 12px;
+      font-size: 0.85rem;
+    }
+
+    .an-bar-item .an-bar-label {
+      color: #c0ccd8;
+      font-family: 'Cairo', sans-serif;
+      font-weight: 700;
+      text-align: right;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      direction: ltr;
+      text-align: left;
+    }
+
+    .an-bar-item .an-bar-label.rtl { direction: rtl; text-align: right; }
+
+    .an-bar-track {
+      background: rgba(255,255,255,.06);
+      border-radius: 6px;
+      height: 10px;
+      overflow: hidden;
+    }
+
+    .an-bar-fill {
+      height: 100%;
+      border-radius: 6px;
+      transition: width .8s cubic-bezier(.23,1,.32,1);
+    }
+
+    .an-bar-fill.green  { background: linear-gradient(90deg, #1dbf73, #00D66F); }
+    .an-bar-fill.blue   { background: linear-gradient(90deg, #3b82f6, #60c8ff); }
+    .an-bar-fill.orange { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+    .an-bar-fill.purple { background: linear-gradient(90deg, #8b5cf6, #a78bfa); }
+    .an-bar-fill.red    { background: linear-gradient(90deg, #ef4444, #f87171); }
+    .an-bar-fill.teal   { background: linear-gradient(90deg, #14b8a6, #2dd4bf); }
+
+    .an-bar-item .an-bar-count {
+      color: #8899aa;
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-align: left;
+    }
+
+    /* Tag cloud */
+    .an-tag-cloud {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .an-tag {
+      padding: 5px 14px;
+      border-radius: 20px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      font-family: 'Cairo', sans-serif;
+      cursor: default;
+      transition: transform .15s;
+      direction: ltr;
+    }
+
+    .an-tag:hover { transform: translateY(-2px); }
+
+    .an-tag.size-1 { font-size: 0.75rem; background: rgba(29,191,115,.1); color: #1dbf73; border: 1px solid rgba(29,191,115,.2); }
+    .an-tag.size-2 { font-size: 0.85rem; background: rgba(29,191,115,.15); color: #1dbf73; border: 1px solid rgba(29,191,115,.25); }
+    .an-tag.size-3 { font-size: 0.95rem; background: rgba(29,191,115,.22); color: #1dbf73; border: 1px solid rgba(29,191,115,.35); }
+    .an-tag.size-4 { font-size: 1.05rem; background: rgba(29,191,115,.3); color: #1dbf73; border: 1px solid rgba(29,191,115,.45); font-weight: 900; }
+    .an-tag.size-5 { font-size: 1.15rem; background: rgba(29,191,115,.38); color: #fff; border: 1px solid rgba(29,191,115,.55); font-weight: 900; box-shadow: 0 2px 10px rgba(29,191,115,.2); }
+
+    /* Donut rings (pure CSS) */
+    .an-donut-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 16px;
+      margin-top: 4px;
+    }
+
+    .an-donut-item {
+      text-align: center;
+    }
+
+    .an-donut-ring {
+      width: 72px; height: 72px;
+      border-radius: 50%;
+      margin: 0 auto 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+      font-weight: 900;
+      color: #f0f0f0;
+      position: relative;
+    }
+
+    .an-donut-label { font-size: 0.78rem; color: #aaa; font-family: 'Cairo', sans-serif; }
+    .an-donut-sub   { font-size: 0.72rem; color: #666; margin-top: 2px; }
+
+    /* Empty state */
+    .an-empty {
+      text-align: center;
+      padding: 60px 20px;
+      color: #8899aa;
+    }
+
+    .an-empty .icon { font-size: 3rem; margin-bottom: 12px; }
+    .an-empty p { font-size: 0.92rem; }
+
+    /* Grid 2 cols */
+    .an-grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    @media (max-width: 700px) {
+      .an-grid-2 { grid-template-columns: 1fr; }
+      .an-bar-item { grid-template-columns: 120px 1fr 40px; }
+      .an-launch h1 { font-size: 1.4rem; }
+    }
+  </style>
+</head>
+
+<body class="app-page" data-page="analytics">
+<div class="app-shell">
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar(false)"></div>
+
+  <!-- ─── Sidebar ──────────────────────────────────────────── -->
+  <aside class="app-sidebar" id="appSidebar" aria-label="القائمة الجانبية">
+    <div class="sidebar-brand">
+      <a href="search.html" class="brand-link">
+        <span class="brand-mark">💼</span>
+        <span class="brand-text">LinkedOFF</span>
+        <span class="brand-sub">AceAlBastoni</span>
+      </a>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a href="search.html"              class="nav-item"><span class="nav-ic">🏠</span><span>الرئيسية</span></a>
+      <a href="search.html"              class="nav-item"><span class="nav-ic">🔍</span><span>البحث عن الوظائف</span></a>
+      <a href="dashboard.html"           class="nav-item"><span class="nav-ic">📊</span><span>لوحة التحكم</span></a>
+      <a href="analytics.html"           class="nav-item active"><span class="nav-ic">📈</span><span>تحليلات السوق</span></a>
+      <a href="saved.html"               class="nav-item"><span class="nav-ic">💾</span><span>الوظائف المحفوظة</span></a>
+      <a href="history.html"             class="nav-item"><span class="nav-ic">📬</span><span>سجل الإرسال</span></a>
+      <a href="engines-interactive.html" class="nav-item"><span class="nav-ic">⚙️</span><span>المحركات</span></a>
+      <a href="about.html"               class="nav-item"><span class="nav-ic">👤</span><span>عن المطوّر</span></a>
+      <a href="pricing.html"             class="nav-item"><span class="nav-ic">💳</span><span>الباقات</span></a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="sidebar-logout" type="button" onclick="performLogout('👋 تم تسجيل الخروج', false)">
+        <span class="nav-ic">🚪</span><span>تسجيل الخروج</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- ─── Main ─────────────────────────────────────────────── -->
+  <div class="app-main">
+    <header class="app-topbar">
+      <button class="sidebar-toggle" type="button" aria-label="فتح/إغلاق القائمة" onclick="toggleSidebar()">
+        <span class="toggle-bars"></span>
+      </button>
+      <div class="topbar-title">📈 تحليلات السوق</div>
+      <div class="topbar-actions">
+        <button id="darkModeBtn" onclick="toggleDarkMode()" title="وضع ليلي" style="
+          background:none;border:1px solid rgba(255,255,255,.15);border-radius:8px;
+          padding:6px 10px;cursor:pointer;font-size:18px;line-height:1;
+          transition:background .2s,border-color .2s;
+        ">🌙</button>
+      </div>
+    </header>
+
+    <main class="app-content">
+      <div class="an-wrapper">
+
+        <!-- Launch Card -->
+        <div class="an-launch">
+          <h1>🔬 تحليل ذكي لسوق العمل</h1>
+          <p>يجلب بيانات الوظائف ويحللها لاستخراج insights حقيقية عن السوق السعودي</p>
+
+          <div class="an-pages-control">
+            <label>عدد الصفحات للتحليل:</label>
+            <select id="pagesToAnalyze">
+              <option value="5">5 صفحات (~250 وظيفة) — سريع</option>
+              <option value="10" selected>10 صفحات (~500 وظيفة)</option>
+              <option value="20">20 صفحة (~1,000 وظيفة)</option>
+              <option value="50">50 صفحة (~2,500 وظيفة) — شامل</option>
+            </select>
+          </div>
+
+          <button class="an-start-btn" id="startAnalysisBtn" onclick="startAnalysis()">
+            🚀 ابدأ التحليل
+          </button>
+
+          <div class="an-progress-wrap" id="progressWrap">
+            <div class="an-progress-label" id="progressLabel">جاري جلب البيانات...</div>
+            <div class="an-progress-bar-bg">
+              <div class="an-progress-bar-fill" id="progressFill"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Results — hidden until analysis runs -->
+        <div id="analysisResults" style="display:none;">
+
+          <!-- Overview stats -->
+          <div class="an-stats-row" id="statsRow"></div>
+
+          <!-- Hashtags -->
+          <div class="an-section">
+            <div class="an-section-title">
+              # أكثر الـ Hashtags ذكراً
+              <span class="badge">سحابة الكلمات</span>
+            </div>
+            <div class="an-tag-cloud" id="hashtagCloud"></div>
+          </div>
+
+          <div class="an-grid-2">
+            <!-- Email Domains -->
+            <div class="an-section">
+              <div class="an-section-title">📧 أكثر نطاقات البريد (Recruiters)</div>
+              <div class="an-bar-list" id="domainBars"></div>
+            </div>
+
+            <!-- Cities -->
+            <div class="an-section">
+              <div class="an-section-title">📍 أكثر المدن المذكورة</div>
+              <div class="an-bar-list" id="cityBars"></div>
+            </div>
+          </div>
+
+          <div class="an-grid-2">
+            <!-- Tech Skills -->
+            <div class="an-section">
+              <div class="an-section-title">🛠️ أكثر المهارات التقنية طلباً</div>
+              <div class="an-bar-list" id="skillBars"></div>
+            </div>
+
+            <!-- Contract types -->
+            <div class="an-section">
+              <div class="an-section-title">📅 أنواع عقود العمل</div>
+              <div class="an-bar-list" id="contractBars"></div>
+            </div>
+          </div>
+
+          <!-- Arabic keywords -->
+          <div class="an-section">
+            <div class="an-section-title">🔑 أكثر الكلمات العربية تكراراً في الإعلانات</div>
+            <div class="an-bar-list" id="arabicKeyBars"></div>
+          </div>
+
+          <!-- Language distribution -->
+          <div class="an-section">
+            <div class="an-section-title">🌐 توزيع لغة الإعلانات والبيانات الإضافية</div>
+            <div class="an-donut-grid" id="donutGrid"></div>
+          </div>
+
+        </div><!-- /analysisResults -->
+
+      </div>
+    </main>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════════════════════
+   Analytics Engine
+   ══════════════════════════════════════════════════════════════ */
+
+const CITIES = [
+  'الرياض','جدة','الدمام','مكة','المدينة','الخبر','الطائف','تبوك',
+  'أبها','حائل','بريدة','نجران','القصيم','الجوف','ينبع','جازان',
+  'الأحساء','القطيف','حفر الباطن','سكاكا','Dubai','Riyadh','Jeddah','Dammam'
+];
+
+const SKILLS = [
+  'Python','JavaScript','Java','SQL','PHP','React','Node','Angular',
+  'Excel','Power BI','AWS','Azure','Docker','Linux','Git','SAP',
+  'AutoCAD','Revit','PMP','IELTS','MBA','CPA','CMA','HR','ERP',
+  'SEO','Marketing','Salesforce','Tableau','Kotlin','Swift','Flutter',
+  'TypeScript','MongoDB','MySQL','Oracle','C#','.NET','Spring','Django'
+];
+
+const ARABIC_KEYS = [
+  'خبرة','سنوات','مبيعات','تسويق','هندسة','محاسبة','إدارة','موارد',
+  'تقنية','برمجة','تصميم','صحة','تعليم','مالية','مشتريات','لوجستيك',
+  'عقارات','بناء','أمن','شبكات','بيانات','ذكاء','تحليل','قانون',
+  'علاقات','خدمة','عملاء','مشروع','تطوير','جودة','عمليات'
+];
+
+const CONTRACT_TYPES = [
+  { label: 'دوام كامل', keys: ['دوام كامل','full time','full-time'] },
+  { label: 'عن بعد',    keys: ['عن بعد','remote','work from home'] },
+  { label: 'دوام جزئي', keys: ['دوام جزئي','part time','part-time'] },
+  { label: 'مؤقت',      keys: ['مؤقت','temporary','contract'] },
+  { label: 'تدريب',     keys: ['تدريب','intern','internship'] }
+];
+
+let _analysisAbort = false;
+
+async function fetchPage(page) {
+  const user = getCurrentUser();
+  const sess = getCurrentSession();
+  if (!user || !sess) throw new Error('Session missing');
+
+  const url =
+    `${API_CONFIG.baseURL}?key=${encodeURIComponent(API_CONFIG.apiKey)}` +
+    `&email=${encodeURIComponent(user.email)}` +
+    `&sessionToken=${encodeURIComponent(sess.token)}` +
+    `&page=${encodeURIComponent(page)}` +
+    `&pageSize=50`;
+
+  const res  = await fetch(url, { method: 'GET', redirect: 'follow' });
+  const text = await res.text();
+  const data = JSON.parse(text);
+  if (data.code === 'session_expired' || data.code === 'invalid_session') {
+    performLogout('⏳ انتهت الجلسة.', true);
+    throw new Error('Session expired');
+  }
+  if (!data.ok) throw new Error(data.message || 'Error');
+  return data;
+}
+
+function countTop(map, n = 10) {
+  return Object.entries(map)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, n);
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+async function startAnalysis() {
+  _analysisAbort = false;
+  const btn = document.getElementById('startAnalysisBtn');
+  const maxPages = parseInt(document.getElementById('pagesToAnalyze').value) || 10;
+  btn.disabled = true;
+  btn.textContent = '⏳ جاري التحليل...';
+
+  document.getElementById('analysisResults').style.display = 'none';
+  document.getElementById('progressWrap').classList.add('show');
+
+  // Data buckets
+  const hashtags   = {};
+  const domains    = {};
+  const cities     = {};
+  const skills     = {};
+  const arabicKeys = {};
+  const contracts  = {};
+  CITIES.forEach(c => cities[c] = 0);
+  SKILLS.forEach(s => skills[s] = 0);
+  ARABIC_KEYS.forEach(k => arabicKeys[k] = 0);
+  CONTRACT_TYPES.forEach(ct => contracts[ct.label] = 0);
+
+  let totalJobs  = 0;
+  let withSalary = 0;
+  let withRemote = 0;
+  let enJobs     = 0;
+  let arJobs     = 0;
+  let realPages  = 0;
+
+  for (let p = 1; p <= maxPages; p++) {
+    if (_analysisAbort) break;
+
+    // update progress
+    const pct = Math.round((p - 1) / maxPages * 100);
+    document.getElementById('progressFill').style.width = pct + '%';
+    document.getElementById('progressLabel').textContent =
+      `جاري تحليل الصفحة ${p} من ${maxPages}... (${totalJobs} وظيفة حتى الآن)`;
+
+    try {
+      const data = await fetchPage(p);
+      const jobs = data.data || [];
+      realPages = data.totalPages || maxPages;
+
+      jobs.forEach(job => {
+        const desc = (job.plainTextJobDescription || '').toLowerCase();
+        const raw  = (job.plainTextJobDescription || '');
+        const src  = (job.source || '');
+        totalJobs++;
+
+        // Language detection
+        const arChars = (raw.match(/[\u0600-\u06FF]/g) || []).length;
+        const enChars = (raw.match(/[a-zA-Z]/g) || []).length;
+        if (arChars > enChars) arJobs++; else enJobs++;
+
+        // Hashtags
+        const tags = raw.match(/#[\u0600-\u06FFa-zA-Z0-9_]+/g) || [];
+        tags.forEach(t => { hashtags[t] = (hashtags[t] || 0) + 1; });
+
+        // Email domain
+        const dm = src.match(/@([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/);
+        if (dm) { const d = dm[1].toLowerCase(); domains[d] = (domains[d] || 0) + 1; }
+
+        // Cities
+        CITIES.forEach(c => { if (desc.includes(c.toLowerCase())) cities[c]++; });
+
+        // Skills
+        SKILLS.forEach(s => { if (desc.includes(s.toLowerCase())) skills[s]++; });
+
+        // Arabic keywords
+        ARABIC_KEYS.forEach(k => { if (desc.includes(k)) arabicKeys[k]++; });
+
+        // Contract types
+        CONTRACT_TYPES.forEach(ct => {
+          if (ct.keys.some(k => desc.includes(k))) contracts[ct.label]++;
+        });
+
+        // Salary mention
+        if (/\d{3,}.*?(ريال|sar|sr)/i.test(raw)) withSalary++;
+
+        // Remote
+        if (/(عن بعد|remote|work from home)/i.test(raw)) withRemote++;
+      });
+
+      if (p >= realPages) break; // no more pages
+    } catch (err) {
+      if (err.message === 'Session expired') return;
+      console.warn('Page', p, 'failed:', err.message);
+    }
+
+    await new Promise(r => setTimeout(r, 150));
+  }
+
+  document.getElementById('progressFill').style.width = '100%';
+  document.getElementById('progressLabel').textContent = `✅ اكتمل التحليل — ${totalJobs} وظيفة`;
+
+  renderResults({
+    totalJobs, withSalary, withRemote, enJobs, arJobs,
+    hashtags, domains, cities, skills, arabicKeys, contracts, realPages
+  });
+
+  btn.disabled = false;
+  btn.textContent = '🔄 إعادة التحليل';
+}
+
+function renderResults(d) {
+  document.getElementById('analysisResults').style.display = 'block';
+
+  /* ── Overview stats ── */
+  document.getElementById('statsRow').innerHTML = [
+    { num: d.totalJobs.toLocaleString('ar'), label: 'وظيفة تم تحليلها' },
+    { num: Math.round(d.withSalary / d.totalJobs * 100) + '%', label: 'وظائف تذكر الراتب' },
+    { num: Math.round(d.withRemote / d.totalJobs * 100) + '%', label: 'وظائف عن بعد أو هجينة' },
+    { num: Object.keys(d.domains).length, label: 'شركة/مجنّد مختلف' },
+    { num: Object.keys(d.hashtags).length, label: 'هاشتاق فريد' },
+    { num: d.realPages.toLocaleString('ar'), label: 'صفحة في قاعدة البيانات' }
+  ].map(s => `
+    <div class="an-stat-card">
+      <div class="an-stat-num">${escHtml(s.num)}</div>
+      <div class="an-stat-label">${escHtml(s.label)}</div>
+    </div>
+  `).join('');
+
+  /* ── Hashtag cloud ── */
+  const topTags = countTop(d.hashtags, 40);
+  if (topTags.length === 0) {
+    document.getElementById('hashtagCloud').innerHTML = '<span style="color:#666;font-size:.85rem;">لم يتم العثور على هاشتاقات</span>';
+  } else {
+    const max = topTags[0][1];
+    document.getElementById('hashtagCloud').innerHTML = topTags.map(([tag, cnt]) => {
+      const ratio = cnt / max;
+      const size = ratio > .7 ? 5 : ratio > .4 ? 4 : ratio > .2 ? 3 : ratio > .1 ? 2 : 1;
+      return `<span class="an-tag size-${size}" title="${cnt} مرة">${escHtml(tag)}</span>`;
+    }).join('');
+  }
+
+  /* ── Helper: render bar list ── */
+  function barList(containerId, entries, color = 'green', rtlLabel = false) {
+    const el = document.getElementById(containerId);
+    if (!entries.length) { el.innerHTML = '<span style="color:#666;font-size:.85rem;">لا توجد بيانات كافية</span>'; return; }
+    const max = entries[0][1];
+    el.innerHTML = entries.map(([label, cnt]) => `
+      <div class="an-bar-item">
+        <div class="an-bar-label ${rtlLabel ? 'rtl' : ''}" title="${escHtml(label)}">${escHtml(label)}</div>
+        <div class="an-bar-track">
+          <div class="an-bar-fill ${color}" style="width:${Math.round(cnt / max * 100)}%"></div>
+        </div>
+        <div class="an-bar-count">${cnt}</div>
+      </div>
+    `).join('');
+  }
+
+  barList('domainBars',   countTop(d.domains, 10),    'blue');
+  barList('cityBars',     countTop(d.cities,  10),    'orange', true);
+  barList('skillBars',    countTop(d.skills,  12),    'purple');
+  barList('contractBars', countTop(d.contracts, 5),   'teal',   true);
+  barList('arabicKeyBars',countTop(d.arabicKeys, 12), 'green',  true);
+
+  /* ── Donut rings ── */
+  const donutData = [
+    { label: 'إنجليزية', sub: d.enJobs + ' وظيفة', pct: Math.round(d.enJobs / d.totalJobs * 100), color: '#3b82f6' },
+    { label: 'عربية',    sub: d.arJobs + ' وظيفة',  pct: Math.round(d.arJobs / d.totalJobs * 100), color: '#1dbf73' },
+    { label: 'مع راتب',  sub: d.withSalary + ' وظيفة', pct: Math.round(d.withSalary / d.totalJobs * 100), color: '#f59e0b' },
+    { label: 'عن بعد',   sub: d.withRemote + ' وظيفة', pct: Math.round(d.withRemote / d.totalJobs * 100), color: '#8b5cf6' }
+  ];
+
+  document.getElementById('donutGrid').innerHTML = donutData.map(item => `
+    <div class="an-donut-item">
+      <div class="an-donut-ring" style="
+        background: conic-gradient(${item.color} ${item.pct * 3.6}deg, rgba(255,255,255,.06) 0deg);
+        box-shadow: 0 0 0 4px rgba(${item.color === '#1dbf73' ? '29,191,115' : '255,255,255'},.06);
+      ">${item.pct}%</div>
+      <div class="an-donut-label">${item.label}</div>
+      <div class="an-donut-sub">${item.sub}</div>
+    </div>
+  `).join('');
+}
+
+/* Dark mode */
+function initDarkMode() {
+  if (localStorage.getItem('linkedoff_darkMode') === 'true') {
+    document.body.classList.add('dark-mode');
+    var btn = document.getElementById('darkModeBtn');
+    if (btn) btn.textContent = '☀️';
+  }
+}
+function toggleDarkMode() {
+  var isDark = document.body.classList.toggle('dark-mode');
+  localStorage.setItem('linkedoff_darkMode', isDark);
+  var btn = document.getElementById('darkModeBtn');
+  if (btn) btn.textContent = isDark ? '☀️' : '🌙';
+}
+
+document.addEventListener('DOMContentLoaded', initDarkMode);
+</script>
+
+<script>
+  /* ── Show user first name in topbar ── */
+  (function () {
+    try {
+      var user = JSON.parse(localStorage.getItem('linkedoff_user') || 'null');
+      if (!user) return;
+      var name = (user.name || user.email || '').split(' ')[0].split('@')[0];
+      if (!name) return;
+      var actions = document.querySelector('.topbar-actions');
+      if (!actions) return;
+      var chip = document.createElement('div');
+      chip.id = 'topbarUserChip';
+      chip.innerHTML = '<span class="avatar">👤</span><span>' + name + '</span>';
+      actions.insertBefore(chip, actions.firstChild);
+    } catch (e) {}
+  })();
+</script>
+</body>
+</html>

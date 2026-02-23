@@ -20,7 +20,9 @@
                     <a href="#pricing">الباقات</a>
                     <a href="#contact">التواصل</a>
                     <a href="about.html">عن المطوّر</a>
-                    <a href="login.html" class="btn-secondary">تسجيل الدخول</a>
+                    <span id="navAuthBtn">
+                        <a href="login.html" class="btn-secondary">تسجيل الدخول</a>
+                    </span>
                 </div>
             </div>
         </nav>
@@ -338,8 +340,25 @@
 
     <script src="js/config.js"></script>
     <!-- <script src="js/main.js"></script> -->
-    <!-- <script src="js/auth.js"></script> -->
     <!-- <script src="js/dashboard.js"></script> -->
+
+    <script>
+      /* ── Navbar: show logout if already logged in ───────── */
+      (function () {
+        try {
+          var user = JSON.parse(localStorage.getItem('linkedoff_user') || 'null');
+          var sess = JSON.parse(localStorage.getItem('linkedoff_session') || 'null');
+          var loggedIn = user && sess && sess.token && Date.now() <= Number(sess.expiresAtMs || 0);
+          var btn = document.getElementById('navAuthBtn');
+          if (!btn) return;
+          if (loggedIn) {
+            btn.innerHTML =
+              '<a href="search.html" class="btn-secondary" style="background:#00A859;border-color:#00A859;">الذهاب للتطبيق ←</a>' +
+              '&nbsp;<a href="#" class="btn-secondary" style="background:#c0392b;border-color:#c0392b;" onclick="(function(){localStorage.removeItem(\'linkedoff_user\');localStorage.removeItem(\'linkedoff_session\');location.reload();})()" >تسجيل الخروج</a>';
+          }
+        } catch (e) {}
+      })();
+    </script>
 
     <!-- Version Badge -->
     <div class="version-badge" id="versionBadge">v1.2.0</div>

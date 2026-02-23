@@ -7,7 +7,7 @@
 
 const APP_CONFIG = {
     // Version Info
-    version: '1.3.2',
+    version: '1.3.3',
     releaseDate: '2026-02-23',
     buildNumber: '20260223',
     
