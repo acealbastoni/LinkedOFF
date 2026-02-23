@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>الباقات والأسعار - LinkedOFF</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="icon" type="image/svg+xml" href="img/icon-linkedoff.svg">
+
+  <!-- ═══ EARLY AUTH GUARD ═══ -->
+  <style>body { visibility: hidden; }</style>
+  <script>
+    (function () {
+      try {
+        var user = JSON.parse(localStorage.getItem('linkedoff_user') || 'null');
+        var sess = JSON.parse(localStorage.getItem('linkedoff_session') || 'null');
+        if (!user || !sess || !sess.token || Date.now() > Number(sess.expiresAtMs || 0)) {
+          window.location.replace('login.html');
+        } else {
+          document.addEventListener('DOMContentLoaded', function () {
+            document.body.style.visibility = 'visible';
+          });
+        }
+      } catch (e) { window.location.replace('login.html'); }
+    })();
+  </script>
+  <!-- ══════════════════════════════════════════════════════ -->
+
+  <script src="js/auth.js"></script>
+  <script>startSessionEnforcer();</script>
+
+  <style>
+    /* ── Overrides to make marketing sections fit inside the app content area ── */
+    .pricing-section,
+    .testimonials-section,
+    .contact-section,
+    .features-section {
+      padding: 40px 0;
+    }
+
+    .features-section { background: var(--light-color); border-radius: 16px; margin-bottom: 20px; }
+    .pricing-section  { background: #fff; border-radius: 16px; margin-bottom: 20px; padding: 36px 0; }
+    .testimonials-section { background: var(--light-color); border-radius: 16px; margin-bottom: 20px; }
+    .contact-section  { background: #fff; border-radius: 16px; margin-bottom: 20px; }
+
+    .section-title { font-size: 1.8rem; margin-bottom: 28px; }
+    .section-subtitle { margin-bottom: 28px; }
+
+    /* Plan button inside app */
+    .plan-btn {
+      display: block;
+      text-align: center;
+      padding: 12px;
+      border-radius: 10px;
+      font-family: 'Cairo', sans-serif;
+      font-weight: 700;
+      margin-top: 20px;
+    }
+
+    /* Contact cards */
+    .contact-info {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 20px;
+    }
+
+    .contact-card {
+      background: var(--light-color);
+      padding: 24px;
+      border-radius: 12px;
+      text-align: center;
+      transition: transform .2s;
+    }
+
+    .contact-card:hover { transform: translateY(-4px); }
+
+    .contact-icon { font-size: 2rem; margin-bottom: 10px; }
+
+    .contact-card h3 { margin-bottom: 8px; font-size: 1.1rem; }
+
+    .contact-card a {
+      color: var(--primary-color);
+      text-decoration: none;
+      font-weight: 700;
+    }
+
+    /* Stars */
+    .stars { font-size: 1.2rem; margin-bottom: 10px; }
+
+    /* Dark mode */
+    body.dark-mode .features-section,
+    body.dark-mode .testimonials-section { background: #181824; }
+    body.dark-mode .pricing-section,
+    body.dark-mode .contact-section      { background: #1e1e2e; }
+    body.dark-mode .pricing-card  { background: #252535; border-color: #333; }
+    body.dark-mode .feature-card  { background: #252535; }
+    body.dark-mode .testimonial-card { background: #252535; }
+    body.dark-mode .contact-card  { background: #252535; }
+    body.dark-mode .section-title,
+    body.dark-mode .plan-name     { color: #f0f0f0; }
+    body.dark-mode .section-subtitle,
+    body.dark-mode .plan-features li,
+    body.dark-mode .contact-card p { color: #aaa; }
+    body.dark-mode .payment-info  { background: #252535; border-color: #333; }
+  </style>
+</head>
+
+<body class="app-page" data-page="pricing">
+<div class="app-shell">
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar(false)"></div>
+
+  <!-- ─── Sidebar ──────────────────────────────────────────── -->
+  <aside class="app-sidebar" id="appSidebar" aria-label="القائمة الجانبية">
+    <div class="sidebar-brand">
+      <a href="search.html" class="brand-link">
+        <span class="brand-mark">💼</span>
+        <span class="brand-text">LinkedOFF</span>
+        <span class="brand-sub">AceAlBastoni</span>
+      </a>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a href="search.html"              class="nav-item"><span class="nav-ic">🏠</span><span>الرئيسية</span></a>
+      <a href="search.html"              class="nav-item"><span class="nav-ic">🔍</span><span>البحث عن الوظائف</span></a>
+      <a href="dashboard.html"           class="nav-item"><span class="nav-ic">📊</span><span>لوحة التحكم</span></a>
+      <a href="engines-interactive.html" class="nav-item"><span class="nav-ic">⚙️</span><span>المحركات</span></a>
+      <a href="about.html"               class="nav-item"><span class="nav-ic">👤</span><span>عن المطوّر</span></a>
+      <a href="pricing.html"             class="nav-item active"><span class="nav-ic">💳</span><span>الباقات</span></a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="sidebar-logout" type="button" onclick="performLogout('👋 تم تسجيل الخروج', false)">
+        <span class="nav-ic">🚪</span><span>تسجيل الخروج</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- ─── Main ─────────────────────────────────────────────── -->
+  <div class="app-main">
+    <header class="app-topbar">
+      <button class="sidebar-toggle" type="button" aria-label="فتح/إغلاق القائمة" onclick="toggleSidebar()">
+        <span class="toggle-bars"></span>
+      </button>
+      <div class="topbar-title">💳 الباقات والأسعار</div>
+      <div class="topbar-actions">
+        <button id="darkModeBtn" onclick="toggleDarkMode()" title="وضع ليلي" style="
+          background:none;border:1px solid #ddd;border-radius:8px;
+          padding:6px 10px;cursor:pointer;font-size:18px;line-height:1;
+          transition:background .2s,border-color .2s;
+        ">🌙</button>
+      </div>
+    </header>
+
+    <main class="app-content">
+
+      <!-- ══ Features ══════════════════════════════════════════ -->
+      <section class="features-section">
+        <div class="container">
+          <h2 class="section-title">🎁 مميزات لا تقاوم</h2>
+          <div class="features-grid">
+            <div class="feature-card">
+              <div class="feature-icon">🔍</div>
+              <h3>بحث متقدم</h3>
+              <p>فلترة حسب المدينة، المجال، الراتب، نوع العقد، والخبرة المطلوبة</p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon">📱</div>
+              <h3>تنبيهات WhatsApp</h3>
+              <p>استقبل الوظائف الجديدة على الواتساب فور نشرها (باقة Pro)</p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon">📊</div>
+              <h3>إحصائيات السوق</h3>
+              <p>معلومات عن متوسط الرواتب والمجالات الأكثر طلباً</p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon">💾</div>
+              <h3>حفظ الوظائف</h3>
+              <p>احفظ الوظائف المفضلة وارجع لها في أي وقت</p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon">🤖</div>
+              <h3>AI Resume Builder</h3>
+              <p>اصنع سيرة ذاتية احترافية بالذكاء الاصطناعي (باقة Premium)</p>
+            </div>
+            <div class="feature-card">
+              <div class="feature-icon">📧</div>
+              <h3>تصدير البيانات</h3>
+              <p>صدّر الوظائف لملف Excel أو PDF للمراجعة</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══ Pricing ════════════════════════════════════════════ -->
+      <section class="pricing-section" id="pricing">
+        <div class="container">
+          <h2 class="section-title">💰 اختر الباقة المناسبة لك</h2>
+          <p class="section-subtitle">كل الباقات بضمان استرجاع المبلغ خلال 7 أيام</p>
+
+          <div class="pricing-grid">
+            <!-- Basic -->
+            <div class="pricing-card">
+              <div class="plan-badge">للباحثين</div>
+              <h3 class="plan-name">Basic</h3>
+              <div class="plan-price">
+                <span class="price">99</span>
+                <span class="currency">ريال/شهر</span>
+              </div>
+              <ul class="plan-features">
+                <li>✅ 50 وظيفة يومياً</li>
+                <li>✅ بحث وفلترة متقدمة</li>
+                <li>✅ حفظ حتى 20 وظيفة</li>
+                <li>✅ دعم فني عبر الإيميل</li>
+                <li>❌ تنبيهات WhatsApp</li>
+                <li>❌ AI Resume Builder</li>
+              </ul>
+              <a href="#" class="btn-primary plan-btn" onclick="initiatePayment('basic'); return false;">اشترك الآن</a>
+            </div>
+
+            <!-- Pro -->
+            <div class="pricing-card popular">
+              <div class="plan-badge popular-badge">الأكثر طلباً ⭐</div>
+              <h3 class="plan-name">Pro</h3>
+              <div class="plan-price">
+                <span class="price">199</span>
+                <span class="currency">ريال/شهر</span>
+              </div>
+              <ul class="plan-features">
+                <li>✅ 200 وظيفة يومياً</li>
+                <li>✅ بحث وفلترة متقدمة</li>
+                <li>✅ حفظ غير محدود</li>
+                <li>✅ تنبيهات WhatsApp فورية 📱</li>
+                <li>✅ إحصائيات السوق</li>
+                <li>✅ دعم فني أولوية</li>
+                <li>❌ AI Resume Builder</li>
+              </ul>
+              <a href="#" class="btn-primary plan-btn" onclick="initiatePayment('pro'); return false;">اشترك الآن</a>
+            </div>
+
+            <!-- Premium -->
+            <div class="pricing-card">
+              <div class="plan-badge">للمحترفين</div>
+              <h3 class="plan-name">Premium</h3>
+              <div class="plan-price">
+                <span class="price">399</span>
+                <span class="currency">ريال/شهر</span>
+              </div>
+              <ul class="plan-features">
+                <li>✅ وظائف غير محدودة</li>
+                <li>✅ كل مميزات Pro</li>
+                <li>✅ AI Resume Builder 🤖</li>
+                <li>✅ تصدير Excel/PDF</li>
+                <li>✅ تقارير شهرية مخصصة</li>
+                <li>✅ دعم VIP على WhatsApp</li>
+                <li>✅ استشارة مهنية مجانية</li>
+              </ul>
+              <a href="#" class="btn-primary plan-btn" onclick="initiatePayment('premium'); return false;">اشترك الآن</a>
+            </div>
+          </div>
+
+          <!-- Payment methods -->
+          <div class="payment-info">
+            <h3>💳 طرق الدفع المتاحة:</h3>
+            <div class="payment-methods">
+              <div class="payment-method">
+                <span class="payment-icon">💚</span>
+                <strong>STC Pay</strong>
+                <p>0566114725</p>
+              </div>
+              <div class="payment-method">
+                <span class="payment-icon">📱</span>
+                <strong>WhatsApp Pay</strong>
+                <p>0566114725</p>
+              </div>
+              <div class="payment-method">
+                <span class="payment-icon">🏦</span>
+                <strong>تحويل بنكي</strong>
+                <p>متاح عند الطلب</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══ Testimonials ════════════════════════════════════════ -->
+      <section class="testimonials-section">
+        <div class="container">
+          <h2 class="section-title">⭐ ماذا يقول عملاؤنا؟</h2>
+          <div class="testimonials-grid">
+            <div class="testimonial-card">
+              <div class="stars">⭐⭐⭐⭐⭐</div>
+              <p>"حصلت على وظيفة أحلامي في أسبوع! المنصة وفرت علي شهور من البحث"</p>
+              <strong>— أحمد العتيبي، مهندس برمجيات</strong>
+            </div>
+            <div class="testimonial-card">
+              <div class="stars">⭐⭐⭐⭐⭐</div>
+              <p>"التنبيهات الفورية على الواتساب خلتني أول واحد يقدم على الوظائف الجديدة"</p>
+              <strong>— سارة المطيري، مديرة تسويق</strong>
+            </div>
+            <div class="testimonial-card">
+              <div class="stars">⭐⭐⭐⭐⭐</div>
+              <p>"أفضل استثمار! الـ 199 ريال قيمتها أضعاف مقارنة بالوقت اللي وفرته"</p>
+              <strong>— خالد السعيد، محاسب قانوني</strong>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══ Contact ══════════════════════════════════════════════ -->
+      <section class="contact-section" id="contact">
+        <div class="container">
+          <h2 class="section-title">📞 تواصل معنا</h2>
+          <div class="contact-info">
+            <div class="contact-card">
+              <div class="contact-icon">📱</div>
+              <h3>WhatsApp</h3>
+              <a href="https://wa.me/966566114725" target="_blank" rel="noopener">0566114725</a>
+            </div>
+            <div class="contact-card">
+              <div class="contact-icon">💚</div>
+              <h3>STC Pay</h3>
+              <p>0566114725</p>
+            </div>
+            <div class="contact-card">
+              <div class="contact-icon">💼</div>
+              <h3>ساعات العمل</h3>
+              <p>يومياً 9 صباحاً – 10 مساءً</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div><!-- /app-main -->
+</div><!-- /app-shell -->
+
+<script src="js/search.js" defer></script>
+<script>
+  function initDarkMode() {
+    if (localStorage.getItem('linkedoff_darkMode') === 'true') {
+      document.body.classList.add('dark-mode');
+      var btn = document.getElementById('darkModeBtn');
+      if (btn) btn.textContent = '☀️';
+    }
+  }
+
+  function toggleDarkMode() {
+    var isDark = document.body.classList.toggle('dark-mode');
+    localStorage.setItem('linkedoff_darkMode', isDark);
+    var btn = document.getElementById('darkModeBtn');
+    if (btn) btn.textContent = isDark ? '☀️' : '🌙';
+  }
+
+  function initiatePayment(plan) {
+    var msgs = {
+      basic:   'سيتم التواصل معك لإتمام الاشتراك في باقة Basic (99 ريال/شهر)',
+      pro:     'سيتم التواصل معك لإتمام الاشتراك في باقة Pro (199 ريال/شهر)',
+      premium: 'سيتم التواصل معك لإتمام الاشتراك في باقة Premium (399 ريال/شهر)'
+    };
+    alert(msgs[plan] || 'سيتم التواصل معك قريباً.');
+  }
+
+  document.addEventListener('DOMContentLoaded', initDarkMode);
+</script>
+</body>
+</html>

@@ -3,32 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>عني - محمد عبدالحميد | LinkedOFF</title>
+  <title>عن المطوّر - محمد عبدالحميد | LinkedOFF</title>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
   <link rel="icon" type="image/svg+xml" href="img/icon-linkedoff.svg">
 
-  <!-- ═══ EARLY AUTH GUARD ═══ -->
-  <style>body { visibility: hidden; }</style>
-  <script>
-    (function () {
-      try {
-        var user = JSON.parse(localStorage.getItem('linkedoff_user') || 'null');
-        var sess = JSON.parse(localStorage.getItem('linkedoff_session') || 'null');
-        if (!user || !sess || !sess.token || Date.now() > Number(sess.expiresAtMs || 0)) {
-          window.location.replace('login.html');
-        } else {
-          document.addEventListener('DOMContentLoaded', function () {
-            document.body.style.visibility = 'visible';
-          });
-        }
-      } catch (e) { window.location.replace('login.html'); }
-    })();
-  </script>
-  <!-- ══════════════════════════════════════════════════════ -->
-
+  <!-- صفحة عامة — لا تتطلب تسجيل دخول -->
   <script src="js/auth.js"></script>
-  <script>startSessionEnforcer();</script>
 
   <style>
     /* ─── About Page Styles ──────────────────────────────────── */
@@ -460,18 +441,16 @@
     </div>
 
     <nav class="sidebar-nav">
-      <a href="index.html"              class="nav-item"><span class="nav-ic">🏠</span><span>الرئيسية</span></a>
+      <a href="search.html"             class="nav-item"><span class="nav-ic">🏠</span><span>الرئيسية</span></a>
       <a href="search.html"             class="nav-item"><span class="nav-ic">🔍</span><span>البحث عن الوظائف</span></a>
       <a href="dashboard.html"          class="nav-item"><span class="nav-ic">📊</span><span>لوحة التحكم</span></a>
       <a href="engines-interactive.html"class="nav-item"><span class="nav-ic">⚙️</span><span>المحركات</span></a>
-      <a href="about.html"              class="nav-item active"><span class="nav-ic">👤</span><span>عني</span></a>
-      <a href="index.html#pricing"      class="nav-item"><span class="nav-ic">💳</span><span>الباقات</span></a>
+      <a href="about.html"              class="nav-item active"><span class="nav-ic">👤</span><span>عن المطوّر</span></a>
+      <a href="pricing.html"            class="nav-item"><span class="nav-ic">💳</span><span>الباقات</span></a>
     </nav>
 
-    <div class="sidebar-footer">
-      <button class="sidebar-logout" type="button" onclick="performLogout('👋 تم تسجيل الخروج', false)">
-        <span class="nav-ic">🚪</span><span>تسجيل الخروج</span>
-      </button>
+    <div class="sidebar-footer" id="aboutSidebarFooter">
+      <!-- filled dynamically below -->
     </div>
   </aside>
 
@@ -481,7 +460,7 @@
       <button class="sidebar-toggle" type="button" aria-label="فتح/إغلاق القائمة" onclick="toggleSidebar()">
         <span class="toggle-bars"></span>
       </button>
-      <div class="topbar-title">👤 عني</div>
+      <div class="topbar-title">👤 عن المطوّر</div>
       <div class="topbar-actions">
         <button id="darkModeBtn" onclick="toggleDarkMode()" title="وضع ليلي" style="
           background:none;border:1px solid #ddd;border-radius:8px;
@@ -745,6 +724,21 @@
   document.addEventListener('keydown', function (e) {
     if (e.key === 'Escape') closePdfPreview();
   });
+
+  /* ── Sidebar footer: logout if logged-in, login if not ─── */
+  (function () {
+    try {
+      var user = JSON.parse(localStorage.getItem('linkedoff_user') || 'null');
+      var sess = JSON.parse(localStorage.getItem('linkedoff_session') || 'null');
+      var loggedIn = user && sess && sess.token && Date.now() <= Number(sess.expiresAtMs || 0);
+      var footer = document.getElementById('aboutSidebarFooter');
+      if (loggedIn) {
+        footer.innerHTML = '<button class="sidebar-logout" type="button" onclick="performLogout(\'👋 تم تسجيل الخروج\', false)"><span class="nav-ic">🚪</span><span>تسجيل الخروج</span></button>';
+      } else {
+        footer.innerHTML = '<a href="login.html" class="sidebar-logout" style="text-decoration:none;display:flex;align-items:center;gap:10px;"><span class="nav-ic">🔐</span><span>تسجيل الدخول</span></a>';
+      }
+    } catch (e) {}
+  })();
 
   document.addEventListener('DOMContentLoaded', initDarkMode);
 </script>

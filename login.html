@@ -1,193 +1,417 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تسجيل الدخول - JobHub KSA</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>تسجيل الدخول - LinkedOFF</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="icon" type="image/svg+xml" href="img/icon-linkedoff.svg">
 
-    <!-- ═══ Already logged-in? Skip login page ═══ -->
-    <script>
-      (function () {
-        try {
-          var user = JSON.parse(localStorage.getItem('linkedoff_user') || 'null');
-          var sess = JSON.parse(localStorage.getItem('linkedoff_session') || 'null');
-          if (user && sess && sess.token && Date.now() <= Number(sess.expiresAtMs || 0)) {
-            window.location.replace('search.html');
-          }
-        } catch (e) {}
-      })();
-    </script>
-    <!-- ══════════════════════════════════════════ -->
+  <!-- ═══ Already logged-in? Go to search ═══ -->
+  <script>
+    (function () {
+      try {
+        var user = JSON.parse(localStorage.getItem('linkedoff_user') || 'null');
+        var sess = JSON.parse(localStorage.getItem('linkedoff_session') || 'null');
+        if (user && sess && sess.token && Date.now() <= Number(sess.expiresAtMs || 0)) {
+          window.location.replace('search.html');
+        }
+      } catch (e) {}
+    })();
+  </script>
+  <!-- ════════════════════════════════════════ -->
 
-    <style>
-        body {
-            background: #f5f7fb;
-        }
-        .auth-container {
-            max-width: 450px;
-            margin: 60px auto;
-            background: #fff;
-            border-radius: 16px;
-            padding: 30px 25px;
-            box-shadow: 0 15px 40px rgba(0,0,0,0.08);
-        }
-        .auth-title {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .auth-title h1 {
-            margin: 0;
-            font-size: 1.6rem;
-        }
-        .auth-tabs {
-            display: flex;
-            margin-bottom: 20px;
-            border-radius: 999px;
-            background: #f1f3f8;
-            padding: 4px;
-        }
-        .auth-tab {
-            flex: 1;
-            text-align: center;
-            padding: 8px 0;
-            border-radius: 999px;
-            cursor: pointer;
-            font-weight: 700;
-            font-size: 0.95rem;
-        }
-        .auth-tab.active {
-            background: var(--primary-color, #0066FF);
-            color: #fff;
-        }
-        .auth-form {
-            display: none;
-        }
-        .auth-form.active {
-            display: block;
-        }
-        .auth-form .form-group {
-            margin-bottom: 15px;
-        }
-        .auth-form label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 600;
-        }
-        .auth-form input {
-            width: 100%;
-            padding: 10px 12px;
-            border-radius: 8px;
-            border: 1px solid #d3d7e3;
-            font-family: inherit;
-        }
-        .auth-form button {
-            width: 100%;
-            padding: 12px;
-            border-radius: 12px;
-            border: none;
-            background: var(--primary-color, #0066FF);
-            color: #fff;
-            font-weight: 700;
-            cursor: pointer;
-            margin-top: 5px;
-        }
-        .auth-footer-link {
-            text-align: center;
-            margin-top: 15px;
-            font-size: 0.9rem;
-        }
-        .auth-footer-link a {
-            color: var(--primary-color, #0066FF);
-            text-decoration: none;
-            font-weight: 700;
-        }
-    </style>
+  <style>
+    /* ── Login page — form card ───────────────────────────── */
+    .login-stage {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: calc(100vh - 64px); /* subtract topbar */
+      padding: 24px 16px 40px;
+    }
+
+    .auth-card {
+      width: 100%;
+      max-width: 440px;
+      background: #fff;
+      border-radius: 20px;
+      padding: 36px 32px 28px;
+      box-shadow: 0 8px 40px rgba(0,0,0,.13);
+    }
+
+    .auth-brand {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .auth-brand .logo-icon {
+      font-size: 2.6rem;
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+
+    .auth-brand h1 {
+      font-size: 1.7rem;
+      font-weight: 900;
+      color: var(--primary-color);
+      margin: 0 0 4px;
+    }
+
+    .auth-brand p {
+      font-size: 0.88rem;
+      color: #888;
+      margin: 0;
+    }
+
+    /* Tabs */
+    .auth-tabs {
+      display: flex;
+      background: #f1f3f8;
+      border-radius: 999px;
+      padding: 4px;
+      margin-bottom: 24px;
+      gap: 4px;
+    }
+
+    .auth-tab {
+      flex: 1;
+      text-align: center;
+      padding: 9px 0;
+      border-radius: 999px;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 0.92rem;
+      color: #666;
+      transition: background .2s, color .2s;
+      user-select: none;
+    }
+
+    .auth-tab.active {
+      background: var(--primary-color);
+      color: #fff;
+      box-shadow: 0 2px 8px rgba(0,168,89,.3);
+    }
+
+    /* Forms */
+    .auth-form { display: none; }
+    .auth-form.active { display: block; }
+
+    .auth-form .form-group { margin-bottom: 16px; }
+
+    .auth-form label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: #333;
+    }
+
+    .auth-form input {
+      width: 100%;
+      padding: 11px 14px;
+      border-radius: 10px;
+      border: 1.5px solid #dde1ec;
+      font-family: 'Cairo', sans-serif;
+      font-size: 0.95rem;
+      background: #fafbff;
+      color: #1a1a1a;
+      transition: border-color .2s, box-shadow .2s;
+      box-sizing: border-box;
+    }
+
+    .auth-form input:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(0,168,89,.12);
+      background: #fff;
+    }
+
+    .auth-form button[type="submit"] {
+      width: 100%;
+      padding: 13px;
+      border-radius: 12px;
+      border: none;
+      background: linear-gradient(135deg, var(--primary-color), #00D66F);
+      color: #fff;
+      font-family: 'Cairo', sans-serif;
+      font-weight: 900;
+      font-size: 1rem;
+      cursor: pointer;
+      margin-top: 6px;
+      box-shadow: 0 4px 14px rgba(0,168,89,.28);
+      transition: transform .15s, box-shadow .15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .auth-form button[type="submit"]:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0,168,89,.38);
+    }
+
+    /* Spinner inside button */
+    .btn-with-spinner .btn-spinner {
+      display: none;
+      width: 18px; height: 18px;
+      border: 2.5px solid rgba(255,255,255,.4);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: _spin .7s linear infinite;
+    }
+
+    @keyframes _spin { to { transform: rotate(360deg); } }
+
+    .btn-with-spinner.loading .btn-spinner { display: inline-block; }
+    .btn-with-spinner.loading .btn-text   { opacity: .7; }
+
+    /* Status messages */
+    .form-status {
+      margin-top: 10px;
+      font-size: 0.88rem;
+      min-height: 22px;
+      font-weight: 700;
+      text-align: center;
+      border-radius: 8px;
+      padding: 0;
+      transition: all .2s;
+    }
+
+    .form-status.success { color: #00A859; }
+    .form-status.error   { color: #dc3545; }
+
+    /* Divider */
+    .auth-divider {
+      text-align: center;
+      margin: 18px 0 14px;
+      font-size: 0.82rem;
+      color: #aaa;
+      position: relative;
+    }
+
+    .auth-divider::before, .auth-divider::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      width: 38%;
+      height: 1px;
+      background: #eee;
+    }
+
+    .auth-divider::before { right: 0; }
+    .auth-divider::after  { left: 0; }
+
+    .auth-back-link {
+      text-align: center;
+      margin-top: 16px;
+      font-size: 0.86rem;
+      color: #aaa;
+    }
+
+    .auth-back-link a {
+      color: var(--primary-color);
+      text-decoration: none;
+      font-weight: 700;
+    }
+
+    /* Sidebar welcome note */
+    .sidebar-login-note {
+      margin: 12px 12px 0;
+      padding: 14px;
+      background: rgba(0,168,89,.1);
+      border: 1px solid rgba(0,168,89,.2);
+      border-radius: 12px;
+      font-size: 0.82rem;
+      color: #aaa;
+      line-height: 1.6;
+      font-family: 'Cairo', sans-serif;
+    }
+
+    .sidebar-login-note strong { color: #00A859; display: block; margin-bottom: 4px; }
+
+    /* Dark mode */
+    body.dark-mode .auth-card {
+      background: #1e1e2e;
+      box-shadow: 0 8px 40px rgba(0,0,0,.35);
+    }
+
+    body.dark-mode .auth-brand h1 { color: #00D66F; }
+    body.dark-mode .auth-brand p  { color: #777; }
+    body.dark-mode .auth-tabs     { background: #252535; }
+    body.dark-mode .auth-tab      { color: #aaa; }
+    body.dark-mode .auth-form label { color: #ccc; }
+
+    body.dark-mode .auth-form input {
+      background: #252535;
+      border-color: #383858;
+      color: #f0f0f0;
+    }
+
+    body.dark-mode .auth-form input:focus {
+      background: #2a2a3a;
+      border-color: #00A859;
+    }
+
+    body.dark-mode .auth-back-link { color: #666; }
+    body.dark-mode .auth-divider   { color: #555; }
+    body.dark-mode .auth-divider::before,
+    body.dark-mode .auth-divider::after { background: #333; }
+  </style>
 </head>
-<body>
-    <div class="auth-container">
-        <div class="auth-title">
-            <h1>💼 JobHub KSA</h1>
-            <p>تسجيل الدخول / إنشاء حساب</p>
-        </div>
 
-        <div class="auth-tabs">
-            <div id="tab-login" class="auth-tab active" onclick="switchAuthTab('login')">تسجيل الدخول</div>
-            <div id="tab-register" class="auth-tab" onclick="switchAuthTab('register')">حساب جديد</div>
-        </div>
+<body class="app-page" data-page="login">
+<div class="app-shell">
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar(false)"></div>
 
-        <!-- Login Form -->
-        <form id="loginForm" class="auth-form active" onsubmit="loginUserFromForm(event)">
-            <div class="form-group">
-                <label for="loginEmail">البريد الإلكتروني</label>
-                <input type="email" id="loginEmail" placeholder="example@email.com" required>
-            </div>
-            <div class="form-group">
-                <label for="loginPassword">كلمة المرور</label>
-                <input type="password" id="loginPassword" placeholder="********" required>
-            </div>
-            <button type="submit" id="loginBtn" class="btn-with-spinner">
-                <span class="btn-text">دخول</span>
-                <span class="btn-spinner" aria-hidden="true"></span>
-              </button>
-              <div class="form-status" id="loginStatus" role="status" aria-live="polite"></div>
-
-              
-        </form>
-
-        <!-- Register Form -->
-        <form id="registerForm" class="auth-form" onsubmit="registerUserFromForm(event)">
-            <div class="form-group">
-                <label for="regName">الاسم الكامل</label>
-                <input type="text" id="regName" placeholder="الاسم" required>
-            </div>
-            <div class="form-group">
-                <label for="regEmail">البريد الإلكتروني</label>
-                <input type="email" id="regEmail" placeholder="example@email.com" required>
-            </div>
-            <div class="form-group">
-                <label for="regPassword">كلمة المرور</label>
-                <input type="password" id="regPassword" placeholder="********" required>
-            </div>
-            <button type="submit" id="registerBtn" class="btn-with-spinner">
-                <span class="btn-text">إنشاء حساب</span>
-                <span class="btn-spinner" aria-hidden="true"></span>
-              </button>
-              <div class="form-status" id="registerStatus" role="status" aria-live="polite"></div>
-
-              
-        </form>
-
-        <div class="auth-footer-link">
-            <a href="index.html">⬅ العودة للصفحة الرئيسية</a>
-        </div>
+  <!-- ─── Sidebar ──────────────────────────────────────────── -->
+  <aside class="app-sidebar" id="appSidebar" aria-label="القائمة الجانبية">
+    <div class="sidebar-brand">
+      <a href="index.html" class="brand-link">
+        <span class="brand-mark">💼</span>
+        <span class="brand-text">LinkedOFF</span>
+        <span class="brand-sub">AceAlBastoni</span>
+      </a>
     </div>
 
-    <script src="js/config.js"></script>
-    <script src="js/auth.js"></script>
-    <script>
-        function switchAuthTab(tab) {
-            const loginTab     = document.getElementById('tab-login');
-            const registerTab  = document.getElementById('tab-register');
-            const loginForm    = document.getElementById('loginForm');
-            const registerForm = document.getElementById('registerForm');
+    <nav class="sidebar-nav">
+      <a href="search.html"              class="nav-item"><span class="nav-ic">🏠</span><span>الرئيسية</span></a>
+      <a href="search.html"              class="nav-item"><span class="nav-ic">🔍</span><span>البحث عن الوظائف</span></a>
+      <a href="dashboard.html"           class="nav-item"><span class="nav-ic">📊</span><span>لوحة التحكم</span></a>
+      <a href="engines-interactive.html" class="nav-item"><span class="nav-ic">⚙️</span><span>المحركات</span></a>
+      <a href="about.html"               class="nav-item"><span class="nav-ic">👤</span><span>عن المطوّر</span></a>
+      <a href="pricing.html"             class="nav-item"><span class="nav-ic">💳</span><span>الباقات</span></a>
+    </nav>
 
-            if (tab === 'login') {
-                loginTab.classList.add('active');
-                registerTab.classList.remove('active');
-                loginForm.classList.add('active');
-                registerForm.classList.remove('active');
-            } else {
-                loginTab.classList.remove('active');
-                registerTab.classList.add('active');
-                loginForm.classList.remove('active');
-                registerForm.classList.add('active');
-            }
-        }
-    </script>
+    <div class="sidebar-login-note">
+      <strong>👋 مرحباً بك</strong>
+      سجّل دخولك للوصول إلى البحث الذكي وإرسال السير الذاتية.
+    </div>
+  </aside>
 
-    <!-- Version Badge -->
-    <div class="version-badge" id="versionBadge">v1.2.0</div>
+  <!-- ─── Main ─────────────────────────────────────────────── -->
+  <div class="app-main">
+    <header class="app-topbar">
+      <button class="sidebar-toggle" type="button" aria-label="فتح/إغلاق القائمة" onclick="toggleSidebar()">
+        <span class="toggle-bars"></span>
+      </button>
+      <div class="topbar-title">🔐 تسجيل الدخول</div>
+      <div class="topbar-actions">
+        <button id="darkModeBtn" onclick="toggleDarkMode()" title="وضع ليلي" style="
+          background:none;border:1px solid #ddd;border-radius:8px;
+          padding:6px 10px;cursor:pointer;font-size:18px;line-height:1;
+          transition:background .2s,border-color .2s;
+        ">🌙</button>
+      </div>
+    </header>
+
+    <main class="app-content">
+      <div class="login-stage">
+        <div class="auth-card">
+
+          <!-- Brand -->
+          <div class="auth-brand">
+            <div class="logo-icon">💼</div>
+            <h1>LinkedOFF</h1>
+            <p>منصة البحث الذكي عن الوظائف في السعودية</p>
+          </div>
+
+          <!-- Tabs -->
+          <div class="auth-tabs">
+            <div id="tab-login"    class="auth-tab active" onclick="switchAuthTab('login')">تسجيل الدخول</div>
+            <div id="tab-register" class="auth-tab"        onclick="switchAuthTab('register')">حساب جديد</div>
+          </div>
+
+          <!-- ── Login Form ── -->
+          <form id="loginForm" class="auth-form active" onsubmit="loginUserFromForm(event)">
+            <div class="form-group">
+              <label for="loginEmail">📧 البريد الإلكتروني</label>
+              <input type="email" id="loginEmail" placeholder="example@email.com" required autocomplete="email">
+            </div>
+            <div class="form-group">
+              <label for="loginPassword">🔒 كلمة المرور</label>
+              <input type="password" id="loginPassword" placeholder="••••••••" required autocomplete="current-password">
+            </div>
+            <button type="submit" id="loginBtn" class="btn-with-spinner">
+              <span class="btn-text">دخول ←</span>
+              <span class="btn-spinner" aria-hidden="true"></span>
+            </button>
+            <div class="form-status" id="loginStatus" role="status" aria-live="polite"></div>
+          </form>
+
+          <!-- ── Register Form ── -->
+          <form id="registerForm" class="auth-form" onsubmit="registerUserFromForm(event)">
+            <div class="form-group">
+              <label for="regName">👤 الاسم الكامل</label>
+              <input type="text" id="regName" placeholder="الاسم الكامل" required autocomplete="name">
+            </div>
+            <div class="form-group">
+              <label for="regEmail">📧 البريد الإلكتروني</label>
+              <input type="email" id="regEmail" placeholder="example@email.com" required autocomplete="email">
+            </div>
+            <div class="form-group">
+              <label for="regPassword">🔒 كلمة المرور</label>
+              <input type="password" id="regPassword" placeholder="٦ أحرف على الأقل" required autocomplete="new-password">
+            </div>
+            <button type="submit" id="registerBtn" class="btn-with-spinner">
+              <span class="btn-text">إنشاء حساب ←</span>
+              <span class="btn-spinner" aria-hidden="true"></span>
+            </button>
+            <div class="form-status" id="registerStatus" role="status" aria-live="polite"></div>
+          </form>
+
+          <div class="auth-divider">أو</div>
+          <div class="auth-back-link">
+            <a href="index.html">⬅ العودة للصفحة الرئيسية</a>
+          </div>
+
+        </div>
+      </div>
+    </main>
+  </div><!-- /app-main -->
+</div><!-- /app-shell -->
+
+<div class="version-badge" id="versionBadge">v 1.3.2</div>
+
+<script src="js/config.js"></script>
+<script src="js/auth.js"></script>
+<script>
+  function switchAuthTab(tab) {
+    var isLogin = tab === 'login';
+    document.getElementById('tab-login').classList.toggle('active', isLogin);
+    document.getElementById('tab-register').classList.toggle('active', !isLogin);
+    document.getElementById('loginForm').classList.toggle('active', isLogin);
+    document.getElementById('registerForm').classList.toggle('active', !isLogin);
+  }
+
+  /* Dark mode — standalone (no search.js on this page) */
+  function initDarkMode() {
+    if (localStorage.getItem('linkedoff_darkMode') === 'true') {
+      document.body.classList.add('dark-mode');
+      var btn = document.getElementById('darkModeBtn');
+      if (btn) btn.textContent = '☀️';
+    }
+  }
+
+  function toggleDarkMode() {
+    var isDark = document.body.classList.toggle('dark-mode');
+    localStorage.setItem('linkedoff_darkMode', isDark);
+    var btn = document.getElementById('darkModeBtn');
+    if (btn) btn.textContent = isDark ? '☀️' : '🌙';
+  }
+
+  /* Sidebar toggle — same logic as other pages */
+  function toggleSidebar(force) {
+    var sb = document.getElementById('appSidebar');
+    var ov = document.getElementById('sidebarOverlay');
+    var open = typeof force === 'boolean' ? force : !sb.classList.contains('open');
+    sb.classList.toggle('open', open);
+    if (ov) ov.classList.toggle('active', open);
+  }
+
+  document.addEventListener('DOMContentLoaded', initDarkMode);
+</script>
 </body>
 </html>
