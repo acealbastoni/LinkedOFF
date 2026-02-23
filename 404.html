@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>404 - الصفحة غير موجودة | LinkedOFF</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/svg+xml" href="img/icon-linkedoff.svg">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Cairo', sans-serif;
+      background: linear-gradient(135deg, #060e18 0%, #0d1628 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      color: #d0d8e8;
+    }
+
+    .card {
+      max-width: 520px;
+      width: 100%;
+      text-align: center;
+      padding: 52px 40px;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 24px;
+      animation: fadeUp .5s ease both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .code-wrap {
+      position: relative;
+      margin-bottom: 24px;
+      display: inline-block;
+    }
+
+    .code {
+      font-size: 7rem;
+      font-weight: 900;
+      line-height: 1;
+      background: linear-gradient(135deg, #1dbf73 30%, #60c8ff 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: -4px;
+    }
+
+    .code-emoji {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%,-50%);
+      font-size: 2.4rem;
+      animation: wobble 2.5s ease-in-out infinite;
+    }
+
+    @keyframes wobble {
+      0%,100% { transform: translate(-50%,-50%) rotate(-5deg); }
+      50%      { transform: translate(-50%,-50%) rotate(5deg); }
+    }
+
+    h1 {
+      font-size: 1.4rem;
+      font-weight: 900;
+      color: #e0e8f8;
+      margin-bottom: 10px;
+    }
+
+    p {
+      font-size: 0.9rem;
+      color: #7788aa;
+      line-height: 1.7;
+      margin-bottom: 32px;
+    }
+
+    .actions {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-family: 'Cairo', sans-serif;
+      font-size: 0.92rem;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      transition: transform .15s, box-shadow .15s;
+      border: none;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #1dbf73, #00D66F);
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(29,191,115,.35);
+    }
+
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(29,191,115,.45); }
+
+    .btn-secondary {
+      background: rgba(255,255,255,.07);
+      border: 1px solid rgba(255,255,255,.12);
+      color: #aabbcc;
+    }
+
+    .btn-secondary:hover { background: rgba(255,255,255,.11); transform: translateY(-1px); }
+
+    .divider {
+      margin: 28px 0;
+      height: 1px;
+      background: rgba(255,255,255,.07);
+    }
+
+    .suggestions {
+      text-align: right;
+    }
+
+    .suggestions p {
+      font-size: 0.82rem;
+      color: #556;
+      margin-bottom: 10px;
+    }
+
+    .suggestions a {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      border-radius: 10px;
+      color: #8899bb;
+      text-decoration: none;
+      font-size: 0.86rem;
+      transition: background .15s, color .15s;
+      margin-bottom: 4px;
+    }
+
+    .suggestions a:hover {
+      background: rgba(29,191,115,.08);
+      color: #1dbf73;
+    }
+
+    .suggestions a .ic { font-size: 1rem; }
+
+    .version {
+      margin-top: 28px;
+      font-size: 0.75rem;
+      color: #334;
+      letter-spacing: .5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+
+    <div class="code-wrap">
+      <div class="code">404</div>
+      <span class="code-emoji">🔍</span>
+    </div>
+
+    <h1>الصفحة غير موجودة</h1>
+    <p>
+      يبدو أن الصفحة التي تبحث عنها انتقلت إلى مكان آخر،<br>
+      أو ربما لم تكن موجودة أصلاً. لا تقلق!
+    </p>
+
+    <div class="actions">
+      <a href="search.html" class="btn btn-primary">🏠 العودة للرئيسية</a>
+      <a href="javascript:history.back()" class="btn btn-secondary">← الصفحة السابقة</a>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="suggestions">
+      <p>ربما تبحث عن:</p>
+      <a href="search.html"><span class="ic">🔍</span> البحث عن الوظائف</a>
+      <a href="dashboard.html"><span class="ic">📊</span> لوحة التحكم</a>
+      <a href="analytics.html"><span class="ic">📈</span> تحليلات السوق</a>
+      <a href="saved.html"><span class="ic">💾</span> الوظائف المحفوظة</a>
+      <a href="history.html"><span class="ic">📬</span> سجل الإرسال</a>
+      <a href="about.html"><span class="ic">👤</span> عن المطوّر</a>
+    </div>
+
+    <div class="version" id="v404">LinkedOFF KSA</div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      try {
+        var v = document.getElementById('v404');
+        if (v && window.APP_CONFIG) v.textContent = 'LinkedOFF KSA — ' + APP_CONFIG.getVersionShort();
+      } catch(e) {}
+    });
+  </script>
+</body>
+</html>

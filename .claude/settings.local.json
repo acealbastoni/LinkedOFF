@@ -2,7 +2,12 @@
   "permissions": {
     "allow": [
       "Bash(python -c:*)",
-      "Bash(python:*)"
+      "Bash(python:*)",
+      "Bash(/tmp/verify_changes.ps1:*)",
+      "Bash(powershell.exe -ExecutionPolicy Bypass -File \"c:\\\\ffffff\\\\hfghgf\\\\jobhub-ksa\\\\verify_changes.ps1\")",
+      "Bash(ls:*)",
+      "Bash(test:*)",
+      "Bash(test -f:*)"
     ]
   }
 }

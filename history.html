@@ -372,6 +372,83 @@
     .hs-domain-bar-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, #60c8ff, #c084fc); transition: width .5s ease; }
 
     .hs-domain-count { color: #8899aa; font-size: 0.78rem; text-align: left; }
+
+    /* ── Activity chart (last 30 days) ── */
+    .hs-activity {
+      background: rgba(255,255,255,.03);
+      border: 1px solid rgba(255,255,255,.07);
+      border-radius: 16px;
+      padding: 20px 24px;
+      margin-top: 20px;
+      animation: _cardIn .35s ease both;
+    }
+
+    .hs-activity-title {
+      font-size: 0.95rem;
+      font-weight: 900;
+      color: #c0c0d0;
+      margin-bottom: 16px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(255,255,255,.06);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .hs-csv-btn {
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-family: 'Cairo', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      background: rgba(29,191,115,.1);
+      border: 1px solid rgba(29,191,115,.25);
+      color: #1dbf73;
+      transition: all .15s;
+    }
+
+    .hs-csv-btn:hover { background: rgba(29,191,115,.2); }
+
+    .hs-chart {
+      display: flex;
+      align-items: flex-end;
+      gap: 4px;
+      height: 70px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+
+    .hs-chart-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      min-width: 18px;
+      flex: 1;
+    }
+
+    .hs-chart-bar {
+      width: 100%;
+      border-radius: 3px 3px 0 0;
+      background: linear-gradient(180deg, #60c8ff, #c084fc);
+      min-height: 3px;
+      transition: opacity .2s;
+      cursor: default;
+    }
+
+    .hs-chart-bar:hover { opacity: .75; }
+
+    .hs-chart-label {
+      font-size: 9px;
+      color: #556;
+      white-space: nowrap;
+      font-family: monospace;
+    }
+
+    .hs-chart-zero { opacity: .25; }
   </style>
 </head>
 
@@ -399,6 +476,7 @@
       <a href="engines-interactive.html" class="nav-item"><span class="nav-ic">⚙️</span><span>المحركات</span></a>
       <a href="about.html"               class="nav-item"><span class="nav-ic">👤</span><span>عن المطوّر</span></a>
       <a href="pricing.html"             class="nav-item"><span class="nav-ic">💳</span><span>الباقات</span></a>
+      <a href="settings.html"            class="nav-item"><span class="nav-ic">🔧</span><span>الإعدادات</span></a>
     </nav>
 
     <div class="sidebar-footer">
@@ -485,13 +563,19 @@
           <div class="hs-domain-list" id="hsDomainList"></div>
         </div>
 
+        <!-- Activity chart -->
+        <div class="hs-activity" id="hsActivity" style="display:none;">
+          <div class="hs-activity-title">
+            <span>📅 نشاط الإرسال — آخر 30 يوم</span>
+            <button class="hs-csv-btn" onclick="exportCSV()">⬇️ تصدير CSV</button>
+          </div>
+          <div class="hs-chart" id="hsChart"></div>
+        </div>
+
       </div>
     </main>
   </div>
 </div>
-
-<div class="version-badge" id="versionBadge">v 1.3.2</div>
-
 <script>
   var PAGE_SIZE = 25;
   var currentPage = 1;
@@ -559,6 +643,7 @@
     currentPage = 1;
     renderTable();
     renderDomains(data);
+    renderActivityChart();
   }
 
   /* ── Table rendering ── */
@@ -701,6 +786,58 @@
     }).join('');
   }
 
+  /* ── Activity Chart (last 30 days) ── */
+  function renderActivityChart() {
+    var dailyData = getDailyData();
+    var keys = Object.keys(dailyData);
+    if (keys.length === 0) {
+      document.getElementById('hsActivity').style.display = 'none';
+      return;
+    }
+    document.getElementById('hsActivity').style.display = 'block';
+
+    /* Build last 30 days array */
+    var days = [];
+    for (var i = 29; i >= 0; i--) {
+      var d = new Date();
+      d.setDate(d.getDate() - i);
+      var key = d.toISOString().slice(0, 10);
+      days.push({ key: key, label: (d.getDate()) + '/' + (d.getMonth() + 1), count: dailyData[key] || 0 });
+    }
+
+    var max = days.reduce(function(m, d) { return Math.max(m, d.count); }, 1);
+
+    document.getElementById('hsChart').innerHTML = days.map(function(d) {
+      var h = Math.round((d.count / max) * 60);
+      var zero = d.count === 0;
+      return '<div class="hs-chart-col" title="' + d.key + ': ' + d.count + ' إرسال">' +
+        '<div class="hs-chart-bar' + (zero ? ' hs-chart-zero' : '') + '" style="height:' + Math.max(h, 3) + 'px"></div>' +
+        '<div class="hs-chart-label">' + d.label + '</div>' +
+        '</div>';
+    }).join('');
+  }
+
+  /* ── CSV Export ── */
+  function exportCSV() {
+    var data = getHistory();
+    var rows = [['البريد الإلكتروني', 'عدد الإرسالات', 'أول إرسال', 'آخر إرسال']];
+    Object.keys(data).forEach(function(em) {
+      var r = data[em];
+      rows.push([em, r.count || 1, r.firstSent || '', r.lastSent || '']);
+    });
+    var csv = rows.map(function(r) {
+      return r.map(function(v) { return '"' + String(v).replace(/"/g, '""') + '"'; }).join(',');
+    }).join('\n');
+
+    var blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+    var url  = URL.createObjectURL(blob);
+    var a    = document.createElement('a');
+    a.href     = url;
+    a.download = 'linkedoff-history-' + new Date().toISOString().slice(0, 10) + '.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   /* ── Actions ── */
   function resendTo(email) {
     var subject = 'طلب توظيف';
@@ -770,5 +907,6 @@
     filterAndRender();
   });
 </script>
+    <script src="js/ui.js"></script>
 </body>
 </html>

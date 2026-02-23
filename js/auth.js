@@ -274,7 +274,16 @@ async function loginUserFromForm(event) {
       setCurrentUser(data.user);
   
       if (data.session && data.session.token && data.session.expiresAtMs) {
-        setCurrentSession({ token: data.session.token, expiresAtMs: data.session.expiresAtMs });
+        let expiresAt = Number(data.session.expiresAtMs);
+        /* If "تذكرني" is checked, extend session to 7 days from now */
+        const rememberEl = document.getElementById('rememberMe');
+        if (rememberEl && rememberEl.checked) {
+          expiresAt = Date.now() + 7 * 24 * 60 * 60 * 1000;
+          localStorage.setItem('linkedoff_rememberMe', '1');
+        } else {
+          localStorage.removeItem('linkedoff_rememberMe');
+        }
+        setCurrentSession({ token: data.session.token, expiresAtMs: expiresAt });
       } else {
         setCurrentUser(null);
         setCurrentSession(null);

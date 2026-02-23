@@ -323,6 +323,7 @@
       <a href="engines-interactive.html" class="nav-item"><span class="nav-ic">⚙️</span><span>المحركات</span></a>
       <a href="about.html"               class="nav-item"><span class="nav-ic">👤</span><span>عن المطوّر</span></a>
       <a href="pricing.html"             class="nav-item"><span class="nav-ic">💳</span><span>الباقات</span></a>
+      <a href="settings.html"            class="nav-item"><span class="nav-ic">🔧</span><span>الإعدادات</span></a>
     </nav>
 
     <div class="sidebar-footer">
@@ -387,9 +388,6 @@
     </main>
   </div>
 </div>
-
-<div class="version-badge" id="versionBadge">v 1.3.2</div>
-
 <script>
   /* ── Constants ── */
   var PAGE_SIZE = 20;
@@ -432,20 +430,38 @@
 
     rangeInfo.textContent = 'عرض ' + (start + 1) + ' – ' + end + ' من أصل ' + total + ' وظيفة';
 
+    var richData = {};
+    try { richData = JSON.parse(localStorage.getItem('savedJobsData') || '{}'); } catch(e) {}
+
     list.innerHTML = slice.map(function(id, i) {
-      var shortId = String(id).length > 30 ? String(id).substring(0, 30) + '…' : String(id);
+      var d   = richData[id] || {};
+      var src = d.source  || '—';
+      var dt  = d.savedAt || d.date || '—';
+      var cty = d.city    || '';
+      var sal = d.salary  || '';
+      var em  = d.email   || '';
+
+      /* Build a human-readable label from available info */
+      var label = src !== '—' ? src : escHtml(String(id).substring(0, 28));
+      var meta  = [cty, sal].filter(Boolean).join(' · ');
+
       return `
         <div class="sv-card" style="animation-delay:${i * 0.04}s">
           <div class="sv-card-left">
             <div class="sv-card-icon">💼</div>
             <div class="sv-card-info">
-              <div class="sv-card-id" title="${escHtml(String(id))}">${escHtml(shortId)}</div>
-              <div class="sv-since-badge">🔑 معرّف الوظيفة</div>
+              <div class="sv-card-id">${escHtml(label)}</div>
+              ${meta ? `<div class="sv-since-badge">📍 ${escHtml(meta)}</div>` : ''}
+              <div class="sv-since-badge" style="margin-top:2px;">📅 محفوظة: ${escHtml(dt)}</div>
+              ${em && em !== 'غير متوفر' ? `<div class="sv-since-badge" style="color:#60c8ff;border-color:rgba(96,200,255,.2);">📧 ${escHtml(em)}</div>` : ''}
             </div>
           </div>
           <div class="sv-card-actions">
-            <button class="sv-action-btn sv-action-btn-search"
-              onclick="window.location.href='search.html'">🔍 بحث</button>
+            ${em && em !== 'غير متوفر' ? `
+              <button class="sv-action-btn sv-action-btn-search"
+                onclick="window.location.href='mailto:${escHtml(em)}'">📧 تقديم</button>` : `
+              <button class="sv-action-btn sv-action-btn-search"
+                onclick="window.location.href='search.html'">🔍 بحث</button>`}
             <button class="sv-action-btn sv-action-btn-remove"
               onclick="removeOne('${escHtml(String(id))}')">🗑️ حذف</button>
           </div>
@@ -481,6 +497,11 @@
   function removeOne(id) {
     var saved = getSaved().filter(function(x) { return String(x) !== String(id); });
     localStorage.setItem('savedJobs', JSON.stringify(saved));
+    try {
+      var rd = JSON.parse(localStorage.getItem('savedJobsData') || '{}');
+      delete rd[id];
+      localStorage.setItem('savedJobsData', JSON.stringify(rd));
+    } catch(e) {}
     renderPage(currentPage);
   }
 
@@ -528,5 +549,6 @@
     renderPage(1);
   });
 </script>
+    <script src="js/ui.js"></script>
 </body>
 </html>

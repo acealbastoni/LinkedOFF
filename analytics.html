@@ -335,6 +335,19 @@
       .an-bar-item { grid-template-columns: 120px 1fr 40px; }
       .an-launch h1 { font-size: 1.4rem; }
     }
+
+    /* ── Analytics is dark-themed — force dark content bg always ── */
+    .app-content {
+      background: #080e18 !important;
+      color: #d0d8e8;
+    }
+
+    /* ── Dark mode: deepen even further ── */
+    body.dark-mode .app-content { background: #050a12 !important; }
+    body.dark-mode .an-launch   { border-color: rgba(29,191,115,.15) !important; }
+    body.dark-mode .an-section  { background: rgba(255,255,255,.02) !important; border-color: rgba(255,255,255,.05) !important; }
+    body.dark-mode .an-stat-card { background: rgba(255,255,255,.025) !important; border-color: rgba(255,255,255,.05) !important; }
+    body.dark-mode .an-pages-control select { background: rgba(0,0,0,.4) !important; }
   </style>
 </head>
 
@@ -362,6 +375,7 @@
       <a href="engines-interactive.html" class="nav-item"><span class="nav-ic">⚙️</span><span>المحركات</span></a>
       <a href="about.html"               class="nav-item"><span class="nav-ic">👤</span><span>عن المطوّر</span></a>
       <a href="pricing.html"             class="nav-item"><span class="nav-ic">💳</span><span>الباقات</span></a>
+      <a href="settings.html"            class="nav-item"><span class="nav-ic">🔧</span><span>الإعدادات</span></a>
     </nav>
 
     <div class="sidebar-footer">
@@ -760,5 +774,6 @@ document.addEventListener('DOMContentLoaded', initDarkMode);
     } catch (e) {}
   })();
 </script>
+    <script src="js/ui.js"></script>
 </body>
 </html>

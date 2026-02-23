@@ -55,6 +55,7 @@
     <a href="engines-interactive.html" class="nav-item"><span class="nav-ic">⚙️</span><span>المحركات</span></a>
     <a href="about.html"               class="nav-item"><span class="nav-ic">👤</span><span>عن المطوّر</span></a>
     <a href="pricing.html"             class="nav-item"><span class="nav-ic">💳</span><span>الباقات</span></a>
+    <a href="settings.html"            class="nav-item"><span class="nav-ic">🔧</span><span>الإعدادات</span></a>
   </nav>
 
   <!-- Daily Counter Widget -->
@@ -82,7 +83,7 @@
       <button class="sidebar-toggle" type="button" aria-label="فتح/إغلاق القائمة" onclick="toggleSidebar()">
         <span class="toggle-bars"></span>
       </button>
-      <!-- <div class="topbar-title">🔍 البحث عن الوظائف</div> -->
+      <div class="topbar-title">🔍 البحث عن الوظائف</div>
       <div class="topbar-actions">
         <button id="darkModeBtn" onclick="toggleDarkMode()" title="وضع ليلي" style="
           background:none;border:1px solid #ddd;border-radius:8px;
@@ -95,16 +96,57 @@
     <main class="app-content">
 <!-- Search Section -->
     <section class="search-section">
-        <div class="container">
-            <h1 class="page-title">🔍 ابحث عن وظيفة أحلامك</h1>
-            <p class="page-subtitle">أكثر من مليون وظيفة متاحة في السعودية</p>
 
+      <!-- ── Hero Banner ── -->
+      <div class="search-hero">
+        <div class="search-hero-blobs" aria-hidden="true">
+          <div class="hero-blob hero-blob--1"></div>
+          <div class="hero-blob hero-blob--2"></div>
+        </div>
+        <div class="container search-hero-inner">
+          <h1 class="page-title">ابحث عن وظيفة أحلامك ✨</h1>
+          <p class="page-subtitle">أكثر من مليون وظيفة متاحة في المملكة العربية السعودية</p>
+          <div class="hero-stats">
+            <div class="hero-stat">
+              <span class="hero-stat-num" id="heroTotalJobs">—</span>
+              <span class="hero-stat-label">وظيفة متاحة</span>
+            </div>
+            <div class="hero-stat-sep"></div>
+            <div class="hero-stat">
+              <span class="hero-stat-num" id="heroSentToday">0</span>
+              <span class="hero-stat-label">تقديم اليوم</span>
+            </div>
+            <div class="hero-stat-sep"></div>
+            <div class="hero-stat">
+              <span class="hero-stat-num" id="heroSavedCount">0</span>
+              <span class="hero-stat-label">محفوظة</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="container">
             <!-- Search Filters -->
             <div class="search-filters">
                 <div class="filter-row">
                     <input type="text" id="searchKeyword" placeholder="🔍 ابحث بالكلمات المفتاحية... (مثال: مهندس، محاسب، مبيعات)"
                            onkeydown="if(event.key==='Enter') searchJobs()">
                     <button class="btn-primary" onclick="searchJobs()">بحث</button>
+                </div>
+
+                <!-- Date Range Row — always visible -->
+                <div class="date-filter-row">
+                  <span class="dfr-icon">📅</span>
+                  <span class="dfr-label">نطاق النشر:</span>
+                  <div class="dfr-field">
+                    <span class="dfr-sub">من</span>
+                    <input type="date" id="dateFromFilter" onchange="searchJobs()" title="من تاريخ">
+                  </div>
+                  <span class="dfr-arrow">←</span>
+                  <div class="dfr-field">
+                    <span class="dfr-sub">إلى</span>
+                    <input type="date" id="dateToFilter" onchange="searchJobs()" title="إلى تاريخ">
+                  </div>
                 </div>
 
                 <div class="advanced-filters" id="advancedFilters">
@@ -177,6 +219,7 @@
                                placeholder="مثال: junior، internship  (افصل بفاصلة أو مسافة)"
                                title="يتم استبعاد أي وظيفة تحتوي على أي من هذه الكلمات">
                     </div>
+
                 </div>
 
                 <div class="filter-actions">
@@ -261,7 +304,6 @@
     <script src="js/search.js"></script>
 
     <!-- Version Badge -->
-    <div class="version-badge" id="versionBadge">v1.2.0</div>
 <!-- Session Message Modal -->
 <div id="sessionModal" class="session-modal hidden">
     <div class="session-box">
@@ -289,8 +331,19 @@
 
   // Init dark mode + daily counter on load
   document.addEventListener('DOMContentLoaded', function() {
-    if (typeof initDarkMode       === 'function') initDarkMode();
+    if (typeof initDarkMode         === 'function') initDarkMode();
     if (typeof updateDailyCounterUI === 'function') updateDailyCounterUI();
+    // Hero stats - sent today + saved count
+    try {
+      var today = new Date().toISOString().slice(0,10);
+      var ds    = JSON.parse(localStorage.getItem('dailySends') || '{}');
+      var sent  = (ds[today] || 0);
+      var saved = (JSON.parse(localStorage.getItem('savedJobs') || '[]')).length;
+      var hst = document.getElementById('heroSentToday');
+      var hsc = document.getElementById('heroSavedCount');
+      if (hst) hst.textContent = sent;
+      if (hsc) hsc.textContent = saved;
+    } catch(e) {}
   });
 </script>
 
@@ -518,6 +571,183 @@
   body.dark-mode .sidebar-logout:hover { background:#2a2a2a !important; }
   body.dark-mode .page-title,
   body.dark-mode .page-subtitle   { color:#e0e0e0 !important; }
+
+  /* ── Search Hero ── */
+  .search-hero {
+    position: relative;
+    background: linear-gradient(135deg, #063d22 0%, #0a5f35 35%, #0d7a44 65%, #00A859 100%);
+    padding: 52px 0 72px;
+    overflow: hidden;
+    text-align: center;
+  }
+  .search-hero-blobs { position:absolute;inset:0;pointer-events:none;overflow:hidden; }
+  .hero-blob {
+    position:absolute;border-radius:50%;opacity:0.12;
+    background:rgba(255,255,255,0.6);
+    animation: blobFloat 8s ease-in-out infinite alternate;
+  }
+  .hero-blob--1 { width:340px;height:340px;top:-80px;right:-60px;animation-delay:0s; }
+  .hero-blob--2 { width:220px;height:220px;bottom:-60px;left:-40px;animation-delay:3s; }
+  @keyframes blobFloat { from{transform:translateY(0) scale(1)} to{transform:translateY(20px) scale(1.06)} }
+
+  .search-hero::after {
+    content:'';position:absolute;bottom:-1px;left:0;right:0;
+    height:38px;
+    background: var(--light-color, #f5f7fa);
+    clip-path: ellipse(52% 100% at 50% 100%);
+  }
+  .search-hero-inner { position:relative;z-index:1; }
+  .search-hero .page-title {
+    color:#fff !important;
+    text-shadow:0 2px 16px rgba(0,0,0,.25);
+    margin-bottom:10px;
+  }
+  .search-hero .page-subtitle {
+    color:rgba(255,255,255,.85) !important;
+    margin-bottom:28px;
+  }
+  .hero-stats {
+    display:inline-flex;align-items:center;gap:0;
+    background:rgba(255,255,255,.13);backdrop-filter:blur(6px);
+    border:1px solid rgba(255,255,255,.22);
+    border-radius:16px;padding:12px 8px;
+    flex-wrap:wrap;justify-content:center;
+  }
+  .hero-stat { text-align:center;padding:4px 24px; }
+  .hero-stat-num {
+    display:block;font-size:1.6rem;font-weight:900;
+    color:#fff;letter-spacing:-0.5px;line-height:1.1;
+  }
+  .hero-stat-label { display:block;font-size:0.75rem;color:rgba(255,255,255,.75);margin-top:3px; }
+  .hero-stat-sep { width:1px;height:38px;background:rgba(255,255,255,.25); }
+
+  /* dark mode hero */
+  body.dark-mode .search-hero {
+    background:linear-gradient(135deg,#041a0f 0%,#063d22 40%,#0a5f35 100%) !important;
+  }
+  body.dark-mode .search-hero::after { background:#121212 !important; }
+
+  /* ── Date Filter Row ── */
+  .date-filter-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    background: #f0faf5;
+    border: 1.5px solid #c8eedd;
+    border-radius: 10px;
+    padding: 10px 16px;
+    margin-bottom: 4px;
+  }
+  .dfr-icon { font-size: 16px; flex-shrink: 0; }
+  .dfr-label {
+    font-size: 13px; font-weight: 700; color: #2e7d52;
+    white-space: nowrap; font-family: 'Cairo', sans-serif;
+    margin-left: 4px; flex-shrink: 0;
+  }
+  .dfr-field {
+    display: flex; align-items: center; gap: 6px;
+    background: #fff; border: 1.5px solid #c8eedd;
+    border-radius: 8px; padding: 6px 12px;
+    flex: 1; min-width: 145px;
+    transition: border-color .2s, box-shadow .2s;
+  }
+  .dfr-field:focus-within {
+    border-color: #00A859;
+    box-shadow: 0 0 0 3px rgba(0,168,89,.12);
+  }
+  .dfr-sub {
+    font-size: 11px; font-weight: 700; color: #00A859;
+    white-space: nowrap; font-family: 'Cairo', sans-serif;
+    background: #e8f8ef; padding: 2px 7px; border-radius: 5px;
+  }
+  .dfr-field input[type="date"] {
+    border: none !important; background: transparent !important;
+    padding: 0 !important; flex: 1;
+    font-family: 'Cairo', sans-serif; font-size: 13px; color: #333;
+    cursor: pointer; min-width: 110px;
+  }
+  .dfr-field input[type="date"]:focus { outline: none; }
+  .dfr-arrow { font-size: 18px; color: #aaa; font-weight: 700; flex-shrink: 0; }
+
+  body.dark-mode .date-filter-row {
+    background: #0d2e1a !important; border-color: #1a4a2a !important;
+  }
+  body.dark-mode .dfr-label  { color: #5dd99a !important; }
+  body.dark-mode .dfr-field  { background: #1e2e24 !important; border-color: #2a5a3a !important; }
+  body.dark-mode .dfr-sub    { background: #1a4a2a !important; color: #5dd99a !important; }
+  body.dark-mode .dfr-field input[type="date"] { color: #e0e0e0 !important; }
+  body.dark-mode .dfr-arrow  { color: #555 !important; }
+
+  /* ── Fixed Search Progress Widget ── */
+  .spw {
+    position: fixed;
+    top: 68px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-130px);
+    z-index: 9500;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: linear-gradient(135deg, rgba(6,61,34,0.97), rgba(10,95,53,0.97));
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    color: #fff;
+    border-radius: 40px;
+    padding: 10px 14px 10px 18px;
+    box-shadow: 0 8px 36px rgba(0,0,0,0.35), 0 0 0 1.5px rgba(0,200,100,0.3);
+    font-family: 'Cairo', sans-serif;
+    font-size: 14px;
+    min-width: 320px;
+    max-width: 520px;
+    opacity: 0;
+    transition: transform 0.42s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s;
+    pointer-events: none;
+  }
+  .spw--visible {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .spw--hiding {
+    transform: translateX(-50%) translateY(-120px) !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+  .spw-ring {
+    width: 28px; height: 28px; flex-shrink: 0;
+    border: 3px solid rgba(255,255,255,0.18);
+    border-top-color: #5fffb0;
+    border-radius: 50%;
+    animation: spwSpin 0.75s linear infinite;
+  }
+  @keyframes spwSpin { to { transform: rotate(360deg); } }
+  .spw-body { flex: 1; min-width: 0; }
+  .spw-title {
+    font-size: 13px; font-weight: 700;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    max-width: 280px;
+  }
+  .spw-sub { font-size: 12px; color: rgba(255,255,255,0.65); margin-top: 1px; }
+  .spw-bar-wrap {
+    height: 3px; background: rgba(255,255,255,0.15);
+    border-radius: 2px; margin-top: 5px; overflow: hidden;
+  }
+  .spw-bar {
+    height: 100%; width: 0%;
+    background: linear-gradient(90deg, #5fffb0, #00A859);
+    border-radius: 2px; transition: width 0.5s ease;
+  }
+  .spw-cancel {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: #fff; border-radius: 20px; padding: 5px 14px;
+    cursor: pointer; font-family: 'Cairo', sans-serif;
+    font-size: 12px; font-weight: 700; flex-shrink: 0;
+    transition: background 0.2s, border-color 0.2s;
+    white-space: nowrap;
+  }
+  .spw-cancel:hover { background: rgba(231,76,60,0.55); border-color: rgba(231,76,60,0.6); }
 </style>
     <script>
   /* ── Show user first name in topbar ── */
@@ -536,7 +766,9 @@
     } catch (e) {}
   })();
 </script>
+    <script src="js/ui.js"></script>
 </body>
     
+    <script src="js/ui.js"></script>
 </body>
 </html>

@@ -6,7 +6,9 @@
     <title>مركز التحكم في المحركات | AceAlBastoni</title>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
-    <link rel="stylesheet" href="css/styles.css"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/enhancements.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
             margin: 0;
@@ -804,6 +806,7 @@
     <!-- ══════════════════════════════════════════════════════ -->
 
     <script src="js/auth.js"></script>
+    <script src="js/config.js"></script>
     <script>startSessionEnforcer();</script>
 </head>
 <body class="app-page" data-page="engines">
@@ -811,7 +814,7 @@
   <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar(false)"></div>
   <aside class="app-sidebar" id="appSidebar" aria-label="القائمة الجانبية">
   <div class="sidebar-brand">
-    <a href="index.html" class="brand-link">
+    <a href="search.html" class="brand-link">
       <span class="brand-mark">💼</span>
       <span class="brand-text">LinkedOFF</span>
       <span class="brand-sub">AceAlBastoni</span>
@@ -819,11 +822,16 @@
   </div>
 
   <nav class="sidebar-nav">
-    <a href="index.html" class="nav-item"><span class="nav-ic">🏠</span><span>الرئيسية</span></a>
-    <a href="search.html" class="nav-item"><span class="nav-ic">🔍</span><span>البحث عن الوظائف</span></a>
-    <a href="dashboard.html" class="nav-item"><span class="nav-ic">📊</span><span>لوحة التحكم</span></a>
-    <a href="engines-interactive.html" class="nav-item"><span class="nav-ic">⚙️</span><span>المحركات</span></a>
-    <a href="index.html#pricing" class="nav-item"><span class="nav-ic">💳</span><span>الباقات</span></a>
+    <a href="search.html"              class="nav-item"><span class="nav-ic">🏠</span><span>الرئيسية</span></a>
+    <a href="search.html"              class="nav-item"><span class="nav-ic">🔍</span><span>البحث عن الوظائف</span></a>
+    <a href="dashboard.html"           class="nav-item"><span class="nav-ic">📊</span><span>لوحة التحكم</span></a>
+    <a href="analytics.html"           class="nav-item"><span class="nav-ic">📈</span><span>تحليلات السوق</span></a>
+    <a href="saved.html"               class="nav-item"><span class="nav-ic">💾</span><span>الوظائف المحفوظة</span></a>
+    <a href="history.html"             class="nav-item"><span class="nav-ic">📬</span><span>سجل الإرسال</span></a>
+    <a href="engines-interactive.html" class="nav-item active"><span class="nav-ic">⚙️</span><span>المحركات</span></a>
+    <a href="about.html"               class="nav-item"><span class="nav-ic">👤</span><span>عن المطوّر</span></a>
+    <a href="pricing.html"             class="nav-item"><span class="nav-ic">💳</span><span>الباقات</span></a>
+    <a href="settings.html"            class="nav-item"><span class="nav-ic">🔧</span><span>الإعدادات</span></a>
   </nav>
 
   <div class="sidebar-footer">
@@ -839,7 +847,11 @@
       </button>
       <div class="topbar-title">⚙️ المحركات</div>
       <div class="topbar-actions">
-        <a class="topbar-link" href="dashboard.html">لوحة التحكم</a>
+        <button id="darkModeBtn" onclick="toggleDarkMode()" title="وضع ليلي" style="
+          background:none;border:1px solid #ddd;border-radius:8px;
+          padding:6px 10px;cursor:pointer;font-size:18px;line-height:1;
+          transition:background .2s,border-color .2s;
+        ">🌙</button>
       </div>
     </header>
 
@@ -1401,18 +1413,40 @@
     </main>
   </div>
 </div>
-
 <script>
-  // Highlight active sidebar link
-  (function() {
+  /* ── Dark mode ── */
+  function initDarkMode() {
+    if (localStorage.getItem('linkedoff_darkMode') === 'true') {
+      document.body.classList.add('dark-mode');
+      var btn = document.getElementById('darkModeBtn');
+      if (btn) btn.textContent = '☀️';
+    }
+  }
+  function toggleDarkMode() {
+    var isDark = document.body.classList.toggle('dark-mode');
+    localStorage.setItem('linkedoff_darkMode', isDark);
+    var btn = document.getElementById('darkModeBtn');
+    if (btn) btn.textContent = isDark ? '☀️' : '🌙';
+  }
+
+  /* ── User chip in topbar ── */
+  (function () {
     try {
-      const current = (location.pathname.split('/').pop() || 'index.html').toLowerCase();
-      document.querySelectorAll('.sidebar-nav .nav-item').forEach(a => {
-        const href = (a.getAttribute('href') || '').toLowerCase();
-        if (href === current) a.classList.add('active');
-      });
+      var user = JSON.parse(localStorage.getItem('linkedoff_user') || 'null');
+      if (!user) return;
+      var name    = user.name || user.email || '';
+      var initial = name.trim().charAt(0).toUpperCase() || '?';
+      var actions = document.querySelector('.topbar-actions');
+      if (!actions) return;
+      var chip = document.createElement('div');
+      chip.id = 'topbarUserChip';
+      chip.innerHTML = '<span class="avatar">' + initial + '</span><span>' + name + '</span>';
+      actions.insertBefore(chip, actions.firstChild);
     } catch(e) {}
   })();
+
+  document.addEventListener('DOMContentLoaded', initDarkMode);
 </script>
+    <script src="js/ui.js"></script>
 </body>
 </html>

@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep:*)",
+      "Bash(powershell -Command \"\\(Get-Content ''c:/ffffff/hfghgf/jobhub-ksa/about.html'' -Raw\\) -replace ''\\(?m\\)^\\\\s*<div[^>]*class=\"\"version-badge\"\"[^>]*id=\"\"versionBadge\"\"[^>]*>.*?</div>\\\\s*\\\\r?\\\\n'', '''' | Set-Content ''c:/ffffff/hfghgf/jobhub-ksa/about.html'' -NoNewline\")",
+      "Bash(powershell -File:*)"
+    ]
+  }
+}

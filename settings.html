@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>الإعدادات - LinkedOFF</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/enhancements.css">
+  <link rel="icon" type="image/svg+xml" href="img/icon-linkedoff.svg">
+
+  <!-- ═══ EARLY AUTH GUARD ═══ -->
+  <style>body { visibility: hidden; }</style>
+  <script>
+    (function () {
+      try {
+        var user = JSON.parse(localStorage.getItem('linkedoff_user') || 'null');
+        var sess = JSON.parse(localStorage.getItem('linkedoff_session') || 'null');
+        if (!user || !sess || !sess.token || Date.now() > Number(sess.expiresAtMs || 0)) {
+          window.location.replace('login.html');
+        } else {
+          document.addEventListener('DOMContentLoaded', function () {
+            document.body.style.visibility = 'visible';
+          });
+        }
+      } catch (e) { window.location.replace('login.html'); }
+    })();
+  </script>
+  <script src="js/auth.js"></script>
+  <script src="js/config.js"></script>
+  <script>startSessionEnforcer();</script>
+
+  <style>
+    .st-wrapper { max-width: 720px; margin: 0 auto; padding-bottom: 60px; }
+
+    /* Section cards */
+    .st-section {
+      background: #fff;
+      border: 1px solid rgba(0,0,0,.07);
+      border-radius: 18px;
+      padding: 24px 26px;
+      margin-bottom: 18px;
+      animation: _cardIn .35s ease both;
+    }
+
+    body.dark-mode .st-section {
+      background: #1e1e2e;
+      border-color: rgba(255,255,255,.07);
+    }
+
+    .st-section-title {
+      font-size: 0.95rem;
+      font-weight: 900;
+      color: #333;
+      margin-bottom: 18px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(0,0,0,.06);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    body.dark-mode .st-section-title { color: #e0e0f0; border-color: rgba(255,255,255,.06); }
+
+    /* Row */
+    .st-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(0,0,0,.04);
+      flex-wrap: wrap;
+    }
+
+    .st-row:last-child { border-bottom: none; padding-bottom: 0; }
+
+    body.dark-mode .st-row { border-color: rgba(255,255,255,.04); }
+
+    .st-row-label {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: #444;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    body.dark-mode .st-row-label { color: #c0c0d0; }
+
+    .st-row-sub {
+      font-size: 0.76rem;
+      color: #999;
+      font-weight: 400;
+    }
+
+    /* Toggle switch */
+    .st-toggle {
+      position: relative;
+      width: 44px;
+      height: 24px;
+      flex-shrink: 0;
+    }
+
+    .st-toggle input { opacity: 0; width: 0; height: 0; }
+
+    .st-toggle-slider {
+      position: absolute;
+      inset: 0;
+      background: #dde1ec;
+      border-radius: 24px;
+      cursor: pointer;
+      transition: background .2s;
+    }
+
+    .st-toggle-slider::before {
+      content: '';
+      position: absolute;
+      width: 18px; height: 18px;
+      left: 3px; top: 3px;
+      background: #fff;
+      border-radius: 50%;
+      transition: transform .2s;
+      box-shadow: 0 1px 4px rgba(0,0,0,.15);
+    }
+
+    .st-toggle input:checked + .st-toggle-slider { background: var(--primary-color); }
+    .st-toggle input:checked + .st-toggle-slider::before { transform: translateX(20px); }
+
+    /* Input fields */
+    .st-input {
+      padding: 9px 14px;
+      border-radius: 10px;
+      border: 1.5px solid #dde1ec;
+      font-family: 'Cairo', sans-serif;
+      font-size: 0.88rem;
+      color: #333;
+      background: #fafbff;
+      width: 220px;
+      max-width: 100%;
+      transition: border-color .2s, box-shadow .2s;
+    }
+
+    .st-input:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(0,168,89,.1);
+    }
+
+    body.dark-mode .st-input {
+      background: #252535;
+      border-color: #383858;
+      color: #f0f0f0;
+    }
+
+    /* Buttons */
+    .st-btn {
+      padding: 9px 20px;
+      border-radius: 10px;
+      font-family: 'Cairo', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      transition: transform .15s, box-shadow .15s;
+    }
+
+    .st-btn-primary {
+      background: linear-gradient(135deg, #00A859, #00D66F);
+      color: #fff;
+      box-shadow: 0 3px 12px rgba(0,168,89,.3);
+    }
+
+    .st-btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(0,168,89,.38); }
+
+    .st-btn-danger {
+      background: rgba(239,68,68,.08);
+      color: #ef4444;
+      border: 1px solid rgba(239,68,68,.25) !important;
+    }
+
+    .st-btn-danger:hover { background: rgba(239,68,68,.15); }
+
+    .st-btn-outline {
+      background: none;
+      border: 1.5px solid #dde1ec !important;
+      color: #666;
+    }
+
+    body.dark-mode .st-btn-outline { border-color: #383858 !important; color: #aaa; }
+    .st-btn-outline:hover { border-color: var(--primary-color) !important; color: var(--primary-color); }
+
+    /* Version info */
+    .st-version-row {
+      font-size: 0.82rem;
+      color: #999;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .st-version-tag {
+      background: rgba(0,168,89,.1);
+      color: #00A859;
+      border: 1px solid rgba(0,168,89,.2);
+      padding: 2px 10px;
+      border-radius: 8px;
+      font-size: 0.78rem;
+      font-weight: 700;
+    }
+
+    /* Stats mini grid */
+    .st-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 12px;
+      margin-top: 4px;
+    }
+
+    .st-stat {
+      background: rgba(0,168,89,.05);
+      border: 1px solid rgba(0,168,89,.12);
+      border-radius: 12px;
+      padding: 14px 16px;
+      text-align: center;
+    }
+
+    .st-stat-num {
+      font-size: 1.6rem;
+      font-weight: 900;
+      color: var(--primary-color);
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+
+    .st-stat-lbl {
+      font-size: 0.74rem;
+      color: #888;
+      font-family: 'Cairo', sans-serif;
+    }
+
+    /* Toast */
+    #stToast {
+      position: fixed;
+      bottom: 72px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: #00A859;
+      color: #fff;
+      padding: 10px 22px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      font-family: 'Cairo', sans-serif;
+      z-index: 9999;
+      opacity: 0;
+      transition: all .3s;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+  </style>
+</head>
+
+<body class="app-page" data-page="settings">
+<div class="app-shell">
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar(false)"></div>
+
+  <aside class="app-sidebar" id="appSidebar" aria-label="القائمة الجانبية">
+    <div class="sidebar-brand">
+      <a href="search.html" class="brand-link">
+        <span class="brand-mark">💼</span>
+        <span class="brand-text">LinkedOFF</span>
+        <span class="brand-sub">AceAlBastoni</span>
+      </a>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a href="search.html"              class="nav-item"><span class="nav-ic">🏠</span><span>الرئيسية</span></a>
+      <a href="search.html"              class="nav-item"><span class="nav-ic">🔍</span><span>البحث عن الوظائف</span></a>
+      <a href="dashboard.html"           class="nav-item"><span class="nav-ic">📊</span><span>لوحة التحكم</span></a>
+      <a href="analytics.html"           class="nav-item"><span class="nav-ic">📈</span><span>تحليلات السوق</span></a>
+      <a href="saved.html"               class="nav-item"><span class="nav-ic">💾</span><span>الوظائف المحفوظة</span></a>
+      <a href="history.html"             class="nav-item"><span class="nav-ic">📬</span><span>سجل الإرسال</span></a>
+      <a href="engines-interactive.html" class="nav-item"><span class="nav-ic">⚙️</span><span>المحركات</span></a>
+      <a href="about.html"               class="nav-item"><span class="nav-ic">👤</span><span>عن المطوّر</span></a>
+      <a href="pricing.html"             class="nav-item"><span class="nav-ic">💳</span><span>الباقات</span></a>
+      <a href="settings.html"            class="nav-item active"><span class="nav-ic">🔧</span><span>الإعدادات</span></a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="sidebar-logout" type="button" onclick="performLogout('👋 تم تسجيل الخروج', false)">
+        <span class="nav-ic">🚪</span><span>تسجيل الخروج</span>
+      </button>
+    </div>
+  </aside>
+
+  <div class="app-main">
+    <header class="app-topbar">
+      <button class="sidebar-toggle" type="button" aria-label="فتح/إغلاق القائمة" onclick="toggleSidebar()">
+        <span class="toggle-bars"></span>
+      </button>
+      <div class="topbar-title">🔧 الإعدادات</div>
+      <div class="topbar-actions">
+        <button id="darkModeBtn" onclick="toggleDarkMode()" title="وضع ليلي" style="
+          background:none;border:1px solid #ddd;border-radius:8px;
+          padding:6px 10px;cursor:pointer;font-size:18px;line-height:1;
+          transition:background .2s,border-color .2s;
+        ">🌙</button>
+      </div>
+    </header>
+
+    <main class="app-content" style="padding:24px 20px;">
+      <div class="st-wrapper">
+
+        <!-- Account -->
+        <div class="st-section" style="animation-delay:.05s">
+          <div class="st-section-title">👤 معلومات الحساب</div>
+
+          <div class="st-row">
+            <div class="st-row-label">
+              الاسم الكامل
+              <span class="st-row-sub">الاسم الذي يظهر في الشريط العلوي</span>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+              <input type="text" id="stName" class="st-input" placeholder="اكتب اسمك...">
+              <button class="st-btn st-btn-primary" onclick="saveName()">حفظ</button>
+            </div>
+          </div>
+
+          <div class="st-row">
+            <div class="st-row-label">
+              البريد الإلكتروني
+              <span class="st-row-sub">لا يمكن تغيير البريد الإلكتروني</span>
+            </div>
+            <span id="stEmail" style="font-size:0.85rem;color:#888;font-family:monospace;"></span>
+          </div>
+
+          <div class="st-row">
+            <div class="st-row-label">
+              تاريخ الانضمام
+              <span class="st-row-sub">أول تسجيل دخول</span>
+            </div>
+            <span id="stJoinDate" style="font-size:0.85rem;color:#888;"></span>
+          </div>
+        </div>
+
+        <!-- Appearance -->
+        <div class="st-section" style="animation-delay:.1s">
+          <div class="st-section-title">🎨 المظهر</div>
+
+          <div class="st-row">
+            <div class="st-row-label">
+              الوضع الليلي
+              <span class="st-row-sub">تفعيل خلفية داكنة لراحة العيون</span>
+            </div>
+            <label class="st-toggle">
+              <input type="checkbox" id="stDarkMode" onchange="toggleDarkModeFromSettings(this.checked)">
+              <span class="st-toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Search Preferences -->
+        <div class="st-section" style="animation-delay:.15s">
+          <div class="st-section-title">🔍 تفضيلات البحث</div>
+
+          <div class="st-row">
+            <div class="st-row-label">
+              تذكّر آخر بحث
+              <span class="st-row-sub">استعادة فلاتر آخر بحث عند العودة للصفحة</span>
+            </div>
+            <label class="st-toggle">
+              <input type="checkbox" id="stRememberSearch" onchange="setRememberSearch(this.checked)" checked>
+              <span class="st-toggle-slider"></span>
+            </label>
+          </div>
+
+          <div class="st-row">
+            <div class="st-row-label">
+              مسح آخر بحث محفوظ
+              <span class="st-row-sub">حذف الفلاتر المحفوظة من آخر جلسة بحث</span>
+            </div>
+            <button class="st-btn st-btn-outline" onclick="clearLastSearch()">مسح</button>
+          </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="st-section" style="animation-delay:.2s">
+          <div class="st-section-title">📊 إحصاءاتي</div>
+          <div class="st-stats">
+            <div class="st-stat">
+              <div class="st-stat-num" id="stStatSaved">0</div>
+              <div class="st-stat-lbl">وظيفة محفوظة</div>
+            </div>
+            <div class="st-stat">
+              <div class="st-stat-num" id="stStatApplied">0</div>
+              <div class="st-stat-lbl">شركة أُرسل لها</div>
+            </div>
+            <div class="st-stat">
+              <div class="st-stat-num" id="stStatToday">0</div>
+              <div class="st-stat-lbl">إرسال اليوم</div>
+            </div>
+            <div class="st-stat">
+              <div class="st-stat-num" id="stStatTotal">0</div>
+              <div class="st-stat-lbl">إجمالي الإرسالات</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Data Management -->
+        <div class="st-section" style="animation-delay:.25s">
+          <div class="st-section-title">🗂️ إدارة البيانات</div>
+
+          <div class="st-row">
+            <div class="st-row-label">
+              الوظائف المحفوظة
+              <span class="st-row-sub">حذف كل الوظائف التي حفظتها</span>
+            </div>
+            <button class="st-btn st-btn-danger" onclick="clearSavedJobs()">🗑️ حذف الكل</button>
+          </div>
+
+          <div class="st-row">
+            <div class="st-row-label">
+              سجل الإرسال
+              <span class="st-row-sub">مسح كل سجل إرسال السير الذاتية</span>
+            </div>
+            <button class="st-btn st-btn-danger" onclick="clearHistory()">🗑️ مسح السجل</button>
+          </div>
+
+          <div class="st-row">
+            <div class="st-row-label">
+              تسجيل الخروج
+              <span class="st-row-sub">إنهاء الجلسة الحالية</span>
+            </div>
+            <button class="st-btn st-btn-danger" onclick="performLogout('👋 تم تسجيل الخروج', false)">🚪 تسجيل الخروج</button>
+          </div>
+        </div>
+
+        <!-- App info -->
+        <div class="st-section" style="animation-delay:.3s">
+          <div class="st-section-title">ℹ️ عن التطبيق</div>
+          <div class="st-row">
+            <div class="st-row-label">الإصدار</div>
+            <div class="st-version-row">
+              <span class="st-version-tag" id="stVersion">—</span>
+              <span id="stReleaseDate" style="font-size:0.78rem;color:#aaa;"></span>
+            </div>
+          </div>
+          <div class="st-row">
+            <div class="st-row-label">المطوّر</div>
+            <a href="about.html" style="font-size:0.85rem;color:var(--primary-color);font-weight:700;text-decoration:none;">
+              محمد عبدالحميد — AceAlBastoni
+            </a>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+</div>
+
+<div id="stToast"></div>
+<script src="js/ui.js"></script>
+<script>
+  /* ── Helpers ── */
+  function toast(msg, color) {
+    var t = document.getElementById('stToast');
+    t.textContent = msg;
+    t.style.background = color || '#00A859';
+    t.style.opacity = '1';
+    t.style.transform = 'translateX(-50%) translateY(0)';
+    setTimeout(function () {
+      t.style.opacity = '0';
+      t.style.transform = 'translateX(-50%) translateY(20px)';
+    }, 2200);
+  }
+
+  /* ── Dark mode ── */
+  function initDarkMode() {
+    var isDark = localStorage.getItem('linkedoff_darkMode') === 'true';
+    document.body.classList.toggle('dark-mode', isDark);
+    var btn = document.getElementById('darkModeBtn');
+    if (btn) btn.textContent = isDark ? '☀️' : '🌙';
+    var toggle = document.getElementById('stDarkMode');
+    if (toggle) toggle.checked = isDark;
+  }
+
+  function toggleDarkMode() {
+    var isDark = document.body.classList.toggle('dark-mode');
+    localStorage.setItem('linkedoff_darkMode', isDark);
+    var btn = document.getElementById('darkModeBtn');
+    if (btn) btn.textContent = isDark ? '☀️' : '🌙';
+    var toggle = document.getElementById('stDarkMode');
+    if (toggle) toggle.checked = isDark;
+  }
+
+  function toggleDarkModeFromSettings(on) {
+    document.body.classList.toggle('dark-mode', on);
+    localStorage.setItem('linkedoff_darkMode', on);
+    var btn = document.getElementById('darkModeBtn');
+    if (btn) btn.textContent = on ? '☀️' : '🌙';
+  }
+
+  /* ── Load account info ── */
+  function loadAccountInfo() {
+    try {
+      var user = JSON.parse(localStorage.getItem('linkedoff_user') || 'null');
+      if (!user) return;
+      var nameEl = document.getElementById('stName');
+      if (nameEl) nameEl.value = user.name || '';
+      var emailEl = document.getElementById('stEmail');
+      if (emailEl) emailEl.textContent = user.email || '—';
+      var joinEl = document.getElementById('stJoinDate');
+      if (joinEl) joinEl.textContent = user.createdAt || localStorage.getItem('linkedoff_joinDate') || '—';
+    } catch(e) {}
+  }
+
+  function saveName() {
+    try {
+      var name = document.getElementById('stName').value.trim();
+      if (!name) return toast('الاسم لا يمكن أن يكون فارغاً', '#ef4444');
+      var user = JSON.parse(localStorage.getItem('linkedoff_user') || '{}');
+      user.name = name;
+      localStorage.setItem('linkedoff_user', JSON.stringify(user));
+      toast('✅ تم حفظ الاسم');
+    } catch(e) {}
+  }
+
+  /* ── Load stats ── */
+  function loadStats() {
+    try {
+      var saved   = (JSON.parse(localStorage.getItem('savedJobs') || '[]')).length;
+      var applied = Object.keys(JSON.parse(localStorage.getItem('appliedJobs') || '{}')).length;
+      var today   = new Date().toISOString().slice(0,10);
+      var daily   = JSON.parse(localStorage.getItem('dailySends') || '{}');
+      var todayCt = daily[today] || 0;
+      var totalCt = Object.values(daily).reduce(function(s,v){ return s + v; }, 0);
+
+      document.getElementById('stStatSaved').textContent   = saved;
+      document.getElementById('stStatApplied').textContent = applied;
+      document.getElementById('stStatToday').textContent   = todayCt;
+      document.getElementById('stStatTotal').textContent   = totalCt;
+    } catch(e) {}
+  }
+
+  /* ── Search prefs ── */
+  function setRememberSearch(on) {
+    localStorage.setItem('linkedoff_rememberSearchEnabled', on ? '1' : '0');
+    if (!on) localStorage.removeItem('linkedoff_lastSearch');
+    toast(on ? '✅ سيتم تذكّر آخر بحث' : '🚫 لن يتم تذكّر البحث');
+  }
+
+  function clearLastSearch() {
+    localStorage.removeItem('linkedoff_lastSearch');
+    toast('✅ تم مسح آخر بحث محفوظ');
+  }
+
+  /* ── Data management ── */
+  function clearSavedJobs() {
+    if (!confirm('هل تريد حذف جميع الوظائف المحفوظة؟')) return;
+    localStorage.setItem('savedJobs', '[]');
+    localStorage.removeItem('savedJobsData');
+    loadStats();
+    if (typeof window.refreshUICounters === 'function') window.refreshUICounters();
+    toast('✅ تم حذف الوظائف المحفوظة');
+  }
+
+  function clearHistory() {
+    if (!confirm('هل تريد مسح سجل الإرسال بالكامل؟')) return;
+    localStorage.setItem('appliedJobs', '{}');
+    loadStats();
+    if (typeof window.refreshUICounters === 'function') window.refreshUICounters();
+    toast('✅ تم مسح سجل الإرسال');
+  }
+
+  /* ── App version ── */
+  function loadVersionInfo() {
+    try {
+      if (!window.APP_CONFIG) return;
+      var vEl = document.getElementById('stVersion');
+      if (vEl) vEl.textContent = APP_CONFIG.getVersionShort();
+      var rEl = document.getElementById('stReleaseDate');
+      if (rEl) rEl.textContent = APP_CONFIG.releaseDate || '';
+    } catch(e) {}
+  }
+
+  /* ── User chip ── */
+  (function () {
+    try {
+      var user = JSON.parse(localStorage.getItem('linkedoff_user') || 'null');
+      if (!user) return;
+      var name    = user.name || user.email || '';
+      var initial = name.trim().charAt(0).toUpperCase() || '?';
+      var actions = document.querySelector('.topbar-actions');
+      if (!actions) return;
+      var chip = document.createElement('div');
+      chip.id = 'topbarUserChip';
+      chip.innerHTML = '<span class="avatar">' + initial + '</span><span>' + name + '</span>';
+      actions.insertBefore(chip, actions.firstChild);
+    } catch(e) {}
+  })();
+
+  /* ── Init ── */
+  document.addEventListener('DOMContentLoaded', function () {
+    initDarkMode();
+    loadAccountInfo();
+    loadStats();
+    loadVersionInfo();
+
+    /* Restore remember-search toggle state */
+    var rem = localStorage.getItem('linkedoff_rememberSearchEnabled');
+    var toggle = document.getElementById('stRememberSearch');
+    if (toggle && rem === '0') toggle.checked = false;
+  });
+</script>
+</body>
+</html>
