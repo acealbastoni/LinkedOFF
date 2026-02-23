@@ -475,18 +475,48 @@ async function fetchJobsPageRaw_(page) {
     return data;
 }
 
+/**
+ * Parse a comma-or-space-separated keyword string into a lowercase array.
+ * e.g. "python, senior remote" → ["python", "senior", "remote"]
+ */
+function parseKeywords_(str) {
+    if (!str) return [];
+    return str
+        .split(/[,\s]+/)
+        .map(k => k.trim().toLowerCase())
+        .filter(k => k.length > 0);
+}
+
 /** Match a job against all active filters */
-function matchesFilters_(job, kwLower, city, field, salary, contract) {
-    const desc = (job.plainTextJobDescription || '').toLowerCase();
-    if (kwLower && !desc.includes(kwLower) && !(job.source || '').toLowerCase().includes(kwLower)) return false;
+function matchesFilters_(job, kwLower, city, field, salary, contract, mustInclude, mustExclude) {
+    const raw  = (job.plainTextJobDescription || '');
+    const desc = raw.toLowerCase();
+    const src  = (job.source || '').toLowerCase();
+
+    if (kwLower && !desc.includes(kwLower) && !src.includes(kwLower)) return false;
     if (city     && !desc.includes(city))     return false;
     if (field    && !desc.includes(field))    return false;
     if (contract && !desc.includes(contract)) return false;
     if (salary > 0) {
-        const s = extractSalary(job.plainTextJobDescription || '');
+        const s = extractSalary(raw);
         const num = s ? parseInt(s.replace(/[^0-9]/g, '')) : 0;
         if (!num || num < salary) return false;
     }
+
+    // Boolean AND: every must-include word must appear
+    if (mustInclude && mustInclude.length > 0) {
+        for (const word of mustInclude) {
+            if (!desc.includes(word) && !src.includes(word)) return false;
+        }
+    }
+
+    // Boolean NOT: none of the must-exclude words may appear
+    if (mustExclude && mustExclude.length > 0) {
+        for (const word of mustExclude) {
+            if (desc.includes(word) || src.includes(word)) return false;
+        }
+    }
+
     return true;
 }
 
@@ -497,11 +527,13 @@ async function searchAllPages(keyword, filters = {}) {
     const token = { cancelled: false };
     _activeSearch = token;
 
-    const kwLower   = (keyword  || '').trim().toLowerCase();
-    const city      = filters.city     || '';
-    const field     = filters.field    || '';
-    const salary    = filters.salary   || 0;
-    const contract  = filters.contract || '';
+    const kwLower      = (keyword  || '').trim().toLowerCase();
+    const city         = filters.city        || '';
+    const field        = filters.field       || '';
+    const salary       = filters.salary      || 0;
+    const contract     = filters.contract    || '';
+    const mustInclude  = filters.mustInclude || [];
+    const mustExclude  = filters.mustExclude || [];
 
     const container  = document.getElementById('jobsContainer');
     const resultsInfo = document.getElementById('resultsInfo');
@@ -545,7 +577,7 @@ async function searchAllPages(keyword, filters = {}) {
 
             // Filter jobs on this page
             const matches = (data.data || []).filter(job =>
-                matchesFilters_(job, kwLower, city, field, salary, contract)
+                matchesFilters_(job, kwLower, city, field, salary, contract, mustInclude, mustExclude)
             );
 
             // Append matching cards progressively (no full re-render)
@@ -608,15 +640,17 @@ function cancelAllPagesSearch() {
 
 // Search and Filter
 function searchJobs() {
-    const keyword  = document.getElementById('searchKeyword').value.trim();
-    const city     = document.getElementById('cityFilter').value;
-    const field    = document.getElementById('fieldFilter').value;
-    const salary   = parseInt(document.getElementById('salaryFilter').value) || 0;
-    const contract = document.getElementById('contractFilter').value;
+    const keyword      = document.getElementById('searchKeyword').value.trim();
+    const city         = document.getElementById('cityFilter').value;
+    const field        = document.getElementById('fieldFilter').value;
+    const salary       = parseInt(document.getElementById('salaryFilter').value) || 0;
+    const contract     = document.getElementById('contractFilter').value;
+    const mustInclude  = parseKeywords_(document.getElementById('mustIncludeFilter').value);
+    const mustExclude  = parseKeywords_(document.getElementById('mustExcludeFilter').value);
 
     // ── Keyword present → search across ALL pages progressively ──────────
     if (keyword) {
-        searchAllPages(keyword, { city, field, salary, contract });
+        searchAllPages(keyword, { city, field, salary, contract, mustInclude, mustExclude });
         return;
     }
 
@@ -624,21 +658,9 @@ function searchJobs() {
     if (_activeSearch) { _activeSearch.cancelled = true; _activeSearch = null; }
     document.getElementById('_searchProgressWrap')?.remove();
 
-    let filtered = jobsData;
-
-    if (city)     filtered = filtered.filter(job => (job.plainTextJobDescription || '').includes(city));
-    if (field)    filtered = filtered.filter(job => (job.plainTextJobDescription || '').includes(field));
-    if (contract) filtered = filtered.filter(job => (job.plainTextJobDescription || '').includes(contract));
-
-    // salary filter kept local (no API param for it)
-    if (salary > 0) {
-        filtered = filtered.filter(job => {
-            const s = extractSalary(job.plainTextJobDescription || '');
-            if (!s) return false;
-            const num = parseInt(s.replace(/[^0-9]/g, ''));
-            return num >= salary;
-        });
-    }
+    let filtered = jobsData.filter(job =>
+        matchesFilters_(job, '', city, field, salary, contract, mustInclude, mustExclude)
+    );
 
     displayJobs(filtered);
     
@@ -660,6 +682,8 @@ function resetFilters() {
     document.getElementById('fieldFilter').value = '';
     document.getElementById('salaryFilter').value = '0';
     document.getElementById('contractFilter').value = '';
+    document.getElementById('mustIncludeFilter').value = '';
+    document.getElementById('mustExcludeFilter').value = '';
     
     displayJobs(jobsData);
     updateResultsInfo();

@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>عني - محمد عبدالحميد | LinkedOFF</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="icon" type="image/svg+xml" href="img/icon-linkedoff.svg">
+
+  <!-- ═══ EARLY AUTH GUARD ═══ -->
+  <style>body { visibility: hidden; }</style>
+  <script>
+    (function () {
+      try {
+        var user = JSON.parse(localStorage.getItem('linkedoff_user') || 'null');
+        var sess = JSON.parse(localStorage.getItem('linkedoff_session') || 'null');
+        if (!user || !sess || !sess.token || Date.now() > Number(sess.expiresAtMs || 0)) {
+          window.location.replace('login.html');
+        } else {
+          document.addEventListener('DOMContentLoaded', function () {
+            document.body.style.visibility = 'visible';
+          });
+        }
+      } catch (e) { window.location.replace('login.html'); }
+    })();
+  </script>
+  <!-- ══════════════════════════════════════════════════════ -->
+
+  <script src="js/auth.js"></script>
+  <script>startSessionEnforcer();</script>
+
+  <style>
+    /* ─── About Page Styles ──────────────────────────────────── */
+    .about-wrapper {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 0 60px;
+    }
+
+    /* Hero card */
+    .about-hero {
+      background: linear-gradient(135deg, #00A859 0%, #00c97a 60%, #0066CC 100%);
+      border-radius: 20px;
+      padding: 48px 40px;
+      display: flex;
+      align-items: center;
+      gap: 36px;
+      color: #fff;
+      margin-bottom: 28px;
+      box-shadow: 0 8px 32px rgba(0,168,89,.25);
+      flex-wrap: wrap;
+    }
+
+    .about-avatar {
+      width: 110px;
+      height: 110px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.18);
+      border: 4px solid rgba(255,255,255,.55);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 54px;
+      flex-shrink: 0;
+      box-shadow: 0 4px 18px rgba(0,0,0,.15);
+    }
+
+    .about-hero-info h1 {
+      font-size: 2rem;
+      font-weight: 900;
+      margin-bottom: 6px;
+      line-height: 1.2;
+    }
+
+    .about-hero-info .role-badge {
+      display: inline-block;
+      background: rgba(255,255,255,.22);
+      border: 1px solid rgba(255,255,255,.4);
+      border-radius: 20px;
+      padding: 4px 16px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      margin-bottom: 14px;
+    }
+
+    .about-hero-info p {
+      font-size: 1rem;
+      opacity: 0.92;
+      line-height: 1.7;
+      max-width: 540px;
+    }
+
+    .hero-links {
+      display: flex;
+      gap: 12px;
+      margin-top: 18px;
+      flex-wrap: wrap;
+    }
+
+    .hero-link-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 9px 20px;
+      background: rgba(255,255,255,.15);
+      border: 1.5px solid rgba(255,255,255,.45);
+      border-radius: 10px;
+      color: #fff;
+      font-family: 'Cairo', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 700;
+      text-decoration: none;
+      cursor: pointer;
+      transition: background .2s, transform .15s;
+    }
+
+    .hero-link-btn:hover {
+      background: rgba(255,255,255,.28);
+      transform: translateY(-2px);
+    }
+
+    /* Section cards */
+    .about-card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 28px 32px;
+      margin-bottom: 22px;
+      box-shadow: 0 2px 16px rgba(0,0,0,.07);
+    }
+
+    .about-card-title {
+      font-size: 1.15rem;
+      font-weight: 900;
+      color: #1A1A1A;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid #f0f0f0;
+    }
+
+    .about-card-title .ic {
+      font-size: 1.3rem;
+    }
+
+    /* Skills */
+    .skills-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .skill-tag {
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      font-family: 'Cairo', sans-serif;
+    }
+
+    .skill-tag.green  { background: rgba(0,168,89,.1);  color: #007a40; border: 1px solid rgba(0,168,89,.25); }
+    .skill-tag.blue   { background: rgba(0,102,204,.1); color: #0050a0; border: 1px solid rgba(0,102,204,.25); }
+    .skill-tag.orange { background: rgba(255,107,0,.1); color: #c44e00; border: 1px solid rgba(255,107,0,.25); }
+    .skill-tag.purple { background: rgba(120,60,200,.1);color: #6020b0; border: 1px solid rgba(120,60,200,.25); }
+
+    /* Timeline */
+    .timeline {
+      position: relative;
+      padding-right: 28px;
+    }
+
+    .timeline::before {
+      content: '';
+      position: absolute;
+      right: 10px;
+      top: 6px;
+      bottom: 6px;
+      width: 2px;
+      background: linear-gradient(to bottom, #00A859, #0066CC);
+      border-radius: 2px;
+    }
+
+    .tl-item {
+      position: relative;
+      margin-bottom: 28px;
+    }
+
+    .tl-item:last-child { margin-bottom: 0; }
+
+    .tl-dot {
+      position: absolute;
+      right: -24px;
+      top: 5px;
+      width: 14px;
+      height: 14px;
+      background: #00A859;
+      border-radius: 50%;
+      border: 3px solid #fff;
+      box-shadow: 0 0 0 2px #00A859;
+    }
+
+    .tl-item.past .tl-dot { background: #0066CC; box-shadow: 0 0 0 2px #0066CC; }
+
+    .tl-date {
+      font-size: 0.78rem;
+      color: #888;
+      font-weight: 700;
+      margin-bottom: 3px;
+    }
+
+    .tl-title {
+      font-size: 1rem;
+      font-weight: 900;
+      color: #1A1A1A;
+      margin-bottom: 2px;
+    }
+
+    .tl-company {
+      font-size: 0.88rem;
+      color: #00A859;
+      font-weight: 700;
+      margin-bottom: 5px;
+    }
+
+    .tl-desc {
+      font-size: 0.88rem;
+      color: #555;
+      line-height: 1.65;
+    }
+
+    /* Certifications */
+    .certs-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+    }
+
+    .cert-card {
+      background: #f8f9fa;
+      border: 1.5px solid #e8e8e8;
+      border-radius: 12px;
+      padding: 18px 20px;
+      transition: transform .2s, box-shadow .2s;
+    }
+
+    .cert-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 20px rgba(0,0,0,.1);
+    }
+
+    .cert-icon { font-size: 1.8rem; margin-bottom: 10px; }
+
+    .cert-name {
+      font-size: 0.92rem;
+      font-weight: 900;
+      color: #1A1A1A;
+      margin-bottom: 4px;
+      line-height: 1.4;
+    }
+
+    .cert-issuer {
+      font-size: 0.8rem;
+      color: #888;
+      margin-bottom: 6px;
+    }
+
+    .cert-year {
+      display: inline-block;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #00A859;
+      background: rgba(0,168,89,.1);
+      padding: 2px 10px;
+      border-radius: 10px;
+    }
+
+    /* Resume downloads */
+    .resume-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+
+    @media (max-width: 600px) {
+      .resume-grid { grid-template-columns: 1fr; }
+      .about-hero { padding: 32px 24px; gap: 24px; }
+      .about-card { padding: 22px 18px; }
+    }
+
+    .resume-card {
+      border: 2px solid #e0e0e0;
+      border-radius: 14px;
+      padding: 22px;
+      text-align: center;
+      transition: border-color .2s, box-shadow .2s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .resume-card::before {
+      content: '';
+      position: absolute;
+      top: 0; right: 0; left: 0;
+      height: 4px;
+    }
+
+    .resume-card.ats::before  { background: linear-gradient(90deg, #00A859, #00D66F); }
+    .resume-card.hf::before   { background: linear-gradient(90deg, #0066CC, #4da6ff); }
+
+    .resume-card:hover {
+      border-color: #00A859;
+      box-shadow: 0 6px 22px rgba(0,168,89,.12);
+    }
+
+    .resume-card.hf:hover { border-color: #0066CC; box-shadow: 0 6px 22px rgba(0,102,204,.12); }
+
+    .resume-type-badge {
+      display: inline-block;
+      font-size: 0.72rem;
+      font-weight: 900;
+      padding: 3px 12px;
+      border-radius: 12px;
+      margin-bottom: 12px;
+      letter-spacing: .5px;
+    }
+
+    .resume-card.ats .resume-type-badge  { background: rgba(0,168,89,.12); color: #007a40; }
+    .resume-card.hf  .resume-type-badge  { background: rgba(0,102,204,.12); color: #004d99; }
+
+    .resume-icon { font-size: 2.4rem; margin: 6px 0 12px; }
+
+    .resume-title {
+      font-size: 0.95rem;
+      font-weight: 900;
+      color: #1A1A1A;
+      margin-bottom: 6px;
+      line-height: 1.4;
+    }
+
+    .resume-desc {
+      font-size: 0.8rem;
+      color: #777;
+      margin-bottom: 16px;
+      line-height: 1.55;
+    }
+
+    .resume-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 9px 22px;
+      border-radius: 10px;
+      font-family: 'Cairo', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 700;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      transition: transform .15s, box-shadow .15s;
+      width: 100%;
+      justify-content: center;
+      margin-bottom: 8px;
+    }
+
+    .resume-btn:hover { transform: translateY(-2px); }
+
+    .resume-btn.download { background: linear-gradient(135deg,#00A859,#00D66F); color: #fff; box-shadow: 0 3px 12px rgba(0,168,89,.3); }
+    .resume-btn.download-blue { background: linear-gradient(135deg,#0066CC,#4da6ff); color: #fff; box-shadow: 0 3px 12px rgba(0,102,204,.3); }
+    .resume-btn.preview-btn { background: #f4f4f4; color: #444; border: 1.5px solid #ddd; }
+
+    /* PDF preview modal */
+    .pdf-modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.65);
+      z-index: 9000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .pdf-modal-overlay.open { display: flex; }
+
+    .pdf-modal {
+      background: #fff;
+      border-radius: 16px;
+      width: min(92vw, 820px);
+      height: min(92vh, 720px);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0,0,0,.35);
+    }
+
+    .pdf-modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 20px;
+      border-bottom: 1px solid #eee;
+      font-family: 'Cairo', sans-serif;
+      font-weight: 900;
+      font-size: 1rem;
+      background: #fafafa;
+    }
+
+    .pdf-modal-close {
+      background: #fee;
+      border: none;
+      border-radius: 8px;
+      padding: 6px 14px;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: 900;
+      color: #c00;
+      font-family: 'Cairo', sans-serif;
+      transition: background .15s;
+    }
+
+    .pdf-modal-close:hover { background: #fcc; }
+
+    .pdf-modal iframe {
+      flex: 1;
+      width: 100%;
+      border: none;
+    }
+
+    /* Dark mode */
+    body.dark-mode .about-card { background: #1e1e2e; box-shadow: 0 2px 16px rgba(0,0,0,.3); }
+    body.dark-mode .about-card-title { color: #f0f0f0; border-color: #2e2e3e; }
+    body.dark-mode .tl-title { color: #f0f0f0; }
+    body.dark-mode .cert-card { background: #252535; border-color: #333; }
+    body.dark-mode .cert-name { color: #f0f0f0; }
+    body.dark-mode .resume-card { border-color: #333; background: #1e1e2e; }
+    body.dark-mode .resume-title { color: #f0f0f0; }
+    body.dark-mode .resume-btn.preview-btn { background: #2a2a3a; color: #ccc; border-color: #444; }
+    body.dark-mode .skill-tag.green  { background: rgba(0,168,89,.2);  }
+    body.dark-mode .skill-tag.blue   { background: rgba(0,102,204,.2); }
+    body.dark-mode .skill-tag.orange { background: rgba(255,107,0,.2); }
+    body.dark-mode .skill-tag.purple { background: rgba(120,60,200,.2);}
+    body.dark-mode .pdf-modal { background: #1e1e2e; }
+    body.dark-mode .pdf-modal-header { background: #252535; color: #f0f0f0; border-color: #333; }
+  </style>
+</head>
+
+<body class="app-page" data-page="about">
+<div class="app-shell">
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar(false)"></div>
+
+  <!-- ─── Sidebar ──────────────────────────────────────────── -->
+  <aside class="app-sidebar" id="appSidebar" aria-label="القائمة الجانبية">
+    <div class="sidebar-brand">
+      <a href="index.html" class="brand-link">
+        <span class="brand-mark">💼</span>
+        <span class="brand-text">LinkedOFF</span>
+        <span class="brand-sub">AceAlBastoni</span>
+      </a>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a href="index.html"              class="nav-item"><span class="nav-ic">🏠</span><span>الرئيسية</span></a>
+      <a href="search.html"             class="nav-item"><span class="nav-ic">🔍</span><span>البحث عن الوظائف</span></a>
+      <a href="dashboard.html"          class="nav-item"><span class="nav-ic">📊</span><span>لوحة التحكم</span></a>
+      <a href="engines-interactive.html"class="nav-item"><span class="nav-ic">⚙️</span><span>المحركات</span></a>
+      <a href="about.html"              class="nav-item active"><span class="nav-ic">👤</span><span>عني</span></a>
+      <a href="index.html#pricing"      class="nav-item"><span class="nav-ic">💳</span><span>الباقات</span></a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="sidebar-logout" type="button" onclick="performLogout('👋 تم تسجيل الخروج', false)">
+        <span class="nav-ic">🚪</span><span>تسجيل الخروج</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- ─── Main ─────────────────────────────────────────────── -->
+  <div class="app-main">
+    <header class="app-topbar">
+      <button class="sidebar-toggle" type="button" aria-label="فتح/إغلاق القائمة" onclick="toggleSidebar()">
+        <span class="toggle-bars"></span>
+      </button>
+      <div class="topbar-title">👤 عني</div>
+      <div class="topbar-actions">
+        <button id="darkModeBtn" onclick="toggleDarkMode()" title="وضع ليلي" style="
+          background:none;border:1px solid #ddd;border-radius:8px;
+          padding:6px 10px;cursor:pointer;font-size:18px;line-height:1;
+          transition:background .2s,border-color .2s;
+        ">🌙</button>
+      </div>
+    </header>
+
+    <main class="app-content">
+      <div class="about-wrapper">
+
+        <!-- ══ Hero ══════════════════════════════════════════ -->
+        <div class="about-hero">
+          <div class="about-avatar">👨‍💻</div>
+          <div class="about-hero-info">
+            <h1>محمد عبدالحميد علي</h1>
+            <div class="role-badge">💡 مطوّر برمجيات &amp; مهندس حلول</div>
+            <p>
+              مطوّر متعدد التخصصات شغوف ببناء أدوات ذكية تحل مشكلات حقيقية.
+              صاحب مشروع <strong>LinkedOFF KSA</strong> — منصة بحث وتقديم وظائف آلية مدعومة بـ Google Workspace.
+              أسعى للانضمام إلى بيئة تقنية مبدعة في المملكة العربية السعودية.
+            </p>
+            <div class="hero-links">
+              <a class="hero-link-btn" href="Mohamed_Abdelhamid_Heavy_ATS_Final_Editable.pdf" download>
+                📄 تنزيل السيرة (ATS)
+              </a>
+              <a class="hero-link-btn" href="1.Mohamed AbdElhamed Ali_Resume 31 December 2025.pdf" download>
+                🎨 تنزيل السيرة (Human)
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- ══ About Summary ══════════════════════════════════ -->
+        <div class="about-card">
+          <div class="about-card-title"><span class="ic">🧑‍💼</span> نبذة مختصرة</div>
+          <p style="color:#444;line-height:1.85;font-size:0.97rem;">
+            أنا محمد عبدالحميد، مطوّر برمجيات من مصر، أمتلك خبرة في بناء تطبيقات الويب
+            وأتمتة سير العمل باستخدام <strong>JavaScript، Google Apps Script، HTML/CSS</strong>.
+            صممت وطوّرت منصة <strong>LinkedOFF KSA</strong> من الصفر؛ وهي أداة متكاملة
+            للبحث عن الوظائف وإرسال السير الذاتية تلقائياً عبر Gmail مع تتبع التقديمات
+            والإحصائيات اليومية.
+          </p>
+          <p style="color:#444;line-height:1.85;font-size:0.97rem;margin-top:12px;">
+            أؤمن بأن التقنية يجب أن تخدم الإنسان وتوفّر وقته وجهده، لذلك أحرص دائماً على
+            تقديم حلول عملية وقابلة للتطوير. أبحث عن فرصة في بيئة محفّزة تمنحني مجالاً
+            للنمو المهني والمساهمة الحقيقية.
+          </p>
+        </div>
+
+        <!-- ══ Technical Skills ══════════════════════════════ -->
+        <div class="about-card">
+          <div class="about-card-title"><span class="ic">🛠️</span> المهارات التقنية</div>
+
+          <p style="font-size:0.85rem;color:#888;font-weight:700;margin-bottom:10px;">لغات وتقنيات</p>
+          <div class="skills-grid" style="margin-bottom:18px;">
+            <span class="skill-tag green">JavaScript (ES6+)</span>
+            <span class="skill-tag green">HTML5 / CSS3</span>
+            <span class="skill-tag green">Google Apps Script</span>
+            <span class="skill-tag blue">Python</span>
+            <span class="skill-tag blue">SQL</span>
+            <span class="skill-tag orange">REST APIs</span>
+            <span class="skill-tag orange">JSON / XML</span>
+          </div>
+
+          <p style="font-size:0.85rem;color:#888;font-weight:700;margin-bottom:10px;">أدوات ومنصات</p>
+          <div class="skills-grid" style="margin-bottom:18px;">
+            <span class="skill-tag purple">Google Workspace</span>
+            <span class="skill-tag purple">Gmail API / GAS</span>
+            <span class="skill-tag purple">Google Drive API</span>
+            <span class="skill-tag blue">Git / GitHub</span>
+            <span class="skill-tag orange">VS Code</span>
+          </div>
+
+          <p style="font-size:0.85rem;color:#888;font-weight:700;margin-bottom:10px;">مهارات شخصية</p>
+          <div class="skills-grid">
+            <span class="skill-tag green">حل المشكلات</span>
+            <span class="skill-tag green">التفكير التحليلي</span>
+            <span class="skill-tag blue">العمل المستقل</span>
+            <span class="skill-tag orange">التواصل الفعّال</span>
+            <span class="skill-tag purple">التعلم السريع</span>
+          </div>
+        </div>
+
+        <!-- ══ Career Timeline ══════════════════════════════ -->
+        <div class="about-card">
+          <div class="about-card-title"><span class="ic">📅</span> المسيرة المهنية</div>
+          <div class="timeline">
+
+            <div class="tl-item">
+              <div class="tl-dot"></div>
+              <div class="tl-date">2024 — حتى الآن</div>
+              <div class="tl-title">مؤسس ومطوّر — LinkedOFF KSA</div>
+              <div class="tl-company">مشروع شخصي</div>
+              <div class="tl-desc">
+                تصميم وتطوير منصة متكاملة للبحث عن الوظائف وإرسال السير الذاتية آلياً
+                عبر Gmail API وGoogle Apps Script، مع واجهة مستخدم عربية كاملة،
+                نظام تتبع التقديمات، والبحث التدريجي عبر آلاف الوظائف.
+              </div>
+            </div>
+
+            <div class="tl-item past">
+              <div class="tl-dot"></div>
+              <div class="tl-date">يمكنك إضافة تجربتك هنا</div>
+              <div class="tl-title">المسمى الوظيفي</div>
+              <div class="tl-company">اسم الشركة</div>
+              <div class="tl-desc">
+                وصف مختصر للمهام والإنجازات في هذا الدور.
+              </div>
+            </div>
+
+            <div class="tl-item past">
+              <div class="tl-dot"></div>
+              <div class="tl-date">يمكنك إضافة تجربتك هنا</div>
+              <div class="tl-title">المسمى الوظيفي</div>
+              <div class="tl-company">اسم الشركة</div>
+              <div class="tl-desc">
+                وصف مختصر للمهام والإنجازات في هذا الدور.
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ══ Certifications ═══════════════════════════════ -->
+        <div class="about-card">
+          <div class="about-card-title"><span class="ic">🏅</span> الشهادات والدورات</div>
+          <div class="certs-grid">
+
+            <div class="cert-card">
+              <div class="cert-icon">🎓</div>
+              <div class="cert-name">يمكنك إضافة شهادتك هنا</div>
+              <div class="cert-issuer">الجهة المانحة</div>
+              <span class="cert-year">السنة</span>
+            </div>
+
+            <div class="cert-card">
+              <div class="cert-icon">🏆</div>
+              <div class="cert-name">يمكنك إضافة شهادتك هنا</div>
+              <div class="cert-issuer">الجهة المانحة</div>
+              <span class="cert-year">السنة</span>
+            </div>
+
+            <div class="cert-card">
+              <div class="cert-icon">📜</div>
+              <div class="cert-name">يمكنك إضافة شهادتك هنا</div>
+              <div class="cert-issuer">الجهة المانحة</div>
+              <span class="cert-year">السنة</span>
+            </div>
+
+            <div class="cert-card">
+              <div class="cert-icon">⭐</div>
+              <div class="cert-name">يمكنك إضافة شهادتك هنا</div>
+              <div class="cert-issuer">الجهة المانحة</div>
+              <span class="cert-year">السنة</span>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ══ Resumes ═══════════════════════════════════════ -->
+        <div class="about-card">
+          <div class="about-card-title"><span class="ic">📄</span> سيرتي الذاتية</div>
+          <div class="resume-grid">
+
+            <!-- ATS Resume -->
+            <div class="resume-card ats">
+              <div class="resume-type-badge">ATS Safe</div>
+              <div class="resume-icon">🤖</div>
+              <div class="resume-title">نسخة ATS المُحسَّنة</div>
+              <div class="resume-desc">
+                مُصمَّمة لاجتياز أنظمة تتبع المتقدمين (ATS).
+                تنسيق نظيف وكلمات مفتاحية محسوبة.
+              </div>
+              <a class="resume-btn download"
+                 href="Mohamed_Abdelhamid_Heavy_ATS_Final_Editable.pdf" download>
+                ⬇️ تنزيل PDF
+              </a>
+              <button class="resume-btn preview-btn"
+                      onclick="openPdfPreview('Mohamed_Abdelhamid_Heavy_ATS_Final_Editable.pdf', 'السيرة الذاتية — ATS')">
+                👁️ معاينة
+              </button>
+            </div>
+
+            <!-- Human Friendly Resume -->
+            <div class="resume-card hf">
+              <div class="resume-type-badge">Human Friendly</div>
+              <div class="resume-icon">🎨</div>
+              <div class="resume-title">النسخة البصرية الاحترافية</div>
+              <div class="resume-desc">
+                مُصمَّمة للمراجع البشري، بتصميم أنيق يعكس
+                الهوية المهنية بشكل مؤثر.
+              </div>
+              <a class="resume-btn download-blue"
+                 href="1.Mohamed AbdElhamed Ali_Resume 31 December 2025.pdf" download>
+                ⬇️ تنزيل PDF
+              </a>
+              <button class="resume-btn preview-btn"
+                      onclick="openPdfPreview('1.Mohamed AbdElhamed Ali_Resume 31 December 2025.pdf', 'السيرة الذاتية — Human Friendly')">
+                👁️ معاينة
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+      </div><!-- /about-wrapper -->
+    </main>
+  </div><!-- /app-main -->
+</div><!-- /app-shell -->
+
+<!-- ─── PDF Preview Modal ─────────────────────────────────── -->
+<div class="pdf-modal-overlay" id="pdfModal" onclick="closePdfPreviewOnOverlay(event)">
+  <div class="pdf-modal">
+    <div class="pdf-modal-header">
+      <span id="pdfModalTitle">معاينة السيرة الذاتية</span>
+      <button class="pdf-modal-close" onclick="closePdfPreview()">✕ إغلاق</button>
+    </div>
+    <iframe id="pdfModalFrame" src="" title="معاينة PDF"></iframe>
+  </div>
+</div>
+
+<script src="js/search.js" defer></script>
+<script>
+  /* ── Dark mode (reuse same helpers from search.js if loaded, else inline) ── */
+  function initDarkMode() {
+    if (localStorage.getItem('linkedoff_darkMode') === 'true') {
+      document.body.classList.add('dark-mode');
+      var btn = document.getElementById('darkModeBtn');
+      if (btn) btn.textContent = '☀️';
+    }
+  }
+
+  function toggleDarkMode() {
+    var isDark = document.body.classList.toggle('dark-mode');
+    localStorage.setItem('linkedoff_darkMode', isDark);
+    var btn = document.getElementById('darkModeBtn');
+    if (btn) btn.textContent = isDark ? '☀️' : '🌙';
+  }
+
+  /* ── PDF preview modal ───────────────────────────────────── */
+  function openPdfPreview(path, title) {
+    document.getElementById('pdfModalTitle').textContent = title;
+    document.getElementById('pdfModalFrame').src = encodeURI(path);
+    document.getElementById('pdfModal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closePdfPreview() {
+    document.getElementById('pdfModal').classList.remove('open');
+    document.getElementById('pdfModalFrame').src = '';
+    document.body.style.overflow = '';
+  }
+
+  function closePdfPreviewOnOverlay(e) {
+    if (e.target === document.getElementById('pdfModal')) closePdfPreview();
+  }
+
+  /* Escape key closes modal */
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') closePdfPreview();
+  });
+
+  document.addEventListener('DOMContentLoaded', initDarkMode);
+</script>
+</body>
+</html>

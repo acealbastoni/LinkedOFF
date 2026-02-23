@@ -93,6 +93,37 @@
     border-color: var(--primary-color);
 }
 
+/* Boolean search inputs — span full row */
+.filter-group--wide {
+    grid-column: 1 / -1;
+}
+
+.filter-group input[type="text"] {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #E0E0E0;
+    border-radius: 10px;
+    font-family: 'Cairo', sans-serif;
+    font-size: 0.95rem;
+    background: #fff;
+    color: var(--dark-color);
+    transition: border-color 0.3s;
+    box-sizing: border-box;
+    direction: rtl;
+}
+
+.filter-group input[type="text"]:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+/* dark mode */
+body.dark-mode .filter-group input[type="text"] {
+    background: #2a2a2a;
+    border-color: #444;
+    color: #f0f0f0;
+}
+
 .filter-actions {
     display: flex;
     gap: 15px;
