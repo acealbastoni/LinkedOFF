@@ -1006,6 +1006,7 @@ body.app-page{
   flex-direction:column;
   gap: 6px;
   padding: 8px 4px;
+  visibility: hidden; /* hidden until RBAC filters it — prevents flash */
 }
 .sidebar-nav .nav-item{
   display:flex;
@@ -1045,6 +1046,14 @@ body.app-page{
   padding-top: 14px;
   border-top: 1px solid var(--panel-border);
 }
+
+/* Daily sent widget — shared across all pages */
+body.dark-mode #dailySentWidget {
+  background: rgba(0,168,89,.08) !important;
+  border-color: rgba(0,168,89,.2) !important;
+}
+#dailySentWidget span[id="dailySentCount"] { color: #00A859; }
+body.dark-mode #dailySentWidget div { color: #aaa; }
 .sidebar-logout{
   width: 100%;
   display:flex;

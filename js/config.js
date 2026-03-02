@@ -7,9 +7,9 @@
 
 const APP_CONFIG = {
     // Version Info
-    version: '1.3.5',
-    releaseDate: '2026-02-23',
-    buildNumber: '20260223',
+    version: '1.3.6',
+    releaseDate: '2026-03-02',
+    buildNumber: '20260302',
     
     // App Info
     appName: 'LinkedOFF KSA',
@@ -19,6 +19,25 @@ const APP_CONFIG = {
     // Display Settings
     showVersionBadge: true,  // Show version badge in navbar
     showBuildNumber: true ,   // Show build number in footer
+
+    // ── Role-Based Access Control ─────────────────────────────────────────
+    // adminEmails: users whose email is here are treated as Admin
+    //              even if the backend didn't return role:'admin'.
+    //              Add your email here to become admin on your device.
+    adminEmails: [
+         'acealbastony@gmail.com',
+    ],
+
+    // pageAccess: maps page filename → minimum role required.
+    //   'admin' → only admins can see/visit this page.
+    //   Pages NOT listed here are accessible to all authenticated users.
+    pageAccess: {
+        'settings.html':            'admin',
+        'engines-interactive.html': 'admin',
+        'users.html':               'admin',
+        // 'admin-panel.html': 'admin',   // example: add more restricted pages here
+    },
+    // ─────────────────────────────────────────────────────────────────────
     
     // Format: "v1.2.0 - 25 ديسمبر 2024"
     getVersionString: function() {

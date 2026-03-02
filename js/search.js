@@ -673,7 +673,7 @@ function renderSearchResultPagination_() {
     const pg = _searchCurrentPage;
     let html = `<button onclick="changeSearchPage_(${pg - 1})" ${pg <= 1 ? 'disabled' : ''}>← السابق</button>`;
 
-    const maxBtn = 5;
+    const maxBtn = 10;
     let start = Math.max(1, pg - Math.floor(maxBtn / 2));
     let end   = Math.min(totalPgs, start + maxBtn - 1);
     if (end - start + 1 < maxBtn) start = Math.max(1, end - maxBtn + 1);
@@ -903,7 +903,7 @@ function renderPagination() {
     `;
 
     // Page numbers
-    const maxButtons = 5;
+    const maxButtons = 10;
     let startPage = Math.max(1, currentPage - Math.floor(maxButtons / 2));
     let endPage = Math.min(totalPages, startPage + maxButtons - 1);
 

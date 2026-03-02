@@ -3,7 +3,14 @@
     "allow": [
       "Bash(grep:*)",
       "Bash(powershell -Command \"\\(Get-Content ''c:/ffffff/hfghgf/jobhub-ksa/about.html'' -Raw\\) -replace ''\\(?m\\)^\\\\s*<div[^>]*class=\"\"version-badge\"\"[^>]*id=\"\"versionBadge\"\"[^>]*>.*?</div>\\\\s*\\\\r?\\\\n'', '''' | Set-Content ''c:/ffffff/hfghgf/jobhub-ksa/about.html'' -NoNewline\")",
-      "Bash(powershell -File:*)"
+      "Bash(powershell -File:*)",
+      "Read(//c/ffffff/hfghgf/jobhub-ksa/**)",
+      "Bash(powershell.exe -NoProfile:*)",
+      "Bash(/c/ffffff/hfghgf/jobhub-ksa/fix_nav.ps1:*)",
+      "Bash(/c/ffffff/hfghgf/jobhub-ksa/fix_nav2.ps1:*)"
+    ],
+    "additionalDirectories": [
+      "\\tmp"
     ]
   }
 }

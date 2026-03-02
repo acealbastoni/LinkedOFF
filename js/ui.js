@@ -206,12 +206,54 @@
 
 
   /* ════════════════════════════════════════════════════
+     4. DAILY SENT WIDGET (sidebar — all pages)
+     Shows today's sent-CV count consistently across
+     every page so the sidebar height never jumps.
+  ════════════════════════════════════════════════════ */
+  function initDailySentWidget() {
+    /* Skip if the widget already exists (e.g. hardcoded fallback) */
+    if (document.getElementById('dailySentWidget')) return;
+
+    var footer = document.querySelector('.sidebar-footer');
+    if (!footer) return;
+
+    try {
+      var today  = new Date().toISOString().slice(0, 10);
+      var daily  = JSON.parse(localStorage.getItem('dailySends') || '{}');
+      var count  = daily[today] || 0;
+
+      var widget = document.createElement('div');
+      widget.id  = 'dailySentWidget';
+      widget.style.cssText = [
+        'margin:0 12px 10px',
+        'padding:10px 14px',
+        'background:rgba(0,168,89,.13)',
+        'border-radius:10px',
+        'border:1px solid rgba(0,168,89,.25)',
+        'opacity:' + (count > 0 ? '1' : '0.5'),
+        'transition:opacity .3s',
+      ].join(';');
+
+      widget.innerHTML =
+        '<div style="font-size:12px;color:#888;margin-bottom:4px;font-family:\'Cairo\',sans-serif;">إرسال اليوم</div>' +
+        '<div style="display:flex;align-items:center;gap:8px;">' +
+          '<span id="dailySentCount" style="font-size:22px;font-weight:900;color:#00A859;font-family:\'Cairo\',sans-serif;">' + count + '</span>' +
+          '<span style="font-size:12px;color:#666;font-family:\'Cairo\',sans-serif;">سيرة ذاتية مرسلة</span>' +
+        '</div>';
+
+      footer.parentNode.insertBefore(widget, footer);
+    } catch (e) {}
+  }
+
+
+  /* ════════════════════════════════════════════════════
      INIT — run after DOM is ready
   ════════════════════════════════════════════════════ */
   function init() {
     initBackToTop();
     initSidebarCounters();
     initNotifBadge();
+    initDailySentWidget();
   }
 
   if (document.readyState === 'loading') {

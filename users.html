@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>إدارة المستخدمين - LinkedOFF KSA</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/enhancements.css">
+  <link rel="stylesheet" href="css/responsive.css">
+
+  <!-- ═══ EARLY AUTH GUARD ═══ -->
+  <style>body { visibility: hidden; }</style>
+  <script>
+    (function () {
+      try {
+        var user = JSON.parse(localStorage.getItem('linkedoff_user') || 'null');
+        var sess = JSON.parse(localStorage.getItem('linkedoff_session') || 'null');
+        if (!user || !sess || !sess.token || Date.now() > Number(sess.expiresAtMs || 0)) {
+          window.location.replace('login.html');
+        } else {
+          document.addEventListener('DOMContentLoaded', function () {
+            document.body.style.visibility = 'visible';
+          });
+        }
+      } catch (e) { window.location.replace('login.html'); }
+    })();
+  </script>
+  <!-- ════════════════════════ -->
+
+  <script src="js/auth.js"></script>
+  <script>startSessionEnforcer();</script>
+
+  <style>
+    /* ─── Users Management Styles ──────────────────────────────── */
+
+    /* Stats row */
+    .um-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .um-stat-card {
+      background: rgba(255,255,255,.04);
+      border: 1px solid var(--panel-border, rgba(255,255,255,.1));
+      border-radius: 16px;
+      padding: 20px 22px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      transition: border-color .2s;
+    }
+    .um-stat-card:hover { border-color: rgba(255,255,255,.18); }
+    .um-stat-icon {
+      width: 48px; height: 48px; border-radius: 14px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center; font-size: 22px;
+    }
+    .um-stat-icon.total  { background: rgba(96,200,255,.12); border: 1px solid rgba(96,200,255,.2); }
+    .um-stat-icon.admins { background: rgba(251,191,36,.12);  border: 1px solid rgba(251,191,36,.2); }
+    .um-stat-icon.users  { background: rgba(0,168,89,.12);    border: 1px solid rgba(0,168,89,.2);   }
+    .um-stat-value { font-size: 30px; font-weight: 900; color: var(--text, #f0f0f0); line-height: 1; }
+    .um-stat-label { font-size: 12px; color: var(--muted, #888); margin-top: 5px; }
+
+    /* Toolbar */
+    .um-toolbar {
+      display: flex; gap: 12px; align-items: center;
+      margin-bottom: 20px; flex-wrap: wrap;
+    }
+    .um-search-wrap { flex: 1; min-width: 200px; position: relative; }
+    .um-search-wrap input {
+      width: 100%; padding: 10px 14px 10px 40px;
+      border-radius: 12px;
+      border: 1px solid var(--panel-border, rgba(255,255,255,.1));
+      background: rgba(255,255,255,.04);
+      color: var(--text, #f0f0f0);
+      font-family: 'Cairo', sans-serif; font-size: 14px;
+      outline: none; transition: border-color .2s;
+    }
+    .um-search-wrap input:focus { border-color: var(--primary, #00A859); }
+    .um-search-wrap input::placeholder { color: var(--muted, #888); }
+    .um-search-icon {
+      position: absolute; right: 13px; top: 50%;
+      transform: translateY(-50%); font-size: 15px; pointer-events: none;
+    }
+    .um-btn {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 10px 18px; border-radius: 12px;
+      font-family: 'Cairo', sans-serif; font-size: 14px; font-weight: 700;
+      cursor: pointer; border: none; transition: all .2s; white-space: nowrap;
+    }
+    .um-btn-primary {
+      background: linear-gradient(135deg, #00A859, #00D66F);
+      color: #fff; box-shadow: 0 3px 12px rgba(0,168,89,.3);
+    }
+    .um-btn-primary:hover { transform: translateY(-1px); box-shadow: 0 5px 18px rgba(0,168,89,.45); }
+    .um-btn-secondary {
+      background: rgba(255,255,255,.06);
+      border: 1px solid var(--panel-border, rgba(255,255,255,.12));
+      color: var(--text, #f0f0f0);
+    }
+    .um-btn-secondary:hover { background: rgba(255,255,255,.1); }
+    .um-btn-sm { padding: 7px 14px; font-size: 13px; border-radius: 10px; }
+    .um-btn-danger {
+      background: rgba(239,68,68,.1);
+      border: 1px solid rgba(239,68,68,.25);
+      color: #ef4444;
+    }
+    .um-btn-danger:hover { background: rgba(239,68,68,.2); }
+    .um-btn-edit {
+      background: rgba(96,165,250,.1);
+      border: 1px solid rgba(96,165,250,.25);
+      color: #60a5fa;
+    }
+    .um-btn-edit:hover { background: rgba(96,165,250,.2); }
+
+    /* Table wrapper */
+    .um-table-wrap {
+      background: rgba(255,255,255,.03);
+      border: 1px solid var(--panel-border, rgba(255,255,255,.1));
+      border-radius: 16px; overflow: hidden;
+    }
+    .um-table-head {
+      display: grid;
+      grid-template-columns: 1.8fr 2.2fr 1.1fr 1.4fr auto;
+      padding: 12px 20px;
+      background: rgba(255,255,255,.04);
+      border-bottom: 1px solid var(--panel-border, rgba(255,255,255,.08));
+      font-size: 11px; font-weight: 700; color: var(--muted, #888);
+      text-transform: uppercase; letter-spacing: .5px; gap: 16px;
+    }
+    .um-user-row {
+      display: grid;
+      grid-template-columns: 1.8fr 2.2fr 1.1fr 1.4fr auto;
+      padding: 14px 20px; align-items: center; gap: 16px;
+      border-bottom: 1px solid rgba(255,255,255,.05);
+      transition: background .15s;
+    }
+    .um-user-row:last-child { border-bottom: none; }
+    .um-user-row:hover { background: rgba(255,255,255,.03); }
+
+    /* Avatar + name cell */
+    .um-user-name-cell { display: flex; align-items: center; gap: 10px; }
+    .um-avatar {
+      width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px; font-weight: 900;
+      background: rgba(0,168,89,.14); border: 1.5px solid rgba(0,168,89,.28); color: #00A859;
+    }
+    .um-avatar.is-admin { background: rgba(251,191,36,.14); border-color: rgba(251,191,36,.3); color: #fbbf24; }
+    .um-name-line { font-size: 14px; font-weight: 700; color: var(--text, #f0f0f0); }
+    .um-name-line.unnamed { color: var(--muted, #888); font-weight: 400; font-style: italic; }
+
+    /* Email cell */
+    .um-email-cell { font-size: 13px; color: var(--muted, #aaa); direction: ltr; text-align: right; word-break: break-all; }
+
+    /* Role badge */
+    .um-role-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 4px 12px; border-radius: 20px;
+      font-size: 12px; font-weight: 700;
+    }
+    .um-role-badge.admin { background: rgba(251,191,36,.14); color: #fbbf24; border: 1px solid rgba(251,191,36,.28); }
+    .um-role-badge.user  { background: rgba(0,168,89,.12);   color: #00A859;  border: 1px solid rgba(0,168,89,.25); }
+
+    /* Date cell */
+    .um-date-cell { font-size: 13px; color: var(--muted, #888); }
+
+    /* Action cell */
+    .um-actions-cell { display: flex; gap: 7px; justify-content: flex-end; }
+
+    /* Source chip */
+    .um-source-chip {
+      display: inline-block; font-size: 10px; padding: 2px 8px;
+      border-radius: 8px; margin-right: 6px; font-weight: 700;
+      background: rgba(96,200,255,.1); color: #60c8ff;
+      border: 1px solid rgba(96,200,255,.2);
+    }
+
+    /* Empty state */
+    .um-empty {
+      text-align: center; padding: 64px 20px; color: var(--muted, #888);
+    }
+    .um-empty-icon { font-size: 60px; margin-bottom: 16px; opacity: .55; }
+    .um-empty-title { font-size: 1.1rem; font-weight: 700; color: var(--text, #f0f0f0); margin-bottom: 8px; }
+    .um-empty-sub { font-size: 0.9rem; margin-bottom: 28px; line-height: 1.7; }
+
+    /* Modal */
+    .um-modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,.65); z-index: 9000;
+      align-items: center; justify-content: center;
+    }
+    .um-modal-overlay.open { display: flex; }
+    .um-modal {
+      background: #131324;
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 20px; padding: 32px 28px;
+      width: min(96vw, 460px); max-height: 90vh; overflow-y: auto;
+      box-shadow: 0 24px 64px rgba(0,0,0,.6);
+    }
+    .um-modal-title {
+      font-size: 1.15rem; font-weight: 900; color: var(--text, #f0f0f0);
+      margin-bottom: 24px; display: flex; align-items: center; gap: 10px;
+    }
+    .um-field { margin-bottom: 18px; }
+    .um-label {
+      display: block; font-size: 13px; font-weight: 700;
+      color: var(--muted, #aaa); margin-bottom: 7px;
+    }
+    .um-input {
+      width: 100%; padding: 11px 14px; border-radius: 12px;
+      border: 1.5px solid rgba(255,255,255,.1);
+      background: rgba(255,255,255,.05);
+      color: var(--text, #f0f0f0); font-family: 'Cairo', sans-serif; font-size: 14px;
+      outline: none; transition: border-color .2s;
+    }
+    .um-input:focus { border-color: #00A859; }
+    .um-input::placeholder { color: rgba(255,255,255,.28); }
+    .um-select {
+      width: 100%; padding: 11px 14px; border-radius: 12px;
+      border: 1.5px solid rgba(255,255,255,.1);
+      background: rgba(20,20,38,.9);
+      color: var(--text, #f0f0f0); font-family: 'Cairo', sans-serif; font-size: 14px;
+      outline: none; cursor: pointer; transition: border-color .2s;
+    }
+    .um-select:focus { border-color: #00A859; }
+    .um-select option { background: #131324; }
+    .um-field-error { color: #ef4444; font-size: 12px; margin-top: 5px; display: none; }
+    .um-modal-actions { display: flex; gap: 12px; margin-top: 24px; }
+    .um-modal-actions .um-btn { flex: 1; justify-content: center; }
+
+    /* Delete confirm */
+    .um-confirm-text {
+      font-size: 15px; color: var(--text, #f0f0f0);
+      line-height: 1.7; margin-bottom: 6px;
+    }
+    .um-confirm-email { font-weight: 900; color: #ef4444; }
+    .um-confirm-note { font-size: 13px; color: var(--muted, #888); margin-bottom: 4px; }
+
+    /* Toast notification */
+    .um-toast {
+      position: fixed; bottom: 28px; left: 50%;
+      transform: translateX(-50%) translateY(140%);
+      padding: 12px 28px; border-radius: 14px;
+      font-family: 'Cairo', sans-serif; font-weight: 700; font-size: 14px;
+      z-index: 9999; transition: transform .3s ease;
+      background: #1a1a30; border: 1px solid rgba(255,255,255,.12);
+      color: #f0f0f0; white-space: nowrap;
+    }
+    .um-toast.show { transform: translateX(-50%) translateY(0); }
+    .um-toast.success { border-color: rgba(0,168,89,.5); color: #00D66F; }
+    .um-toast.error   { border-color: rgba(239,68,68,.5); color: #f87171; }
+    .um-toast.info    { border-color: rgba(96,200,255,.4); color: #60c8ff; }
+
+    /* Dark mode */
+    body.dark-mode .um-modal { background: #0e0e20; }
+    body.dark-mode .um-select { background: rgba(10,10,22,.95); }
+    body.dark-mode .um-toast  { background: #0e0e20; }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .um-table-head { display: none; }
+      .um-user-row {
+        grid-template-columns: 1fr;
+        gap: 10px; padding: 16px 18px;
+        border-bottom: 1px solid rgba(255,255,255,.07);
+      }
+      .um-actions-cell { justify-content: flex-start; }
+    }
+    @media (max-width: 600px) {
+      .um-stats { grid-template-columns: 1fr 1fr; }
+      .um-stats .um-stat-card:first-child { grid-column: span 2; }
+    }
+    @media (max-width: 420px) {
+      .um-stats { grid-template-columns: 1fr; }
+      .um-stats .um-stat-card:first-child { grid-column: 1; }
+      .um-toolbar { flex-direction: column; }
+      .um-search-wrap { min-width: unset; }
+    }
+  </style>
+</head>
+<body class="app-page" data-page="users">
+<div class="app-shell">
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar(false)"></div>
+  <aside class="app-sidebar" id="appSidebar" aria-label="القائمة الجانبية">
+    <div class="sidebar-brand">
+      <a href="search.html" class="brand-link">
+        <span class="brand-mark">💼</span>
+        <span class="brand-text">LinkedOFF</span>
+        <span class="brand-sub">AceAlBastoni</span>
+      </a>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="search.html"              class="nav-item"><span class="nav-ic">🔍</span><span>البحث عن الوظائف</span></a>
+      <a href="dashboard.html"           class="nav-item"><span class="nav-ic">📊</span><span>لوحة التحكم</span></a>
+      <a href="analytics.html"           class="nav-item"><span class="nav-ic">📈</span><span>تحليلات السوق</span></a>
+      <a href="saved.html"               class="nav-item"><span class="nav-ic">💾</span><span>الوظائف المحفوظة</span></a>
+      <a href="history.html"             class="nav-item"><span class="nav-ic">📬</span><span>سجل الإرسال</span></a>
+      <a href="engines-interactive.html" class="nav-item"><span class="nav-ic">⚙️</span><span>المحركات</span></a>
+      <a href="users.html"               class="nav-item active"><span class="nav-ic">👥</span><span>إدارة المستخدمين</span></a>
+      <a href="about.html"               class="nav-item"><span class="nav-ic">👤</span><span>عن المطوّر</span></a>
+      <a href="pricing.html"             class="nav-item"><span class="nav-ic">💳</span><span>الباقات</span></a>
+      <a href="settings.html"            class="nav-item"><span class="nav-ic">🔧</span><span>الإعدادات</span></a>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="sidebar-logout" type="button" onclick="performLogout('👋 تم تسجيل الخروج', false)">
+        <span class="nav-ic">🚪</span><span>تسجيل الخروج</span>
+      </button>
+    </div>
+  </aside>
+
+  <div class="app-main">
+    <header class="app-topbar">
+      <button class="sidebar-toggle" type="button" aria-label="فتح/إغلاق القائمة" onclick="toggleSidebar()">
+        <span class="toggle-bars"></span>
+      </button>
+      <div class="topbar-title">👥 إدارة المستخدمين</div>
+      <div class="topbar-actions">
+        <button id="darkModeBtn" onclick="toggleDarkMode()" title="وضع ليلي" style="
+          background:none;border:1px solid #ddd;border-radius:8px;
+          padding:6px 10px;cursor:pointer;font-size:18px;line-height:1;
+          transition:background .2s,border-color .2s;
+        ">🌙</button>
+      </div>
+    </header>
+
+    <main class="app-content">
+
+      <!-- Stats -->
+      <div class="um-stats">
+        <div class="um-stat-card">
+          <div class="um-stat-icon total">👥</div>
+          <div>
+            <div class="um-stat-value" id="statTotal">0</div>
+            <div class="um-stat-label">إجمالي المستخدمين</div>
+          </div>
+        </div>
+        <div class="um-stat-card">
+          <div class="um-stat-icon admins">👑</div>
+          <div>
+            <div class="um-stat-value" id="statAdmins">0</div>
+            <div class="um-stat-label">مديرو النظام</div>
+          </div>
+        </div>
+        <div class="um-stat-card">
+          <div class="um-stat-icon users">👤</div>
+          <div>
+            <div class="um-stat-value" id="statUsers">0</div>
+            <div class="um-stat-label">مستخدمون عاديون</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Toolbar -->
+      <div class="um-toolbar">
+        <div class="um-search-wrap">
+          <span class="um-search-icon">🔍</span>
+          <input type="text" id="umSearchInput" placeholder="ابحث بالاسم أو البريد الإلكتروني..." oninput="filterUsers()">
+        </div>
+        <button class="um-btn um-btn-secondary" onclick="syncFromConfig()" title="استيراد المديرين من adminEmails في config.js">
+          🔄 مزامنة
+        </button>
+        <button class="um-btn um-btn-primary" onclick="openAddModal()">
+          ➕ إضافة مستخدم
+        </button>
+      </div>
+
+      <!-- Users Table -->
+      <div class="um-table-wrap">
+        <div class="um-table-head">
+          <div>المستخدم</div>
+          <div>البريد الإلكتروني</div>
+          <div>الدور</div>
+          <div>تاريخ الإضافة</div>
+          <div></div>
+        </div>
+        <div id="umUsersList">
+          <!-- rows injected by JS -->
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- ─── Toast ───────────────────────────────────── -->
+<div class="um-toast" id="umToast"></div>
+
+<!-- ─── Add / Edit Modal ─────────────────────────── -->
+<div class="um-modal-overlay" id="umFormModal">
+  <div class="um-modal">
+    <div class="um-modal-title" id="umFormTitle">➕ إضافة مستخدم</div>
+    <input type="hidden" id="umEditId">
+
+    <div class="um-field">
+      <label class="um-label" for="umFieldName">الاسم (اختياري)</label>
+      <input class="um-input" type="text" id="umFieldName" placeholder="مثال: أحمد محمد">
+    </div>
+
+    <div class="um-field">
+      <label class="um-label" for="umFieldEmail">البريد الإلكتروني <span style="color:#ef4444">*</span></label>
+      <input class="um-input" type="email" id="umFieldEmail" placeholder="user@example.com" dir="ltr">
+      <div class="um-field-error" id="umEmailError"></div>
+    </div>
+
+    <div class="um-field">
+      <label class="um-label" for="umFieldRole">الدور</label>
+      <select class="um-select" id="umFieldRole">
+        <option value="user">👤 مستخدم عادي</option>
+        <option value="admin">👑 مدير النظام</option>
+      </select>
+    </div>
+
+    <div class="um-modal-actions">
+      <button class="um-btn um-btn-secondary" onclick="closeFormModal()">إلغاء</button>
+      <button class="um-btn um-btn-primary" onclick="saveUser()">💾 حفظ</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── Delete Confirm Modal ─────────────────────── -->
+<div class="um-modal-overlay" id="umDeleteModal">
+  <div class="um-modal">
+    <div class="um-modal-title">🗑️ تأكيد الحذف</div>
+    <p class="um-confirm-text">
+      هل أنت متأكد من حذف المستخدم<br>
+      <span class="um-confirm-email" id="umDeleteEmail"></span>؟
+    </p>
+    <p class="um-confirm-note">
+      سيُزال من سجل المستخدمين. لن يؤثر ذلك على بيانات جلسته الحالية.
+    </p>
+    <div class="um-modal-actions">
+      <button class="um-btn um-btn-secondary" onclick="closeDeleteModal()">إلغاء</button>
+      <button class="um-btn um-btn-danger" onclick="confirmDelete()" style="flex:1;justify-content:center;padding:10px 18px;font-size:14px;">🗑️ نعم، احذف</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  /* ════════════════════════════════════════════════════
+     Users Management — Core Logic
+     Storage key: 'linkedoff_users_registry'
+     Schema: [{ id, name, email, role, addedAt, source }]
+  ════════════════════════════════════════════════════ */
+
+  var UM_KEY        = 'linkedoff_users_registry';
+  var umDeleteTarget = null;
+  var umToastTimer   = null;
+
+  /* ── Storage helpers ─────────────────────────── */
+  function umLoad() {
+    try { return JSON.parse(localStorage.getItem(UM_KEY) || '[]'); }
+    catch (e) { return []; }
+  }
+  function umSave(list) {
+    localStorage.setItem(UM_KEY, JSON.stringify(list));
+  }
+
+  /* ── Toast ───────────────────────────────────── */
+  function umToast(msg, type) {
+    var el = document.getElementById('umToast');
+    if (!el) return;
+    if (umToastTimer) clearTimeout(umToastTimer);
+    el.textContent = msg;
+    el.className   = 'um-toast ' + (type || 'info') + ' show';
+    umToastTimer = setTimeout(function () { el.classList.remove('show'); }, 3200);
+  }
+
+  /* ── Date formatter (Arabic) ─────────────────── */
+  function umFmtDate(iso) {
+    try {
+      var d = new Date(iso);
+      var m = ['يناير','فبراير','مارس','إبريل','مايو','يونيو',
+               'يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+      return d.getDate() + ' ' + m[d.getMonth()] + ' ' + d.getFullYear();
+    } catch (e) { return '—'; }
+  }
+
+  /* ── Stats ───────────────────────────────────── */
+  function umUpdateStats(list) {
+    var admins = list.filter(function (u) { return u.role === 'admin'; }).length;
+    document.getElementById('statTotal').textContent  = list.length;
+    document.getElementById('statAdmins').textContent = admins;
+    document.getElementById('statUsers').textContent  = list.length - admins;
+  }
+
+  /* ── Render list ─────────────────────────────── */
+  function umRender(list) {
+    var search   = (document.getElementById('umSearchInput').value || '').toLowerCase().trim();
+    var filtered = list.filter(function (u) {
+      return (u.email || '').toLowerCase().includes(search) ||
+             (u.name  || '').toLowerCase().includes(search);
+    });
+
+    var container = document.getElementById('umUsersList');
+
+    if (!filtered.length) {
+      container.innerHTML =
+        '<div class="um-empty">' +
+          '<div class="um-empty-icon">' + (search ? '🔍' : '👥') + '</div>' +
+          '<div class="um-empty-title">' + (search ? 'لا توجد نتائج مطابقة' : 'لا يوجد مستخدمون بعد') + '</div>' +
+          '<div class="um-empty-sub">' +
+            (search
+              ? 'جرب كلمة بحث مختلفة أو تأكد من التهجئة'
+              : 'أضف مستخدمين يدوياً أو اضغط <strong>مزامنة</strong> لاستيراد المديرين من config.js') +
+          '</div>' +
+          (!search
+            ? '<button class="um-btn um-btn-primary" onclick="openAddModal()" style="margin:0 auto;">➕ إضافة أول مستخدم</button>'
+            : '') +
+        '</div>';
+      return;
+    }
+
+    container.innerHTML = filtered.map(function (u) {
+      var isAdmin  = u.role === 'admin';
+      var initial  = ((u.name || u.email || '?').trim().charAt(0) || '?').toUpperCase();
+      var srcChip  = u.source === 'config'
+        ? '<span class="um-source-chip">config</span>'
+        : '';
+      return (
+        '<div class="um-user-row">' +
+          /* Name */
+          '<div class="um-user-name-cell">' +
+            '<div class="um-avatar' + (isAdmin ? ' is-admin' : '') + '">' + initial + '</div>' +
+            '<div>' +
+              '<div class="um-name-line' + (!u.name ? ' unnamed' : '') + '">' +
+                (u.name ? umEsc(u.name) : 'بدون اسم') + srcChip +
+              '</div>' +
+            '</div>' +
+          '</div>' +
+          /* Email */
+          '<div class="um-email-cell">' + umEsc(u.email || '—') + '</div>' +
+          /* Role */
+          '<div>' +
+            '<span class="um-role-badge ' + u.role + '">' +
+              (isAdmin ? '👑 مدير' : '👤 مستخدم') +
+            '</span>' +
+          '</div>' +
+          /* Date */
+          '<div class="um-date-cell">' + umFmtDate(u.addedAt) + '</div>' +
+          /* Actions */
+          '<div class="um-actions-cell">' +
+            '<button class="um-btn um-btn-edit um-btn-sm" onclick="openEditModal(\'' + u.id + '\')">✏️ تعديل</button>' +
+            '<button class="um-btn um-btn-danger um-btn-sm" onclick="openDeleteModal(\'' + u.id + '\')">🗑️</button>' +
+          '</div>' +
+        '</div>'
+      );
+    }).join('');
+  }
+
+  /* ── Escape HTML ─────────────────────────────── */
+  function umEsc(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  /* ── Filter ──────────────────────────────────── */
+  function filterUsers() {
+    umRender(umLoad());
+  }
+
+  /* ── Full refresh ────────────────────────────── */
+  function umRefresh() {
+    var list = umLoad();
+    umUpdateStats(list);
+    umRender(list);
+  }
+
+  /* ── Add modal ───────────────────────────────── */
+  function openAddModal() {
+    document.getElementById('umFormTitle').textContent = '➕ إضافة مستخدم';
+    document.getElementById('umEditId').value     = '';
+    document.getElementById('umFieldName').value  = '';
+    document.getElementById('umFieldEmail').value = '';
+    document.getElementById('umFieldRole').value  = 'user';
+    document.getElementById('umEmailError').style.display = 'none';
+    document.getElementById('umFormModal').classList.add('open');
+    setTimeout(function () { document.getElementById('umFieldEmail').focus(); }, 120);
+  }
+
+  /* ── Edit modal ──────────────────────────────── */
+  function openEditModal(id) {
+    var user = umLoad().find(function (u) { return u.id === id; });
+    if (!user) return;
+    document.getElementById('umFormTitle').textContent = '✏️ تعديل مستخدم';
+    document.getElementById('umEditId').value     = id;
+    document.getElementById('umFieldName').value  = user.name  || '';
+    document.getElementById('umFieldEmail').value = user.email || '';
+    document.getElementById('umFieldRole').value  = user.role  || 'user';
+    document.getElementById('umEmailError').style.display = 'none';
+    document.getElementById('umFormModal').classList.add('open');
+  }
+
+  function closeFormModal() {
+    document.getElementById('umFormModal').classList.remove('open');
+  }
+
+  /* ── Save (add or edit) ──────────────────────── */
+  function saveUser() {
+    var id    = document.getElementById('umEditId').value.trim();
+    var name  = document.getElementById('umFieldName').value.trim();
+    var email = document.getElementById('umFieldEmail').value.trim().toLowerCase();
+    var role  = document.getElementById('umFieldRole').value;
+    var errEl = document.getElementById('umEmailError');
+
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      errEl.textContent    = 'يرجى إدخال بريد إلكتروني صحيح';
+      errEl.style.display  = 'block';
+      return;
+    }
+    errEl.style.display = 'none';
+
+    var list = umLoad();
+
+    if (id) {
+      /* Edit */
+      var idx = list.findIndex(function (u) { return u.id === id; });
+      if (idx === -1) return;
+      var dup = list.find(function (u) { return u.email === email && u.id !== id; });
+      if (dup) {
+        errEl.textContent   = 'هذا البريد الإلكتروني مسجّل لمستخدم آخر';
+        errEl.style.display = 'block';
+        return;
+      }
+      list[idx].name  = name;
+      list[idx].email = email;
+      list[idx].role  = role;
+      umSave(list);
+      closeFormModal();
+      umRefresh();
+      umToast('✅ تم تحديث بيانات المستخدم', 'success');
+    } else {
+      /* Add */
+      var dup2 = list.find(function (u) { return u.email === email; });
+      if (dup2) {
+        errEl.textContent   = 'هذا البريد الإلكتروني مسجّل مسبقاً في السجل';
+        errEl.style.display = 'block';
+        return;
+      }
+      list.push({
+        id:      String(Date.now()),
+        name:    name,
+        email:   email,
+        role:    role,
+        addedAt: new Date().toISOString(),
+        source:  'manual'
+      });
+      umSave(list);
+      closeFormModal();
+      umRefresh();
+      umToast('✅ تمت إضافة المستخدم بنجاح', 'success');
+    }
+  }
+
+  /* ── Delete ──────────────────────────────────── */
+  function openDeleteModal(id) {
+    var user = umLoad().find(function (u) { return u.id === id; });
+    if (!user) return;
+    umDeleteTarget = id;
+    document.getElementById('umDeleteEmail').textContent = user.email;
+    document.getElementById('umDeleteModal').classList.add('open');
+  }
+
+  function closeDeleteModal() {
+    umDeleteTarget = null;
+    document.getElementById('umDeleteModal').classList.remove('open');
+  }
+
+  function confirmDelete() {
+    if (!umDeleteTarget) return;
+    var list = umLoad().filter(function (u) { return u.id !== umDeleteTarget; });
+    umSave(list);
+    closeDeleteModal();
+    umRefresh();
+    umToast('🗑️ تم حذف المستخدم', 'info');
+  }
+
+  /* ── Sync from config.js adminEmails ─────────── */
+  function syncFromConfig() {
+    var adminEmails = (window.APP_CONFIG && APP_CONFIG.adminEmails) || [];
+    if (!adminEmails.length) {
+      umToast('⚠️ لا يوجد بريد إلكتروني في adminEmails', 'error');
+      return;
+    }
+    var list    = umLoad();
+    var added   = 0;
+    var updated = 0;
+
+    adminEmails.forEach(function (email) {
+      var e        = String(email).toLowerCase().trim();
+      var existing = list.find(function (u) { return u.email === e; });
+      if (existing) {
+        if (existing.role !== 'admin') {
+          existing.role = 'admin';
+          updated++;
+        }
+      } else {
+        list.push({
+          id:      String(Date.now() + Math.round(Math.random() * 9999)),
+          name:    '',
+          email:   e,
+          role:    'admin',
+          addedAt: new Date().toISOString(),
+          source:  'config'
+        });
+        added++;
+      }
+    });
+
+    umSave(list);
+    umRefresh();
+
+    if (!added && !updated) {
+      umToast('ℹ️ جميع مديري config.js موجودون بالفعل', 'info');
+    } else {
+      var parts = [];
+      if (added)   parts.push(added   + ' مستخدم جديد');
+      if (updated) parts.push(updated + ' ترقية إلى مدير');
+      umToast('✅ مزامنة مكتملة: ' + parts.join('، '), 'success');
+    }
+  }
+
+  /* ── Close on overlay / Escape ───────────────── */
+  document.getElementById('umFormModal').addEventListener('click', function (e) {
+    if (e.target === this) closeFormModal();
+  });
+  document.getElementById('umDeleteModal').addEventListener('click', function (e) {
+    if (e.target === this) closeDeleteModal();
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') { closeFormModal(); closeDeleteModal(); }
+  });
+
+  /* ── Init ────────────────────────────────────── */
+  document.addEventListener('DOMContentLoaded', function () {
+    umRefresh();
+  });
+</script>
+
+<script>
+  /* ── Dark mode ── */
+  function initDarkMode() {
+    if (localStorage.getItem('linkedoff_darkMode') === 'true') {
+      document.body.classList.add('dark-mode');
+      var btn = document.getElementById('darkModeBtn');
+      if (btn) btn.textContent = '☀️';
+    }
+  }
+  function toggleDarkMode() {
+    var isDark = document.body.classList.toggle('dark-mode');
+    localStorage.setItem('linkedoff_darkMode', isDark);
+    var btn = document.getElementById('darkModeBtn');
+    if (btn) btn.textContent = isDark ? '☀️' : '🌙';
+  }
+  document.addEventListener('DOMContentLoaded', initDarkMode);
+</script>
+<script>
+  /* ── Show user first name in topbar ── */
+  (function () {
+    try {
+      var user = JSON.parse(localStorage.getItem('linkedoff_user') || 'null');
+      if (!user) return;
+      var name = (user.name || user.email || '').split(' ')[0].split('@')[0];
+      if (!name) return;
+      var actions = document.querySelector('.topbar-actions');
+      if (!actions) return;
+      var chip = document.createElement('div');
+      chip.id = 'topbarUserChip';
+      chip.innerHTML = '<span class="avatar">👤</span><span>' + name + '</span>';
+      actions.insertBefore(chip, actions.firstChild);
+    } catch (e) {}
+  })();
+</script>
+
+    <script src="js/config.js"></script>
+    <script src="js/rbac.js"></script>
+    <script src="js/ui.js"></script>
+</body>
+</html>

@@ -10,14 +10,9 @@
     <link rel="stylesheet" href="css/enhancements.css">
     <link rel="stylesheet" href="css/responsive.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
 
-        :root {
+    <style>
+        .engines-area {
             --primary-color: #2563eb;
             --primary-dark: #1e40af;
             --success-color: #10b981;
@@ -35,83 +30,14 @@
             --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
         }
 
-        body {
-            font-family: 'IBM Plex Sans Arabic', sans-serif;
-            background: var(--bg-secondary);
-            color: var(--text-primary);
-            line-height: 1.6;
-            direction: rtl;
+        .engines-area {
+            font-family: 'Cairo', sans-serif;
         }
 
-        .container {
+        .engines-area .container {
             max-width: 1400px;
             margin: 0 auto;
             padding: 32px 24px;
-        }
-
-        /* Header */
-        .header {
-            background: var(--bg-primary);
-            border-bottom: 1px solid var(--border-color);
-            padding: 20px 32px;
-            margin: -32px -24px 32px;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            box-shadow: var(--shadow-sm);
-        }
-
-        .header-content {
-            max-width: 1400px;
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-
-        .brand-logo {
-            width: 48px;
-            height: 48px;
-            position: relative;
-        }
-
-        .brand-text h1 {
-            font-size: 20px;
-            font-weight: 600;
-            color: var(--text-primary);
-            margin-bottom: 2px;
-        }
-
-        .brand-text p {
-            font-size: 13px;
-            color: var(--text-secondary);
-            font-weight: 400;
-        }
-
-        .header-actions {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .user-avatar {
-            width: 36px;
-            height: 36px;
-            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 14px;
-            cursor: pointer;
-            font-weight: 600;
         }
 
         /* Page Title */
@@ -748,16 +674,6 @@
                 padding: 20px 16px;
             }
 
-            .header {
-                padding: 16px 20px;
-            }
-
-            .header-content {
-                flex-direction: column;
-                gap: 16px;
-                align-items: flex-start;
-            }
-
             .stats-grid {
                 grid-template-columns: 1fr;
             }
@@ -808,6 +724,7 @@
 
     <script src="js/auth.js"></script>
     <script src="js/config.js"></script>
+    <script src="js/rbac.js"></script>
     <script>startSessionEnforcer();</script>
 </head>
 <body class="app-page" data-page="engines">
@@ -823,7 +740,6 @@
   </div>
 
   <nav class="sidebar-nav">
-    <a href="search.html"              class="nav-item"><span class="nav-ic">🏠</span><span>الرئيسية</span></a>
     <a href="search.html"              class="nav-item"><span class="nav-ic">🔍</span><span>البحث عن الوظائف</span></a>
     <a href="dashboard.html"           class="nav-item"><span class="nav-ic">📊</span><span>لوحة التحكم</span></a>
     <a href="analytics.html"           class="nav-item"><span class="nav-ic">📈</span><span>تحليلات السوق</span></a>
@@ -857,32 +773,7 @@
     </header>
 
     <main class="app-content">
-<!-- Header -->
-    <div class="header">
-        <div class="header-content">
-            <div class="brand">
-                <div class="brand-logo">
-                    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <rect width="48" height="48" rx="10" fill="#2563eb"/>
-                        <path d="M14 32L18 16H22L26 32H22L21 28H19L18 32H14ZM19.5 25H20.5L20 20L19.5 25Z" fill="white"/>
-                        <path d="M26 16H30C32 16 34 17 34 20C34 23 32 24 30 24H26V16ZM30 16V24C31 24 32 23 32 20C32 17 31 16 30 16Z" fill="white"/>
-                    </svg>
-                </div>
-                <div class="brand-text">
-                    <h1>AceAlBastoni</h1>
-                    <p>مركز التحكم في المحركات</p>
-                </div>
-            </div>
-            <div class="header-actions">
-                <button class="btn btn-secondary" onclick="showAllSettings()">
-                    <i class="fas fa-cog"></i>
-                    <span>الإعدادات</span>
-                </button>
-                <div class="user-avatar" title="Admin">AB</div>
-            </div>
-        </div>
-    </div>
-
+    <div class="engines-area">
     <div class="container">
         <!-- Page Header -->
         <div class="page-header">
@@ -1411,6 +1302,7 @@
             }
         });
     </script>
+    </div><!-- /engines-area -->
     </main>
   </div>
 </div>
