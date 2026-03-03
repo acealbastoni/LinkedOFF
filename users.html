@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
@@ -297,11 +297,19 @@
       <a href="analytics.html"           class="nav-item"><span class="nav-ic">📈</span><span>تحليلات السوق</span></a>
       <a href="saved.html"               class="nav-item"><span class="nav-ic">💾</span><span>الوظائف المحفوظة</span></a>
       <a href="history.html"             class="nav-item"><span class="nav-ic">📬</span><span>سجل الإرسال</span></a>
-      <a href="engines-interactive.html" class="nav-item"><span class="nav-ic">⚙️</span><span>المحركات</span></a>
-      <a href="users.html"               class="nav-item active"><span class="nav-ic">👥</span><span>إدارة المستخدمين</span></a>
       <a href="about.html"               class="nav-item"><span class="nav-ic">👤</span><span>عن المطوّر</span></a>
       <a href="pricing.html"             class="nav-item"><span class="nav-ic">💳</span><span>الباقات</span></a>
-      <a href="settings.html"            class="nav-item"><span class="nav-ic">🔧</span><span>الإعدادات</span></a>
+      <a href="actros.html"              class="nav-item"><span class="nav-ic">🚛</span><span>إدارة أكتروس</span></a>
+      <div class="sidebar-group" id="sidebarSettingsGroup">
+        <div class="sidebar-section-header" onclick="toggleSidebarGroup(this)"><span>🔧 الإعدادات</span><span class="group-chevron">›</span></div>
+        <a href="settings.html" data-group-page="settings.html" class="nav-item nav-sub-item"><span class="nav-ic">👤</span><span>إعدادات الحساب</span></a>
+        <a href="users.html" data-group-page="users.html" class="nav-item nav-sub-item active"><span class="nav-ic">👥</span><span>إعدادات المستخدمين</span></a>
+        <a href="settings-pages.html" data-group-page="settings-pages.html" class="nav-item nav-sub-item"><span class="nav-ic">📄</span><span>إعدادات الصفحات</span></a>
+        <a href="settings-datasource.html" data-group-page="settings-datasource.html" class="nav-item nav-sub-item"><span class="nav-ic">🗄️</span><span>مصادر البيانات</span></a>
+        <a href="settings-api.html" data-group-page="settings-api.html" class="nav-item nav-sub-item"><span class="nav-ic">🔑</span><span>إعدادات الـ API</span></a>
+        <a href="actros-settings.html" data-group-page="actros-settings.html" class="nav-item nav-sub-item"><span class="nav-ic">🚛</span><span>إعدادات أكتروس</span></a>
+        <a href="engines-interactive.html" data-group-page="engines-interactive.html" class="nav-item nav-sub-item"><span class="nav-ic">⚙️</span><span>إعدادات المحركات</span></a>
+      </div>
     </nav>
     <div class="sidebar-footer">
       <button class="sidebar-logout" type="button" onclick="performLogout('👋 تم تسجيل الخروج', false)">
@@ -360,6 +368,9 @@
         </div>
         <button class="um-btn um-btn-secondary" onclick="syncFromConfig()" title="استيراد المديرين من adminEmails في config.js">
           🔄 مزامنة
+        </button>
+        <button class="um-btn um-btn-secondary" id="syncApiBtn" onclick="syncFromAPI()" title="جلب المستخدمين من Google Spreadsheet عبر الـ API">
+          🌐 مزامنة API
         </button>
         <button class="um-btn um-btn-primary" onclick="openAddModal()">
           ➕ إضافة مستخدم
@@ -721,6 +732,65 @@
       if (added)   parts.push(added   + ' مستخدم جديد');
       if (updated) parts.push(updated + ' ترقية إلى مدير');
       umToast('✅ مزامنة مكتملة: ' + parts.join('، '), 'success');
+    }
+  }
+
+  /* ── Sync from API (Google Spreadsheet) ─────── */
+  async function syncFromAPI() {
+    var btn = document.getElementById('syncApiBtn');
+    if (btn) { btn.disabled = true; btn.textContent = '⏳ جاري الجلب...'; }
+
+    try {
+      umToast('⏳ جاري جلب المستخدمين من الشبكة...', 'info');
+
+      var data = await window.authRequest('listUsers');
+      if (!data || !Array.isArray(data.users)) throw new Error('البيانات المُستلمة غير صحيحة');
+
+      var list    = umLoad();
+      var added   = 0;
+      var updated = 0;
+
+      data.users.forEach(function(u) {
+        var email = String(u.email || '').toLowerCase().trim();
+        if (!email) return;
+
+        var existing = list.find(function(x) { return x.email === email; });
+        if (existing) {
+          /* تحديث الاسم إن كان فارغاً */
+          if (u.name && !existing.name) {
+            existing.name = u.name;
+            updated++;
+          }
+        } else {
+          list.push({
+            id:      u.id || String(Date.now() + Math.round(Math.random() * 9999)),
+            name:    u.name   || '',
+            email:   email,
+            role:    u.role   || 'user',
+            addedAt: u.createdAt || new Date().toISOString(),
+            source:  'api'
+          });
+          added++;
+        }
+      });
+
+      umSave(list);
+      umRefresh();
+
+      if (!added && !updated) {
+        umToast('ℹ️ جميع المستخدمين موجودون بالفعل', 'info');
+      } else {
+        var parts = [];
+        if (added)   parts.push(added   + ' مستخدم جديد');
+        if (updated) parts.push(updated + ' تحديث اسم');
+        umToast('✅ مزامنة API مكتملة: ' + parts.join('، '), 'success');
+      }
+    } catch (err) {
+      var msg = err.message || 'فشل الاتصال';
+      if (msg === 'timeout') msg = 'انتهت مهلة الاتصال، حاول مرة أخرى.';
+      umToast('❌ ' + msg, 'error');
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = '🌐 مزامنة API'; }
     }
   }
 

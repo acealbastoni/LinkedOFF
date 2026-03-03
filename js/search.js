@@ -7,10 +7,20 @@
 
 
 
-const API_CONFIG = {
-    baseURL: 'https://script.google.com/macros/s/AKfycbw6ctohJP85I1Jeo6p5z2EWyiFBEdavgX_TcWvlZtho--6j1SPr-xxtwLDZsgiYErqsKQ/exec',
-    apiKey: '447e152f-143f-4195-80fd-42b87d40af46-1764452322847' // أو خلي apiKey زي ما هو عندك
-  };
+// Reads override from localStorage (set via settings-api.html), falls back to default
+const API_CONFIG = (function () {
+  var _defURL = 'https://script.google.com/macros/s/AKfycbw6ctohJP85I1Jeo6p5z2EWyiFBEdavgX_TcWvlZtho--6j1SPr-xxtwLDZsgiYErqsKQ/exec';
+  var _defKey = '447e152f-143f-4195-80fd-42b87d40af46-1764452322847';
+  try {
+    var _cfg = JSON.parse(localStorage.getItem('linkedoff_api_config') || '{}');
+    return {
+      baseURL: (_cfg.jobs && _cfg.jobs.baseURL) || _defURL,
+      apiKey:  (_cfg.jobs && _cfg.jobs.apiKey)  || _defKey
+    };
+  } catch (e) {
+    return { baseURL: _defURL, apiKey: _defKey };
+  }
+})();
   
 
 /**

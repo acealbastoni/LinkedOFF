@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>إعدادات الـ API - LinkedOFF KSA</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/enhancements.css">
+  <link rel="stylesheet" href="css/responsive.css">
+
+  <!-- ═══ EARLY AUTH GUARD ═══ -->
+  <style>body { visibility: hidden; }</style>
+  <script>
+    (function () {
+      try {
+        var user = JSON.parse(localStorage.getItem('linkedoff_user') || 'null');
+        var sess = JSON.parse(localStorage.getItem('linkedoff_session') || 'null');
+        if (!user || !sess || !sess.token || Date.now() > Number(sess.expiresAtMs || 0)) {
+          window.location.replace('login.html');
+        } else {
+          document.addEventListener('DOMContentLoaded', function () {
+            document.body.style.visibility = 'visible';
+          });
+        }
+      } catch (e) { window.location.replace('login.html'); }
+    })();
+  </script>
+  <!-- ════════════════════════ -->
+
+  <script src="js/auth.js"></script>
+  <script>startSessionEnforcer();</script>
+
+  <style>
+    /* ─── API Settings Page ───────────────────────────────────────────── */
+
+    .api-page-header { margin-bottom: 28px; }
+    .api-page-title  { font-size: 1.4rem; font-weight: 900; color: var(--text, #f0f0f0); margin-bottom: 6px; }
+    .api-page-sub    { font-size: 0.88rem; color: var(--muted, #888); line-height: 1.6; }
+
+    /* Info box */
+    .api-info-box {
+      padding: 14px 18px; border-radius: 12px; margin-bottom: 28px;
+      background: rgba(96,165,250,.07);
+      border: 1px solid rgba(96,165,250,.18);
+      font-size: 13px; color: rgba(96,165,250,.9); line-height: 1.7;
+    }
+    .api-info-box strong { color: #60a5fa; }
+
+    /* Summary strip */
+    .api-summary {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 12px; margin-bottom: 28px;
+    }
+    .api-summary-item {
+      background: rgba(255,255,255,.03);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 14px; padding: 14px 16px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .api-summary-icon  { font-size: 24px; flex-shrink: 0; }
+    .api-summary-label { font-size: 11px; color: var(--muted, #888); margin-bottom: 2px; }
+    .api-summary-val   { font-size: 13px; font-weight: 700; color: var(--text, #f0f0f0); }
+    .api-summary-val.custom  { color: #fbbf24; }
+    .api-summary-val.default { color: #00A859; }
+
+    /* Service card */
+    .api-service-card {
+      background: rgba(255,255,255,.03);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 18px;
+      margin-bottom: 20px;
+      overflow: hidden;
+      transition: border-color .2s;
+    }
+    .api-service-card:hover { border-color: rgba(255,255,255,.15); }
+
+    .api-card-head {
+      display: flex; align-items: center; gap: 14px;
+      padding: 18px 22px;
+      border-bottom: 1px solid rgba(255,255,255,.06);
+      flex-wrap: wrap;
+    }
+    .api-card-icon {
+      width: 46px; height: 46px; border-radius: 13px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; flex-shrink: 0;
+    }
+    .api-card-title-wrap { flex: 1; min-width: 0; }
+    .api-card-name  { font-size: 15px; font-weight: 900; color: var(--text, #f0f0f0); }
+    .api-card-desc  { font-size: 12px; color: var(--muted, #888); margin-top: 3px; line-height: 1.5; }
+    .api-card-badge {
+      font-size: 11px; padding: 4px 12px;
+      border-radius: 20px; font-weight: 700; flex-shrink: 0;
+    }
+    .api-card-badge.default { background: rgba(0,168,89,.1);  color: #00A859; border: 1px solid rgba(0,168,89,.25); }
+    .api-card-badge.custom  { background: rgba(251,191,36,.1); color: #fbbf24; border: 1px solid rgba(251,191,36,.25); }
+
+    .api-card-body { padding: 22px; }
+
+    /* Action chips (what the service handles) */
+    .api-actions-list { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 20px; }
+    .api-action-chip {
+      font-size: 11px; padding: 3px 10px; border-radius: 20px;
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(255,255,255,.1);
+      color: var(--muted, #aaa);
+      font-family: 'Courier New', monospace; direction: ltr;
+    }
+
+    /* Form fields */
+    .api-field { margin-bottom: 16px; }
+    .api-label {
+      display: block; font-size: 12px; font-weight: 700;
+      color: var(--muted, #aaa); margin-bottom: 7px; letter-spacing: .3px;
+    }
+    .api-input-wrap { position: relative; }
+    .api-input {
+      width: 100%; padding: 11px 14px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,.1);
+      background: rgba(255,255,255,.04);
+      color: var(--text, #f0f0f0);
+      font-family: 'Courier New', monospace; font-size: 12px;
+      outline: none; transition: border-color .2s;
+      box-sizing: border-box; direction: ltr; text-align: left;
+    }
+    .api-input:focus { border-color: var(--primary, #00A859); }
+    .api-input::placeholder { color: rgba(255,255,255,.2); font-family: 'Cairo', sans-serif; font-size: 13px; }
+    .api-input.is-modified { border-color: #fbbf24; }
+
+    .api-input-eye {
+      position: absolute; top: 50%; transform: translateY(-50%);
+      left: 12px; background: none; border: none; cursor: pointer;
+      color: var(--muted, #888); font-size: 16px; padding: 4px; line-height: 1;
+    }
+    .api-has-eye { padding-left: 40px; }
+
+    .api-field-hint { font-size: 11px; color: var(--muted, #888); margin-top: 5px; line-height: 1.5; }
+
+    /* Buttons */
+    .api-btn {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 9px 18px; border-radius: 10px;
+      font-family: 'Cairo', sans-serif; font-size: 13px; font-weight: 700;
+      cursor: pointer; border: none; transition: all .2s; white-space: nowrap;
+    }
+    .api-btn-primary {
+      background: linear-gradient(135deg, #00A859, #00D66F);
+      color: #fff; box-shadow: 0 3px 12px rgba(0,168,89,.3);
+    }
+    .api-btn-primary:hover  { transform: translateY(-1px); box-shadow: 0 5px 18px rgba(0,168,89,.45); }
+    .api-btn-test {
+      background: rgba(96,165,250,.1);
+      border: 1px solid rgba(96,165,250,.25); color: #60a5fa;
+    }
+    .api-btn-test:hover  { background: rgba(96,165,250,.2); }
+    .api-btn-reset {
+      background: rgba(239,68,68,.07);
+      border: 1px solid rgba(239,68,68,.2); color: #ef4444;
+    }
+    .api-btn-reset:hover { background: rgba(239,68,68,.14); }
+    .api-btn:disabled   { opacity: .5; cursor: not-allowed; transform: none !important; }
+
+    .api-btn-row {
+      display: flex; gap: 8px; flex-wrap: wrap; margin-top: 20px;
+      padding-top: 16px; border-top: 1px solid rgba(255,255,255,.05);
+    }
+
+    /* Test result */
+    .api-test-result {
+      margin-top: 12px; padding: 11px 16px;
+      border-radius: 10px; font-size: 12px; font-weight: 700;
+      display: none; direction: ltr; text-align: left;
+      font-family: 'Courier New', monospace;
+    }
+    .api-test-result.ok  { background: rgba(0,168,89,.1);  color: #00A859; border: 1px solid rgba(0,168,89,.2); }
+    .api-test-result.err { background: rgba(239,68,68,.1);  color: #ef4444; border: 1px solid rgba(239,68,68,.2); }
+
+    /* Toast */
+    .api-toast {
+      position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+      background: #1e293b; border: 1px solid rgba(255,255,255,.12);
+      color: #f0f0f0; padding: 12px 24px; border-radius: 30px;
+      font-size: 14px; font-weight: 700; font-family: 'Cairo', sans-serif;
+      z-index: 9999; opacity: 0; pointer-events: none;
+      transition: opacity .25s, transform .25s;
+      white-space: nowrap;
+    }
+    .api-toast.show { opacity: 1; transform: translateX(-50%) translateY(-6px); }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      .api-btn-row { flex-direction: column; }
+      .api-btn     { justify-content: center; }
+      .api-summary { grid-template-columns: 1fr 1fr; }
+      .api-card-head { gap: 10px; }
+    }
+    @media (max-width: 380px) {
+      .api-summary { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body class="app-page" data-page="settings-api">
+<div class="app-shell">
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar(false)"></div>
+  <aside class="app-sidebar" id="appSidebar" aria-label="القائمة الجانبية">
+    <div class="sidebar-brand">
+      <a href="search.html" class="brand-link">
+        <span class="brand-mark">💼</span>
+        <span class="brand-text">LinkedOFF</span>
+        <span class="brand-sub">AceAlBastoni</span>
+      </a>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="search.html"              class="nav-item"><span class="nav-ic">🔍</span><span>البحث عن الوظائف</span></a>
+      <a href="dashboard.html"           class="nav-item"><span class="nav-ic">📊</span><span>لوحة التحكم</span></a>
+      <a href="analytics.html"           class="nav-item"><span class="nav-ic">📈</span><span>تحليلات السوق</span></a>
+      <a href="saved.html"               class="nav-item"><span class="nav-ic">💾</span><span>الوظائف المحفوظة</span></a>
+      <a href="history.html"             class="nav-item"><span class="nav-ic">📬</span><span>سجل الإرسال</span></a>
+      <a href="about.html"               class="nav-item"><span class="nav-ic">👤</span><span>عن المطوّر</span></a>
+      <a href="pricing.html"             class="nav-item"><span class="nav-ic">💳</span><span>الباقات</span></a>
+      <a href="actros.html"              class="nav-item"><span class="nav-ic">🚛</span><span>إدارة أكتروس</span></a>
+      <div class="sidebar-group" id="sidebarSettingsGroup">
+        <div class="sidebar-section-header" onclick="toggleSidebarGroup(this)"><span>🔧 الإعدادات</span><span class="group-chevron">›</span></div>
+        <a href="settings.html"            data-group-page="settings.html"            class="nav-item nav-sub-item"><span class="nav-ic">👤</span><span>إعدادات الحساب</span></a>
+        <a href="users.html"               data-group-page="users.html"               class="nav-item nav-sub-item"><span class="nav-ic">👥</span><span>إعدادات المستخدمين</span></a>
+        <a href="settings-pages.html"      data-group-page="settings-pages.html"      class="nav-item nav-sub-item"><span class="nav-ic">📄</span><span>إعدادات الصفحات</span></a>
+        <a href="settings-datasource.html" data-group-page="settings-datasource.html" class="nav-item nav-sub-item"><span class="nav-ic">🗄️</span><span>مصادر البيانات</span></a>
+        <a href="settings-api.html"        data-group-page="settings-api.html"        class="nav-item nav-sub-item active"><span class="nav-ic">🔑</span><span>إعدادات الـ API</span></a>
+        <a href="actros-settings.html"     data-group-page="actros-settings.html"     class="nav-item nav-sub-item"><span class="nav-ic">🚛</span><span>إعدادات أكتروس</span></a>
+        <a href="engines-interactive.html" data-group-page="engines-interactive.html" class="nav-item nav-sub-item"><span class="nav-ic">⚙️</span><span>إعدادات المحركات</span></a>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="sidebar-logout" type="button" onclick="performLogout('👋 تم تسجيل الخروج', false)">
+        <span class="nav-ic">🚪</span><span>تسجيل الخروج</span>
+      </button>
+    </div>
+  </aside>
+
+  <div class="app-main">
+    <header class="app-topbar">
+      <button class="sidebar-toggle" type="button" aria-label="فتح/إغلاق القائمة" onclick="toggleSidebar()">
+        <span class="toggle-bars"></span>
+      </button>
+      <div class="topbar-title">🔑 إعدادات الـ API</div>
+      <div class="topbar-actions">
+        <button id="darkModeBtn" onclick="toggleDarkMode()" title="وضع ليلي" style="
+          background:none;border:1px solid #ddd;border-radius:8px;
+          padding:6px 10px;cursor:pointer;font-size:18px;line-height:1;
+          transition:background .2s,border-color .2s;
+        ">🌙</button>
+      </div>
+    </header>
+
+    <main class="app-content">
+
+      <!-- Page Header -->
+      <div class="api-page-header">
+        <div class="api-page-title">🔑 إعدادات الـ API</div>
+        <div class="api-page-sub">
+          إدارة روابط وبيانات الاتصال لكل خدمة خارجية يستخدمها التطبيق.
+          التعديلات تُحفظ محلياً على جهازك وتُطبَّق فوراً على الطلبات القادمة.
+        </div>
+      </div>
+
+      <!-- Info note -->
+      <div class="api-info-box">
+        ℹ️ الروابط الافتراضية <strong>تعمل بشكل طبيعي</strong> ولا تحتاج تعديلاً.
+        عدّل فقط إذا أردت تحويل خدمة معينة إلى نسخة مختلفة من الـ API (مثل بيئة اختبار أو deployment جديد).
+        الضغط على <strong>↩ استعادة الافتراضي</strong> يُلغي أي تعديل ويعود للرابط الأصلي.
+      </div>
+
+      <!-- Summary strip -->
+      <div class="api-summary" id="apiSummary"></div>
+
+      <!-- ══ Auth Service Card ══════════════════════════════════════════ -->
+      <div class="api-service-card" id="card-auth">
+        <div class="api-card-head">
+          <div class="api-card-icon" style="background:rgba(10,102,194,.12);color:#0A66C2;">🔐</div>
+          <div class="api-card-title-wrap">
+            <div class="api-card-name">خدمة المصادقة</div>
+            <div class="api-card-desc">تسجيل الدخول، إنشاء الحسابات، إدارة الجلسات، جلب المستخدمين وتحديث بياناتهم</div>
+          </div>
+          <span class="api-card-badge" id="badge-auth">—</span>
+        </div>
+        <div class="api-card-body">
+          <!-- Actions this service handles -->
+          <div class="api-actions-list">
+            <span class="api-action-chip">login</span>
+            <span class="api-action-chip">register</span>
+            <span class="api-action-chip">changePassword</span>
+            <span class="api-action-chip">listUsers</span>
+            <span class="api-action-chip">deleteUser</span>
+            <span class="api-action-chip">updateProfile</span>
+          </div>
+          <div class="api-field">
+            <label class="api-label" for="authBaseURL">رابط الخدمة (Base URL)</label>
+            <input class="api-input" id="authBaseURL" type="url"
+              placeholder="https://script.google.com/macros/s/.../exec"
+              oninput="onFieldInput('auth')">
+            <div class="api-field-hint">
+              رابط Google Apps Script المنشور لخدمة المصادقة.
+              يجب أن ينتهي بـ <code style="background:rgba(255,255,255,.06);padding:1px 5px;border-radius:4px;direction:ltr;">/exec</code>
+              ولا يحتوي على أي query string.
+            </div>
+          </div>
+          <div class="api-btn-row">
+            <button class="api-btn api-btn-primary" onclick="saveService('auth')">💾 حفظ</button>
+            <button class="api-btn api-btn-test" id="testBtn-auth" onclick="testService('auth')">🔌 اختبار الاتصال</button>
+            <button class="api-btn api-btn-reset" onclick="resetService('auth')">↩ استعادة الافتراضي</button>
+          </div>
+          <div class="api-test-result" id="testResult-auth"></div>
+        </div>
+      </div>
+
+      <!-- ══ Jobs Service Card ══════════════════════════════════════════ -->
+      <div class="api-service-card" id="card-jobs">
+        <div class="api-card-head">
+          <div class="api-card-icon" style="background:rgba(0,168,89,.1);color:#00A859;">💼</div>
+          <div class="api-card-title-wrap">
+            <div class="api-card-name">خدمة الوظائف</div>
+            <div class="api-card-desc">جلب قوائم الوظائف، البحث، الفلترة، والتصفح بالصفحات من Google Sheets</div>
+          </div>
+          <span class="api-card-badge" id="badge-jobs">—</span>
+        </div>
+        <div class="api-card-body">
+          <div class="api-actions-list">
+            <span class="api-action-chip">getJobs</span>
+            <span class="api-action-chip">searchJobs</span>
+            <span class="api-action-chip">getJobById</span>
+            <span class="api-action-chip">getCategories</span>
+          </div>
+          <div class="api-field">
+            <label class="api-label" for="jobsBaseURL">رابط الخدمة (Base URL)</label>
+            <input class="api-input" id="jobsBaseURL" type="url"
+              placeholder="https://script.google.com/macros/s/.../exec"
+              oninput="onFieldInput('jobs')">
+            <div class="api-field-hint">
+              رابط Google Apps Script المنشور لخدمة الوظائف.
+            </div>
+          </div>
+          <div class="api-field">
+            <label class="api-label" for="jobsApiKey">مفتاح API (API Key)</label>
+            <div class="api-input-wrap">
+              <button class="api-input-eye" type="button" onclick="toggleEye('jobsApiKey', this)" title="إظهار/إخفاء">👁</button>
+              <input class="api-input api-has-eye" id="jobsApiKey" type="password"
+                placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+                oninput="onFieldInput('jobs')">
+            </div>
+            <div class="api-field-hint">
+              مفتاح API المُرسَل مع كل طلب في حقل <code style="background:rgba(255,255,255,.06);padding:1px 5px;border-radius:4px;direction:ltr;">key</code>.
+            </div>
+          </div>
+          <div class="api-btn-row">
+            <button class="api-btn api-btn-primary" onclick="saveService('jobs')">💾 حفظ</button>
+            <button class="api-btn api-btn-test" id="testBtn-jobs" onclick="testService('jobs')">🔌 اختبار الاتصال</button>
+            <button class="api-btn api-btn-reset" onclick="resetService('jobs')">↩ استعادة الافتراضي</button>
+          </div>
+          <div class="api-test-result" id="testResult-jobs"></div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="api-toast" id="apiToast"></div>
+
+<!-- ─── Scripts ──────────────────────────────────────────────────────────── -->
+<script src="js/config.js"></script>
+<script src="js/rbac.js"></script>
+
+<script>
+/* ════════════════════════════════════════════════════════════════════════════
+   API Settings — Logic
+   ════════════════════════════════════════════════════════════════════════════ */
+
+const API_STORE_KEY = 'linkedoff_api_config';
+
+// Default values (mirrors what auth.js / search.js use)
+const DEFAULTS = {
+  auth: {
+    baseURL: 'https://script.google.com/macros/s/AKfycbwJpiH3xUH2EjqR5V9UzjgqHppfxPu6Tr9GmU-IlFig28jyanGW4ATSQUy_THVcMByLtw/exec'
+  },
+  jobs: {
+    baseURL: 'https://script.google.com/macros/s/AKfycbw6ctohJP85I1Jeo6p5z2EWyiFBEdavgX_TcWvlZtho--6j1SPr-xxtwLDZsgiYErqsKQ/exec',
+    apiKey:  '447e152f-143f-4195-80fd-42b87d40af46-1764452322847'
+  }
+};
+
+// ── Storage helpers ───────────────────────────────────────────────────────────
+function loadStored() {
+  try { return JSON.parse(localStorage.getItem(API_STORE_KEY) || '{}'); } catch { return {}; }
+}
+function saveStored(data) {
+  localStorage.setItem(API_STORE_KEY, JSON.stringify(data));
+}
+
+function isCustomized(service) {
+  const stored = loadStored()[service];
+  if (!stored) return false;
+  const def = DEFAULTS[service] || {};
+  return Object.keys(def).some(k => stored[k] && stored[k] !== def[k]);
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  populateFields();
+  renderSummary();
+});
+
+function populateFields() {
+  const stored = loadStored();
+
+  const auth = stored.auth || {};
+  document.getElementById('authBaseURL').value = auth.baseURL || DEFAULTS.auth.baseURL;
+
+  const jobs = stored.jobs || {};
+  document.getElementById('jobsBaseURL').value = jobs.baseURL || DEFAULTS.jobs.baseURL;
+  document.getElementById('jobsApiKey').value  = jobs.apiKey  || DEFAULTS.jobs.apiKey;
+
+  refreshModifiedIndicators();
+  updateBadge('auth');
+  updateBadge('jobs');
+}
+
+function updateBadge(service) {
+  const badge  = document.getElementById('badge-' + service);
+  const custom = isCustomized(service);
+  badge.className   = 'api-card-badge ' + (custom ? 'custom' : 'default');
+  badge.textContent = custom ? 'مُخصَّص' : 'افتراضي';
+}
+
+// ── Modified indicator (yellow border when value differs from default) ─────────
+function refreshModifiedIndicators() {
+  markModified('authBaseURL', DEFAULTS.auth.baseURL);
+  markModified('jobsBaseURL', DEFAULTS.jobs.baseURL);
+  markModified('jobsApiKey',  DEFAULTS.jobs.apiKey);
+}
+
+function onFieldInput(service) {
+  if (service === 'auth') {
+    markModified('authBaseURL', DEFAULTS.auth.baseURL);
+  } else if (service === 'jobs') {
+    markModified('jobsBaseURL', DEFAULTS.jobs.baseURL);
+    markModified('jobsApiKey',  DEFAULTS.jobs.apiKey);
+  }
+}
+
+function markModified(id, defaultVal) {
+  const inp = document.getElementById(id);
+  if (!inp) return;
+  inp.classList.toggle('is-modified', inp.value.trim() !== defaultVal);
+}
+
+// ── Save ──────────────────────────────────────────────────────────────────────
+function saveService(service) {
+  const stored = loadStored();
+
+  if (service === 'auth') {
+    const url = document.getElementById('authBaseURL').value.trim();
+    if (!url) { apiToast('⚠️ الرابط لا يمكن أن يكون فارغاً'); return; }
+    stored.auth = { baseURL: url };
+
+  } else if (service === 'jobs') {
+    const url = document.getElementById('jobsBaseURL').value.trim();
+    const key = document.getElementById('jobsApiKey').value.trim();
+    if (!url) { apiToast('⚠️ الرابط لا يمكن أن يكون فارغاً'); return; }
+    stored.jobs = { baseURL: url, apiKey: key };
+  }
+
+  saveStored(stored);
+  updateBadge(service);
+  renderSummary();
+  refreshModifiedIndicators();
+  apiToast('✅ تم الحفظ — سيُطبَّق الرابط الجديد فوراً على الطلبات القادمة');
+}
+
+// ── Reset to default ──────────────────────────────────────────────────────────
+function resetService(service) {
+  if (!confirm('هل تريد استعادة الإعدادات الافتراضية لهذه الخدمة؟\nسيتم حذف أي تعديل وإعادة الرابط الأصلي.')) return;
+  const stored = loadStored();
+  delete stored[service];
+  saveStored(stored);
+  populateFields();
+  renderSummary();
+  apiToast('↩ تم استعادة الإعدادات الافتراضية');
+}
+
+// ── Test connection ───────────────────────────────────────────────────────────
+async function testService(service) {
+  let url = '';
+  if (service === 'auth') url = document.getElementById('authBaseURL').value.trim();
+  if (service === 'jobs') url = document.getElementById('jobsBaseURL').value.trim();
+
+  if (!url) { apiToast('⚠️ أدخل الرابط أولاً'); return; }
+
+  const btn = document.getElementById('testBtn-' + service);
+  const box = document.getElementById('testResult-' + service);
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ جاري الاختبار...'; }
+  if (box)   box.style.display = 'none';
+
+  try {
+    const testUrl = url + (url.includes('?') ? '&' : '?') + 'action=ping&_t=' + Date.now();
+    const resp = await Promise.race([
+      fetch(testUrl, { method: 'GET' }),
+      new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), 12000))
+    ]);
+
+    const text = await resp.text();
+    let ok  = resp.status === 200;
+    let msg = '(' + resp.status + ') ';
+
+    try {
+      const j = JSON.parse(text);
+      // Any valid JSON back from GAS means the URL is alive and deployed correctly
+      ok  = true;
+      msg += j.ok
+        ? '✓ الخادم جاهز ويستجيب'
+        : '⚠️ الخادم يستجيب — ' + (j.error || j.message || 'unknown action (ping not found)');
+    } catch {
+      msg += ok ? '✓ الخادم يستجيب' : '✗ استجابة غير متوقعة';
+    }
+
+    showTestResult(service, ok, msg);
+
+  } catch (err) {
+    const msg = err.message === 'timeout'
+      ? '✗ timeout — لم يستجب الخادم خلال 12 ثانية'
+      : '✗ ' + err.message;
+    showTestResult(service, false, msg);
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '🔌 اختبار الاتصال'; }
+  }
+}
+
+function showTestResult(service, ok, msg) {
+  const box = document.getElementById('testResult-' + service);
+  if (!box) return;
+  box.style.display = 'block';
+  box.className     = 'api-test-result ' + (ok ? 'ok' : 'err');
+  box.textContent   = msg;
+}
+
+// ── Summary strip ─────────────────────────────────────────────────────────────
+function renderSummary() {
+  const authCustom = isCustomized('auth');
+  const jobsCustom = isCustomized('jobs');
+  const items = [
+    { icon: '🔐', label: 'خدمة المصادقة', val: authCustom ? 'مُخصَّص' : 'افتراضي', custom: authCustom },
+    { icon: '💼', label: 'خدمة الوظائف',  val: jobsCustom ? 'مُخصَّص' : 'افتراضي', custom: jobsCustom },
+    { icon: '🔢', label: 'إجمالي الخدمات', val: '2 خدمة', custom: false },
+  ];
+  document.getElementById('apiSummary').innerHTML = items.map(it => `
+    <div class="api-summary-item">
+      <div class="api-summary-icon">${it.icon}</div>
+      <div>
+        <div class="api-summary-label">${it.label}</div>
+        <div class="api-summary-val ${it.custom ? 'custom' : 'default'}">${it.val}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── Eye toggle (show/hide password) ──────────────────────────────────────────
+function toggleEye(inputId, btn) {
+  const inp = document.getElementById(inputId);
+  if (!inp) return;
+  if (inp.type === 'password') { inp.type = 'text';     btn.textContent = '🙈'; }
+  else                         { inp.type = 'password'; btn.textContent = '👁'; }
+}
+
+// ── Toast ─────────────────────────────────────────────────────────────────────
+let _apiToastTimer;
+function apiToast(msg, ms = 3000) {
+  const el = document.getElementById('apiToast');
+  if (!el) return;
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(_apiToastTimer);
+  _apiToastTimer = setTimeout(() => el.classList.remove('show'), ms);
+}
+</script>
+
+<script src="js/ui.js"></script>
+</body>
+</html>

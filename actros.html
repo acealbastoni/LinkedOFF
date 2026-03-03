@@ -1,0 +1,1326 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>إدارة أكتروس - LinkedOFF KSA</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/enhancements.css">
+  <link rel="stylesheet" href="css/responsive.css">
+
+  <!-- ═══ EARLY AUTH GUARD ═══ -->
+  <style>body { visibility: hidden; }</style>
+  <script>
+    (function () {
+      try {
+        var user = JSON.parse(localStorage.getItem('linkedoff_user') || 'null');
+        var sess = JSON.parse(localStorage.getItem('linkedoff_session') || 'null');
+        if (!user || !sess || !sess.token || Date.now() > Number(sess.expiresAtMs || 0)) {
+          window.location.replace('login.html');
+        } else {
+          document.addEventListener('DOMContentLoaded', function () {
+            document.body.style.visibility = 'visible';
+          });
+        }
+      } catch (e) { window.location.replace('login.html'); }
+    })();
+  </script>
+  <!-- ════════════════════════ -->
+
+  <script src="js/auth.js"></script>
+  <script>startSessionEnforcer();</script>
+
+  <style>
+    /* ── Actros Page — Styles ─────────────────────────────────────────── */
+
+    /* Month picker inside topbar-actions */
+    .ac-month-select {
+      padding: 6px 12px; border-radius: 10px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.05);
+      color: var(--text, #f0f0f0);
+      font-family: 'Cairo', sans-serif; font-size: 13px; font-weight: 700;
+      outline: none; cursor: pointer;
+    }
+
+    /* ── Stats row ────────────────────────────────────── */
+    .ac-stats {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 16px; margin-bottom: 24px;
+    }
+    .ac-stat {
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 16px; padding: 18px 20px;
+      display: flex; align-items: center; gap: 14px;
+      transition: border-color .2s;
+    }
+    .ac-stat:hover { border-color: rgba(255,255,255,.15); }
+    .ac-stat-icon {
+      width: 46px; height: 46px; border-radius: 13px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center; font-size: 20px;
+    }
+    .ac-stat-value { font-size: 20px; font-weight: 900; line-height: 1.1; }
+    .ac-stat-label { font-size: 11px; color: var(--muted, #888); margin-top: 4px; }
+    .ac-stat-sub   { font-size: 11px; margin-top: 2px; }
+
+    /* ── Two-column layout ────────────────────────────── */
+    .ac-layout {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 20px;
+      align-items: start;
+    }
+
+    /* ── Add entry button ─────────────────────────────── */
+    .ac-add-btn {
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      width: 100%; padding: 13px; border-radius: 12px;
+      border: 2px dashed rgba(0,168,89,.35);
+      background: rgba(0,168,89,.04);
+      color: var(--primary, #00A859);
+      font-family: 'Cairo', sans-serif; font-size: 14px; font-weight: 700;
+      cursor: pointer; transition: all .2s; margin-bottom: 16px;
+    }
+    .ac-add-btn:hover { border-color: var(--primary, #00A859); background: rgba(0,168,89,.08); }
+
+    /* ── Entries table ────────────────────────────────── */
+    .ac-table-wrap {
+      background: rgba(255,255,255,.03);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 16px; overflow: hidden;
+    }
+    .ac-table-head {
+      display: grid;
+      grid-template-columns: 80px 1fr 60px 90px 62px 80px 1fr auto;
+      padding: 10px 16px;
+      background: rgba(255,255,255,.03);
+      border-bottom: 1px solid rgba(255,255,255,.07);
+      font-size: 11px; font-weight: 700;
+      color: var(--muted, #888); letter-spacing: .4px; gap: 10px;
+    }
+    .ac-row {
+      display: grid;
+      grid-template-columns: 80px 1fr 60px 90px 62px 80px 1fr auto;
+      padding: 12px 16px; align-items: center; gap: 10px;
+      border-bottom: 1px solid rgba(255,255,255,.04);
+      font-size: 13px; transition: background .15s;
+    }
+    .ac-row:last-child { border-bottom: none; }
+    .ac-row:hover      { background: rgba(255,255,255,.02); }
+    .ac-row-date    { font-size: 12px; font-weight: 700; color: var(--muted, #888); }
+    .ac-row-desc    { font-weight: 600; }
+    .ac-row-desc small { display: block; font-size: 11px; color: var(--muted, #888); font-weight: 400; }
+    .ac-row-rev     { font-weight: 900; color: var(--primary, #00A859); }
+    .ac-row-diesel  { color: #fbbf24; }
+    .ac-row-cost    { font-size: 12px; color: #ef4444; }
+    .ac-row-actions { display: flex; gap: 6px; justify-content: flex-end; }
+    .ac-act {
+      width: 28px; height: 28px; border-radius: 8px; border: none;
+      cursor: pointer; font-size: 13px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center; transition: all .2s;
+    }
+    .ac-act-edit   { background: rgba(96,165,250,.1); color: #60a5fa; }
+    .ac-act-delete { background: rgba(239,68,68,.1);  color: #ef4444; }
+    .ac-act-edit:hover   { background: rgba(96,165,250,.22); }
+    .ac-act-delete:hover { background: rgba(239,68,68,.22); }
+
+    /* Empty state */
+    .ac-empty { text-align: center; padding: 52px 20px; color: var(--muted, #888); }
+    .ac-empty .ei { font-size: 54px; opacity: .4; margin-bottom: 14px; }
+    .ac-empty p   { font-size: 13px; line-height: 1.8; }
+
+    /* ── P&L Panel ────────────────────────────────────── */
+    .ac-pnl {
+      background: rgba(255,255,255,.03);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 16px; overflow: hidden;
+      position: sticky; top: 76px;
+    }
+    .ac-pnl-head {
+      padding: 14px 18px;
+      border-bottom: 1px solid rgba(255,255,255,.07);
+      font-size: 13px; font-weight: 900;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .ac-pnl-body { padding: 14px 16px; }
+    .ac-line {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 7px 0; border-bottom: 1px solid rgba(255,255,255,.04);
+      font-size: 12px;
+    }
+    .ac-line:last-child { border-bottom: none; }
+    .ac-line .ll { color: var(--muted, #888); display: flex; align-items: center; gap: 5px; }
+    .ac-line .lv { font-weight: 700; font-size: 13px; }
+    .ac-plus  { color: var(--primary, #00A859); }
+    .ac-minus { color: #ef4444; }
+    .ac-sep { border-top: 1px solid rgba(255,255,255,.1); margin: 8px 0; }
+
+    .ac-net {
+      border-radius: 12px; padding: 14px 16px;
+      text-align: center; margin: 14px 0 4px;
+    }
+    .ac-net.profit { background: rgba(0,168,89,.08);  border: 1px solid rgba(0,168,89,.25); }
+    .ac-net.loss   { background: rgba(239,68,68,.08); border: 1px solid rgba(239,68,68,.25); }
+    .ac-net-label  { font-size: 11px; color: var(--muted, #888); margin-bottom: 4px; }
+    .ac-net-value  { font-size: 24px; font-weight: 900; }
+    .ac-net.profit .ac-net-value { color: var(--primary, #00A859); }
+    .ac-net.loss   .ac-net-value { color: #ef4444; }
+    .ac-net-sub    { font-size: 11px; color: var(--muted, #888); margin-top: 4px; }
+
+    /* Generate button */
+    .ac-gen-btn {
+      width: 100%; margin: 16px 0 18px; padding: 13px 18px;
+      border-radius: 12px; border: none;
+      background: linear-gradient(135deg, #0A66C2, #004182);
+      color: #fff; font-family: 'Cairo', sans-serif;
+      font-size: 14px; font-weight: 900; cursor: pointer;
+      box-shadow: 0 4px 14px rgba(10,102,194,.3);
+      transition: all .2s;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .ac-gen-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(10,102,194,.45); }
+
+    /* ── Entry Form Modal ─────────────────────────────── */
+    .ac-modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,.65); z-index: 9000;
+      align-items: center; justify-content: center; padding: 16px;
+    }
+    .ac-modal-overlay.open { display: flex; }
+    .ac-modal {
+      background: #131324;
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 20px; padding: 28px 24px;
+      width: min(98vw, 680px); max-height: 92vh; overflow-y: auto;
+    }
+    .ac-modal-title {
+      font-size: 16px; font-weight: 900; margin-bottom: 22px;
+      display: flex; align-items: center; gap: 8px;
+    }
+
+    /* Form grid */
+    .ac-fg  { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .ac-fg3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+    .ac-s2  { grid-column: span 2; }
+    .ac-s3  { grid-column: span 3; }
+    .ac-sep-line { border-top: 1px solid rgba(255,255,255,.08); margin: 18px 0 14px; }
+    .ac-form-label {
+      font-size: 11px; font-weight: 700; color: var(--muted, #888);
+      margin-bottom: 10px; letter-spacing: .3px;
+    }
+    .ac-field { display: flex; flex-direction: column; gap: 5px; }
+    .ac-field label { font-size: 12px; font-weight: 700; color: var(--muted, #888); }
+    .ac-field input, .ac-field textarea {
+      padding: 10px 13px; border-radius: 11px;
+      border: 1px solid rgba(255,255,255,.1);
+      background: rgba(255,255,255,.04);
+      color: var(--text, #f0f0f0);
+      font-family: 'Cairo', sans-serif; font-size: 14px;
+      outline: none; transition: border-color .2s; width: 100%;
+    }
+    .ac-field input:focus { border-color: var(--primary, #00A859); }
+    .ac-field input::placeholder { color: rgba(255,255,255,.2); }
+    .ac-field .hint { font-size: 11px; color: var(--muted, #888); margin-top: 3px; }
+
+    /* Input with unit suffix */
+    .ac-ig { display: flex; border-radius: 11px; overflow: hidden; border: 1px solid rgba(255,255,255,.1); }
+    .ac-ig:focus-within { border-color: var(--primary, #00A859); }
+    .ac-ig input { border: none; border-radius: 0; flex: 1; padding: 10px 13px; background: rgba(255,255,255,.04); }
+    .ac-ig input:focus { border: none; }
+    .ac-ig-unit {
+      display: flex; align-items: center; padding: 0 12px;
+      background: rgba(255,255,255,.05); color: var(--muted, #888);
+      font-size: 12px; font-weight: 700; white-space: nowrap;
+      border-right: 1px solid rgba(255,255,255,.08);
+    }
+    .ac-auto-input { background: rgba(255,255,255,.02) !important; color: #fbbf24 !important; }
+
+    /* Modal actions */
+    .ac-modal-actions { display: flex; gap: 10px; margin-top: 22px; }
+    .ac-btn {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 11px 20px; border-radius: 12px;
+      font-family: 'Cairo', sans-serif; font-size: 14px; font-weight: 700;
+      cursor: pointer; border: none; transition: all .2s;
+    }
+    .ac-btn-primary  { background: linear-gradient(135deg,#00A859,#00d66f); color:#fff; flex:1; justify-content:center; }
+    .ac-btn-primary:hover { transform: translateY(-1px); }
+    .ac-btn-secondary{ background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12); color:var(--text,#f0f0f0); }
+    .ac-btn-secondary:hover { background:rgba(255,255,255,.1); }
+
+    /* ── Report Modal ─────────────────────────────────── */
+    .ac-report {
+      background: #0d0d1e; border: 1px solid rgba(255,255,255,.15);
+      border-radius: 20px; padding: 32px 28px;
+      width: min(98vw, 820px); max-height: 94vh; overflow-y: auto;
+    }
+    .ac-rpt-hdr { text-align: center; margin-bottom: 28px; }
+    .ac-rpt-hdr h1 { font-size: 1.35rem; font-weight: 900; }
+    .ac-rpt-hdr .sub { font-size: 13px; color: var(--muted, #888); margin-top: 6px; }
+
+    .ac-rpt-section { margin-bottom: 24px; }
+    .ac-rpt-section h2 {
+      font-size: 11px; font-weight: 700; color: var(--muted, #888);
+      text-transform: uppercase; letter-spacing: .5px;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      padding-bottom: 8px; margin-bottom: 14px;
+    }
+
+    /* Report table */
+    .ac-rtbl { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .ac-rtbl th {
+      background: rgba(255,255,255,.04); padding: 9px 10px;
+      text-align: right; font-weight: 700; color: var(--muted, #888); font-size: 11px;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+    }
+    .ac-rtbl td { padding: 8px 10px; border-bottom: 1px solid rgba(255,255,255,.04); }
+    .ac-rtbl tr:last-child td { border-bottom: none; }
+    .ac-rtbl tr:hover td { background: rgba(255,255,255,.02); }
+    .ac-rtbl td.ltr { direction: ltr; text-align: left; }
+
+    /* Totals grid */
+    .ac-totals { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .ac-total-card {
+      background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.08);
+      border-radius: 12px; padding: 12px 16px;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .ac-tc-label { font-size: 12px; color: var(--muted, #888); }
+    .ac-tc-value { font-size: 17px; font-weight: 900; }
+
+    /* Net result */
+    .ac-net-result {
+      margin-top: 20px; padding: 22px; border-radius: 16px; text-align: center;
+    }
+    .ac-net-result.profit { background:rgba(0,168,89,.1); border:2px solid rgba(0,168,89,.3); }
+    .ac-net-result.loss   { background:rgba(239,68,68,.1);border:2px solid rgba(239,68,68,.3); }
+    .ac-net-result .emoji { font-size: 40px; margin-bottom: 8px; }
+    .ac-net-result .label { font-size: 12px; color: var(--muted, #888); margin-bottom: 6px; }
+    .ac-net-result .value { font-size: 30px; font-weight: 900; }
+    .ac-net-result.profit .value { color: var(--primary, #00A859); }
+    .ac-net-result.loss   .value { color: #ef4444; }
+    .ac-net-result .note  { font-size: 12px; color: var(--muted, #888); margin-top: 6px; }
+
+    /* Share bar */
+    .ac-share-bar { display: flex; gap: 10px; margin-top: 18px; flex-wrap: wrap; }
+    .ac-share-btn {
+      flex: 1; min-width: 150px; padding: 12px 16px; border-radius: 12px; border: none;
+      font-family: 'Cairo', sans-serif; font-size: 14px; font-weight: 700;
+      cursor: pointer; transition: all .2s;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .ac-share-wa    { background: #25D366; color: #fff; }
+    .ac-share-print { background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.12); color:var(--text,#f0f0f0); }
+    .ac-share-wa:hover    { background: #1ebe5c; transform: translateY(-1px); }
+    .ac-share-print:hover { background: rgba(255,255,255,.14); }
+
+    /* ── Toast ────────────────────────────────────────── */
+    .ac-toast {
+      position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
+      background: #1e293b; border: 1px solid rgba(255,255,255,.15);
+      color: var(--text, #f0f0f0); padding: 12px 26px; border-radius: 30px;
+      font-size: 14px; font-weight: 700;
+      z-index: 9999; opacity: 0; pointer-events: none;
+      transition: opacity .25s, transform .25s; white-space: nowrap;
+    }
+    .ac-toast.show { opacity: 1; transform: translateX(-50%) translateY(-6px); }
+
+    /* ── Responsive ───────────────────────────────────── */
+    @media (max-width: 1100px) {
+      .ac-layout { grid-template-columns: 1fr; }
+      .ac-pnl    { position: static; }
+    }
+    @media (max-width: 768px) {
+      .ac-stats  { grid-template-columns: 1fr 1fr; }
+      .ac-table-head  { display: none; }
+      .ac-row    { grid-template-columns: 1fr auto; }
+      .ac-row-date, .ac-row-desc, .ac-row-rev, .ac-row-diesel, .ac-row-cost, .ac-row-notes { grid-column: 1; }
+      .ac-row-actions { grid-column: 2; grid-row: 1 / 4; align-self: center; }
+    }
+    @media (max-width: 480px) {
+      .ac-stats  { grid-template-columns: 1fr 1fr; gap: 10px; }
+      .ac-fg, .ac-fg3 { grid-template-columns: 1fr; }
+      .ac-s2, .ac-s3  { grid-column: span 1; }
+      .ac-totals { grid-template-columns: 1fr; }
+    }
+    /* Share PDF button */
+    .ac-share-pdf { background: #dc2626; color: #fff; }
+    .ac-share-pdf:hover { background: #b91c1c; transform: translateY(-1px); }
+    .ac-share-label {
+      width: 100%; font-size: 11px; color: var(--muted,#888); font-weight: 700;
+      padding: 4px 2px; letter-spacing: .3px;
+    }
+
+    /* ── Report redesign elements ─────────────────────────── */
+    .ac-rpt-stats {
+      display: grid; grid-template-columns: repeat(4,1fr); gap: 10px;
+      margin-bottom: 20px;
+    }
+    .ac-rpt-stat {
+      background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08);
+      border-radius: 12px; padding: 14px 16px; text-align: center;
+    }
+    .ac-rpt-stat-val { font-size: 16px; font-weight: 900; margin-bottom: 4px; }
+    .ac-rpt-stat-lbl { font-size: 11px; color: var(--muted,#888); }
+
+    .ac-rpt-cost-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 12px; }
+    .ac-rpt-cost-sect {
+      background: rgba(255,255,255,.03);
+      border: 1px solid rgba(255,255,255,.07); border-radius: 12px; padding: 14px;
+    }
+    .ac-rpt-cost-title {
+      font-size: 11px; font-weight: 700; color: var(--muted,#888);
+      text-transform: uppercase; letter-spacing: .4px;
+      border-bottom: 1px solid rgba(255,255,255,.07); padding-bottom: 8px; margin-bottom: 10px;
+    }
+    .ac-rpt-cost-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,.04); font-size: 12px;
+    }
+    .ac-rpt-cost-row:last-of-type { border-bottom: none; }
+    .ac-rpt-cost-row .ll { color: var(--muted,#888); }
+    .ac-rpt-cost-row .lv { font-weight: 700; color: #ef4444; }
+    .ac-rpt-cost-ttl {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 8px 0 0; border-top: 1px solid rgba(255,255,255,.1);
+      margin-top: 6px; font-size: 13px; font-weight: 900;
+    }
+    .ac-rpt-rev {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,.08); font-size: 13px;
+    }
+    .ac-rpt-rev .ll { color: var(--muted,#888); }
+    .ac-rpt-rev .lv { font-weight: 900; }
+    @media (max-width: 600px) {
+      .ac-rpt-stats     { grid-template-columns: 1fr 1fr; }
+      .ac-rpt-cost-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ── Day navigation bar ────────────────────────────── */
+    .ac-day-nav {
+      display: flex; align-items: center; gap: 8px;
+      margin-bottom: 12px; flex-wrap: wrap;
+    }
+    .ac-day-nav-btn {
+      padding: 7px 14px; border-radius: 10px; border: none;
+      background: rgba(255,255,255,.07); color: var(--text, #f0f0f0);
+      font-family: 'Cairo', sans-serif; font-size: 13px; font-weight: 700;
+      cursor: pointer; transition: all .2s;
+    }
+    .ac-day-nav-btn:hover { background: rgba(255,255,255,.12); }
+    .ac-day-nav-btn:disabled { opacity: .35; cursor: default; pointer-events: none; }
+    .ac-day-nav-label {
+      flex: 1; text-align: center; font-size: 13px; font-weight: 700; padding: 7px 10px;
+    }
+    .ac-day-nav-all {
+      padding: 5px 12px; border-radius: 8px;
+      border: 1px solid rgba(255,255,255,.15);
+      background: transparent; color: var(--muted, #888);
+      font-family: 'Cairo', sans-serif; font-size: 12px; font-weight: 700;
+      cursor: pointer; transition: all .2s;
+    }
+    .ac-day-nav-all.active, .ac-day-nav-all:hover {
+      border-color: var(--primary, #00A859); color: var(--primary, #00A859);
+      background: rgba(0,168,89,.05);
+    }
+
+    /* Notes column */
+    .ac-row-notes {
+      font-size: 11px; color: var(--muted, #888);
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+
+    @media print {
+      /* Hide app shell & entry modal */
+      .app-sidebar, .app-topbar, .ac-toast,
+      #entryModal { display: none !important; }
+      /* Show report overlay flat */
+      #reportModal {
+        position: static !important; background: none !important;
+        display: block !important; padding: 0 !important;
+      }
+      .ac-report {
+        background: #fff !important; color: #111 !important;
+        border: none !important; box-shadow: none !important;
+        border-radius: 0 !important; width: 100% !important;
+        max-height: none !important; overflow: visible !important;
+        padding: 16px !important;
+      }
+      /* Color adjustments for white paper */
+      .ac-rpt-hdr .sub  { color: #555 !important; }
+      .ac-rtbl th       { background: #f3f4f6 !important; color: #333 !important; border-color: #ddd !important; }
+      .ac-rtbl td       { color: #111 !important; border-color: #eee !important; }
+      .ac-total-card    { background: #f9f9f9 !important; border: 1px solid #ddd !important; }
+      .ac-tc-label      { color: #555 !important; }
+      .ac-net-result.profit { background: #f0fdf4 !important; border-color: #86efac !important; }
+      .ac-net-result.loss   { background: #fef2f2 !important; border-color: #fca5a5 !important; }
+      /* Hide share bar & close button */
+      .ac-share-bar, .ac-share-label,
+      #reportModal > .ac-report > div:first-child { display: none !important; }
+    }
+  </style>
+</head>
+<body class="app-page" data-page="actros">
+<div class="app-shell">
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar(false)"></div>
+
+  <aside class="app-sidebar" id="appSidebar" aria-label="القائمة الجانبية">
+    <div class="sidebar-brand">
+      <a href="search.html" class="brand-link">
+        <span class="brand-mark">💼</span>
+        <span class="brand-text">LinkedOFF</span>
+        <span class="brand-sub">AceAlBastoni</span>
+      </a>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="search.html"              class="nav-item"><span class="nav-ic">🔍</span><span>البحث عن الوظائف</span></a>
+      <a href="dashboard.html"           class="nav-item"><span class="nav-ic">📊</span><span>لوحة التحكم</span></a>
+      <a href="analytics.html"           class="nav-item"><span class="nav-ic">📈</span><span>تحليلات السوق</span></a>
+      <a href="saved.html"               class="nav-item"><span class="nav-ic">💾</span><span>الوظائف المحفوظة</span></a>
+      <a href="history.html"             class="nav-item"><span class="nav-ic">📬</span><span>سجل الإرسال</span></a>
+      <a href="about.html"               class="nav-item"><span class="nav-ic">👤</span><span>عن المطوّر</span></a>
+      <a href="pricing.html"             class="nav-item"><span class="nav-ic">💳</span><span>الباقات</span></a>
+      <a href="actros.html"              class="nav-item active"><span class="nav-ic">🚛</span><span>إدارة أكتروس</span></a>
+      <div class="sidebar-group" id="sidebarSettingsGroup">
+        <div class="sidebar-section-header" onclick="toggleSidebarGroup(this)"><span>🔧 الإعدادات</span><span class="group-chevron">›</span></div>
+        <a href="settings.html"           data-group-page="settings.html"           class="nav-item nav-sub-item"><span class="nav-ic">👤</span><span>إعدادات الحساب</span></a>
+        <a href="users.html"              data-group-page="users.html"              class="nav-item nav-sub-item"><span class="nav-ic">👥</span><span>إعدادات المستخدمين</span></a>
+        <a href="settings-pages.html"     data-group-page="settings-pages.html"     class="nav-item nav-sub-item"><span class="nav-ic">📄</span><span>إعدادات الصفحات</span></a>
+        <a href="settings-datasource.html" data-group-page="settings-datasource.html" class="nav-item nav-sub-item"><span class="nav-ic">🗄️</span><span>مصادر البيانات</span></a>
+        <a href="settings-api.html"        data-group-page="settings-api.html"        class="nav-item nav-sub-item"><span class="nav-ic">🔑</span><span>إعدادات الـ API</span></a>
+        <a href="actros-settings.html"    data-group-page="actros-settings.html"    class="nav-item nav-sub-item"><span class="nav-ic">🚛</span><span>إعدادات أكتروس</span></a>
+        <a href="engines-interactive.html" data-group-page="engines-interactive.html" class="nav-item nav-sub-item"><span class="nav-ic">⚙️</span><span>إعدادات المحركات</span></a>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="sidebar-logout" type="button" onclick="performLogout('👋 تم تسجيل الخروج', false)">
+        <span class="nav-ic">🚪</span><span>تسجيل الخروج</span>
+      </button>
+    </div>
+  </aside>
+
+  <div class="app-main">
+    <header class="app-topbar">
+      <button class="sidebar-toggle" type="button" aria-label="فتح/إغلاق القائمة" onclick="toggleSidebar()">
+        <span class="toggle-bars"></span>
+      </button>
+      <div class="topbar-title">🚛 <span id="tbVehicleName">إدارة أكتروس</span></div>
+      <div class="topbar-actions">
+        <select id="monthSelect" class="ac-month-select" onchange="onMonthChange()"></select>
+        <button id="darkModeBtn" onclick="toggleDarkMode()" title="وضع ليلي" style="
+          background:none;border:1px solid #ddd;border-radius:8px;
+          padding:6px 10px;cursor:pointer;font-size:18px;line-height:1;
+          transition:background .2s,border-color .2s;">🌙</button>
+      </div>
+    </header>
+
+    <main class="app-content">
+
+      <!-- Stats -->
+      <div class="ac-stats">
+        <div class="ac-stat">
+          <div class="ac-stat-icon" style="background:rgba(0,168,89,.12);color:#00A859;">💰</div>
+          <div>
+            <div class="ac-stat-value" id="stRevenue">0 ج</div>
+            <div class="ac-stat-label">إجمالي الإيرادات</div>
+            <div class="ac-stat-sub" id="stTrips" style="color:#00A859;font-weight:700;"></div>
+          </div>
+        </div>
+        <div class="ac-stat">
+          <div class="ac-stat-icon" style="background:rgba(251,191,36,.12);color:#fbbf24;">⛽</div>
+          <div>
+            <div class="ac-stat-value" id="stDieselL">0 ل</div>
+            <div class="ac-stat-label">ليترات الديزل</div>
+            <div class="ac-stat-sub" id="stDieselEgp" style="color:#fbbf24;font-weight:700;"></div>
+          </div>
+        </div>
+        <div class="ac-stat">
+          <div class="ac-stat-icon" style="background:rgba(239,68,68,.12);color:#ef4444;">📉</div>
+          <div>
+            <div class="ac-stat-value" id="stExpenses">0 ج</div>
+            <div class="ac-stat-label">إجمالي المصاريف</div>
+            <div class="ac-stat-sub" id="stDays" style="color:var(--muted,#888);"></div>
+          </div>
+        </div>
+        <div class="ac-stat" id="stNetCard">
+          <div class="ac-stat-icon" id="stNetIcon" style="background:rgba(0,168,89,.12);color:#00A859;">📊</div>
+          <div>
+            <div class="ac-stat-value" id="stNet">0 ج</div>
+            <div class="ac-stat-label">صافي الربح</div>
+            <div class="ac-stat-sub" id="stNetTag" style="font-size:12px;font-weight:700;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Two-column layout -->
+      <div class="ac-layout">
+
+        <!-- LEFT: entries list -->
+        <div>
+          <button class="ac-add-btn" onclick="openEntryModal()">＋ إضافة يوم عمل</button>
+          <div class="ac-day-nav" id="dayNav">
+            <button class="ac-day-nav-btn" id="dayNavPrev" onclick="shiftDay(-1)">◄ السابق</button>
+            <button class="ac-day-nav-all" id="dayNavAll" onclick="clearDayFilter()">📅 كل الشهر</button>
+            <span class="ac-day-nav-label" id="dayNavLabel">عرض كل الشهر</span>
+            <button class="ac-day-nav-btn" id="dayNavNext" onclick="shiftDay(1)">التالي ►</button>
+          </div>
+          <div class="ac-table-wrap">
+            <div class="ac-table-head">
+              <div>التاريخ</div><div>العميل / الوصف</div>
+              <div style="text-align:center">نقلات</div>
+              <div>الإيراد</div><div>ديزل (ل)</div><div>أعطال</div><div>ملاحظات</div><div></div>
+            </div>
+            <div id="acEntriesList">
+              <div class="ac-empty">
+                <div class="ei">📋</div>
+                <p>لا توجد بيانات في هذا الشهر.<br>اضغط "إضافة يوم عمل" لإدخال أول سجل.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: P&L panel -->
+        <div>
+          <div class="ac-pnl">
+            <div class="ac-pnl-head">📊 حساب الشهر</div>
+            <div class="ac-pnl-body">
+              <div class="ac-line"><span class="ll">💰 الإيرادات</span><span class="lv ac-plus" id="pRevenue">0 ج</span></div>
+              <div class="ac-sep"></div>
+              <div class="ac-line"><span class="ll">⛽ تكلفة الوقود</span>     <span class="lv ac-minus" id="pFuel">- 0 ج</span></div>
+              <div class="ac-line"><span class="ll">🧑‍✈️ نسبة السائق من النقلات</span><span class="lv ac-minus" id="pDriverPct">- 0 ج</span></div>
+              <div class="ac-line"><span class="ll">📅 مصاريف يومية السائق</span><span class="lv ac-minus" id="pDriverDay">- 0 ج</span></div>
+              <div class="ac-line"><span class="ll">🔧 أعطال وصيانة</span>     <span class="lv ac-minus" id="pBreakdown">- 0 ج</span></div>
+              <div class="ac-line"><span class="ll">📌 مصاريف أخرى يومية</span><span class="lv ac-minus" id="pOtherVar">- 0 ج</span></div>
+              <div class="ac-sep"></div>
+              <div class="ac-line"><span class="ll">🧑‍✈️ راتب السائق</span>     <span class="lv ac-minus" id="pSalary">- 0 ج</span></div>
+              <div class="ac-line"><span class="ll">👷 أجرة التباع</span>      <span class="lv ac-minus" id="pHelper">- 0 ج</span></div>
+              <div class="ac-line"><span class="ll">🗂️ مصاريف ثابتة أخرى</span><span class="lv ac-minus" id="pOtherFixed">- 0 ج</span></div>
+
+              <div class="ac-net profit" id="acNetBox">
+                <div class="ac-net-label">صافي الربح / الخسارة</div>
+                <div class="ac-net-value" id="acNetVal">0 ج</div>
+                <div class="ac-net-sub"   id="acNetSub"></div>
+              </div>
+
+              <button class="ac-gen-btn" onclick="generateReport()">
+                📄 Generate — إنشاء التقرير
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- ac-layout -->
+    </main>
+  </div><!-- app-main -->
+</div><!-- app-shell -->
+
+<!-- ═══════════ ENTRY FORM MODAL ════════════ -->
+<div class="ac-modal-overlay" id="entryModal">
+  <div class="ac-modal">
+    <div class="ac-modal-title" id="entryModalTitle">➕ إضافة يوم عمل</div>
+
+    <div class="ac-fg">
+      <div class="ac-field"><label>التاريخ *</label><input type="date" id="fDate"></div>
+      <div class="ac-field"><label>اسم العميل / الجهة</label><input type="text" id="fClient" placeholder="شركة النيل للمقاولات..."></div>
+      <div class="ac-field ac-s2"><label>وصف / مسار النقلة</label><input type="text" id="fRoute" placeholder="القاهرة ← الإسكندرية — شحن بضاعة"></div>
+      <div class="ac-field">
+        <label>عدد النقلات *</label>
+        <div class="ac-ig"><input type="number" id="fTripsCount" value="1" min="0" step="1"><div class="ac-ig-unit">نقلة</div></div>
+      </div>
+      <div class="ac-field">
+        <label>إجمالي إيراد النقلات *</label>
+        <div class="ac-ig"><input type="number" id="fRevenue" placeholder="0" min="0"><div class="ac-ig-unit">ج.م</div></div>
+      </div>
+    </div>
+
+    <div class="ac-sep-line"></div>
+    <div class="ac-form-label">⛽ الوقود</div>
+    <div class="ac-fg3">
+      <div class="ac-field">
+        <label>ليترات الديزل</label>
+        <div class="ac-ig"><input type="number" id="fDieselL" placeholder="0" min="0" step="0.1"><div class="ac-ig-unit">لتر</div></div>
+      </div>
+      <div class="ac-field">
+        <label>سعر اللتر (اختياري)</label>
+        <div class="ac-ig"><input type="number" id="fDieselPrice" placeholder="من الإعدادات" min="0" step="0.01"><div class="ac-ig-unit">ج.م</div></div>
+        <div class="hint" style="font-size:11px;color:var(--muted,#888);">فارغ = سعر الإعدادات</div>
+      </div>
+      <div class="ac-field">
+        <label>تكلفة الوقود (تلقائي)</label>
+        <div class="ac-ig"><input type="number" id="fFuelCost" placeholder="0" readonly class="ac-auto-input"><div class="ac-ig-unit">ج.م</div></div>
+      </div>
+    </div>
+
+    <div class="ac-sep-line"></div>
+    <div class="ac-form-label">💸 المصاريف</div>
+    <div class="ac-fg">
+      <div class="ac-field">
+        <label>مصاريف أعطال / صيانة</label>
+        <div class="ac-ig"><input type="number" id="fBreakdown" placeholder="0" min="0"><div class="ac-ig-unit">ج.م</div></div>
+      </div>
+      <div class="ac-field">
+        <label>مصاريف إضافية أخرى</label>
+        <div class="ac-ig"><input type="number" id="fOtherExp" placeholder="0" min="0"><div class="ac-ig-unit">ج.م</div></div>
+      </div>
+      <div class="ac-field">
+        <label>مصاريف السائق اليومية</label>
+        <div class="ac-ig"><input type="number" id="fDriverDaily" placeholder="من الإعدادات" min="0"><div class="ac-ig-unit">ج.م</div></div>
+        <div class="hint" style="font-size:11px;color:var(--muted,#888);">فارغ = قيمة الإعدادات</div>
+      </div>
+      <div class="ac-field">
+        <label>ملاحظات</label>
+        <input type="text" id="fNotes" placeholder="أي ملاحظة...">
+      </div>
+    </div>
+
+    <div class="ac-modal-actions">
+      <button class="ac-btn ac-btn-secondary" onclick="closeEntryModal()">إلغاء</button>
+      <button class="ac-btn ac-btn-primary"   onclick="saveEntry()">💾 حفظ</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ REPORT MODAL ════════════ -->
+<div class="ac-modal-overlay" id="reportModal">
+  <div class="ac-report">
+    <!-- Close bar -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+      <span style="font-size:13px;font-weight:700;color:var(--muted,#888);">📄 تقرير التشغيل</span>
+      <button onclick="closeReportModal()" class="ac-btn ac-btn-secondary" style="padding:7px 14px;font-size:13px;">✕ إغلاق</button>
+    </div>
+
+    <!-- Header -->
+    <div class="ac-rpt-hdr">
+      <div style="font-size:42px;margin-bottom:8px;">🚛</div>
+      <h1 id="rTitle">تقرير تشغيل أكتروس</h1>
+      <div class="sub" id="rSubtitle"></div>
+      <div id="rDate" style="font-size:11px;color:var(--muted,#888);margin-top:5px;"></div>
+    </div>
+
+    <!-- Summary stats row -->
+    <div class="ac-rpt-stats" id="rStats"></div>
+
+    <!-- Daily entries -->
+    <div class="ac-rpt-section">
+      <h2>📅 تفاصيل أيام العمل</h2>
+      <div style="overflow-x:auto;">
+        <table class="ac-rtbl">
+          <thead><tr>
+            <th>التاريخ</th><th>العميل / الوصف</th>
+            <th style="text-align:center">نقلات</th>
+            <th>الإيراد</th><th>ديزل (ل)</th><th>وقود</th>
+            <th>أعطال</th><th>مصاريف سائق</th><th>أخرى</th><th>ملاحظات</th>
+          </tr></thead>
+          <tbody id="rTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Costs breakdown -->
+    <div class="ac-rpt-section">
+      <h2>💸 تفصيل المصاريف</h2>
+      <div id="rCosts"></div>
+    </div>
+
+    <!-- Net result -->
+    <div class="ac-net-result" id="rNetResult">
+      <div class="emoji" id="rNetEmoji">📊</div>
+      <div class="label">صافي الربح / الخسارة للشهر</div>
+      <div class="value" id="rNetValue">0 ج.م</div>
+      <div class="note"  id="rNetNote"></div>
+    </div>
+
+    <!-- Share bar -->
+    <div class="ac-share-bar" id="rShareBar"></div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="ac-toast" id="acToast"></div>
+
+<!-- ═══════════ SCRIPTS ════════════ -->
+<script src="js/config.js"></script>
+<script src="js/rbac.js"></script>
+
+<script>
+/* ════════════════════════════════════════════════════════
+   Actros — Core Logic
+   actros_settings  — constants
+   actros_entries   — daily records
+   ════════════════════════════════════════════════════════ */
+
+const SETTINGS_KEY = 'actros_settings';
+const ENTRIES_KEY  = 'actros_entries';
+const MONTHS_AR    = ['يناير','فبراير','مارس','إبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+const fmt    = (n, d=0) => (parseFloat(n)||0).toLocaleString('ar-EG',{minimumFractionDigits:d,maximumFractionDigits:d});
+const fmtEgp = n => fmt(n) + ' ج';
+const uid    = () => Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+function escHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+let _tt;
+function acToast(msg, ms=2600) {
+  const el = document.getElementById('acToast');
+  el.textContent = msg; el.classList.add('show');
+  clearTimeout(_tt); _tt = setTimeout(()=>el.classList.remove('show'), ms);
+}
+
+// ── Data ──────────────────────────────────────────────────────────────────────
+function loadSettings(){ try{return JSON.parse(localStorage.getItem(SETTINGS_KEY)||'{}')}catch{return{}} }
+function loadEntries() { try{return JSON.parse(localStorage.getItem(ENTRIES_KEY)||'[]')}catch{return[]} }
+function saveEntries(e){ localStorage.setItem(ENTRIES_KEY, JSON.stringify(e)); }
+
+// ── Month picker ──────────────────────────────────────────────────────────────
+function buildMonthPicker(){
+  const sel = document.getElementById('monthSelect');
+  const now = new Date();
+  for(let i=0;i<24;i++){
+    const d = new Date(now.getFullYear(), now.getMonth()-i, 1);
+    const v = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+    const o = document.createElement('option');
+    o.value = v; o.textContent = `${MONTHS_AR[d.getMonth()]} ${d.getFullYear()}`;
+    sel.appendChild(o);
+  }
+}
+
+let selectedDay = null;
+
+function getAllMonthEntries(){
+  const m = document.getElementById('monthSelect').value;
+  return loadEntries().filter(e=>e.date&&e.date.startsWith(m)).sort((a,b)=>a.date.localeCompare(b.date));
+}
+
+function getViewEntries(){
+  if(!selectedDay) return getAllMonthEntries();
+  return getAllMonthEntries().filter(e=>e.date===selectedDay);
+}
+
+function onMonthChange(){ selectedDay=null; renderAll(); }
+
+function shiftDay(delta){
+  const today=new Date().toISOString().slice(0,10);
+  const entries=getAllMonthEntries();
+  if(!entries.length) return;
+  const dates=[...new Set(entries.map(e=>e.date))].sort();
+  if(!selectedDay){
+    selectedDay=delta>0?dates[0]:dates[dates.length-1];
+  } else {
+    const idx=dates.indexOf(selectedDay), ni=idx+delta;
+    if(ni<0||ni>=dates.length) return;
+    if(delta>0&&dates[ni]>today) return;
+    selectedDay=dates[ni];
+  }
+  renderAll();
+}
+
+function clearDayFilter(){ selectedDay=null; renderAll(); }
+
+function updateDayNav(entries){
+  const today=new Date().toISOString().slice(0,10);
+  const dates=[...new Set(entries.map(e=>e.date))].sort();
+  const prevBtn=document.getElementById('dayNavPrev');
+  const nextBtn=document.getElementById('dayNavNext');
+  const label  =document.getElementById('dayNavLabel');
+  const allBtn =document.getElementById('dayNavAll');
+  if(!selectedDay){
+    label.textContent='عرض كل الشهر'; allBtn.classList.add('active');
+    prevBtn.disabled=!dates.length; nextBtn.disabled=true;
+  } else {
+    const idx=dates.indexOf(selectedDay);
+    const d=new Date(selectedDay+'T00:00:00');
+    label.textContent=`${d.getDate()} ${MONTHS_AR[d.getMonth()]}`;
+    allBtn.classList.remove('active');
+    prevBtn.disabled=idx<=0;
+    nextBtn.disabled=idx>=dates.length-1||(!!dates[idx+1]&&dates[idx+1]>today);
+  }
+}
+
+// ── Calculations ──────────────────────────────────────────────────────────────
+function calcPnL(entries, s){
+  const workDays     = entries.length;
+  const totalRevenue = entries.reduce((a,e)=>a+(parseFloat(e.revenue)||0),0);
+  const totalTrips   = entries.reduce((a,e)=>a+(parseInt(e.tripsCount)||0),0);
+  const totalDieselL = entries.reduce((a,e)=>a+(parseFloat(e.dieselL)||0),0);
+  const totalFuelCost= entries.reduce((a,e)=>{
+    const p = parseFloat(e.dieselPriceOverride)||parseFloat(s.dieselPrice)||0;
+    return a+(parseFloat(e.dieselL)||0)*p;
+  },0);
+  const driverTripAmt   = totalRevenue*(parseFloat(s.driverTripPct)||0)/100;
+  const totalDriverDay  = entries.reduce((a,e)=>{
+    const d = (e.driverDailyExpOverride!==null&&e.driverDailyExpOverride!==undefined&&e.driverDailyExpOverride!=='')
+      ?parseFloat(e.driverDailyExpOverride)||0:parseFloat(s.driverDailyExp)||0;
+    return a+d;
+  },0);
+  const totalBreakdown  = entries.reduce((a,e)=>a+(parseFloat(e.breakdownCost)||0),0);
+  const totalOtherVar   = entries.reduce((a,e)=>a+(parseFloat(e.otherExp)||0),0);
+  const driverSalary    = parseFloat(s.driverSalary)||0;
+  const helperSalary    = parseFloat(s.helperSalary)||0;
+  let otherFixedTotal   = 0;
+  (s.otherExpenses||[]).forEach(ex=>{
+    otherFixedTotal += ex.period==='daily'?(parseFloat(ex.amount)||0)*workDays:(parseFloat(ex.amount)||0);
+  });
+  const totalExpenses = totalFuelCost+driverTripAmt+totalDriverDay+totalBreakdown+totalOtherVar+driverSalary+helperSalary+otherFixedTotal;
+  const netProfit     = totalRevenue - totalExpenses;
+  return {workDays,totalTrips,totalRevenue,totalDieselL,totalFuelCost,driverTripAmt,totalDriverDay,totalBreakdown,totalOtherVar,driverSalary,helperSalary,otherFixedTotal,totalExpenses,netProfit};
+}
+
+// ── Render all ────────────────────────────────────────────────────────────────
+function renderAll(){
+  const s=loadSettings(), entries=getAllMonthEntries(), pnl=calcPnL(entries,s);
+  const viewEntries=getViewEntries();
+  if(s.vehicleName) document.getElementById('tbVehicleName').textContent='🚛 '+s.vehicleName;
+  updateDayNav(entries);
+  renderStats(pnl); renderPnL(pnl); renderEntries(viewEntries,s);
+}
+
+function set(id,v){const el=document.getElementById(id);if(el)el.textContent=v;}
+
+function renderStats(p){
+  set('stRevenue', fmtEgp(p.totalRevenue));
+  set('stTrips',   p.totalTrips+' نقلة | '+p.workDays+' يوم');
+  set('stDieselL', fmt(p.totalDieselL,1)+' ل');
+  set('stDieselEgp', fmtEgp(p.totalFuelCost));
+  set('stExpenses', fmtEgp(p.totalExpenses));
+  set('stDays',    p.workDays+' يوم عمل');
+  set('stNet',     fmt(Math.abs(p.netProfit))+' ج');
+  set('stNetTag',  p.netProfit>=0?'✅ ربح':'❌ خسارة');
+  const isP = p.netProfit>=0;
+  document.getElementById('stNetIcon').style.cssText = isP
+    ?'width:46px;height:46px;border-radius:13px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:20px;background:rgba(0,168,89,.12);color:#00A859;'
+    :'width:46px;height:46px;border-radius:13px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:20px;background:rgba(239,68,68,.12);color:#ef4444;';
+  document.getElementById('stNet').style.color = isP?'var(--primary,#00A859)':'#ef4444';
+}
+
+function renderPnL(p){
+  set('pRevenue',   fmtEgp(p.totalRevenue));
+  set('pFuel',      '- '+fmtEgp(p.totalFuelCost));
+  set('pDriverPct', '- '+fmtEgp(p.driverTripAmt));
+  set('pDriverDay', '- '+fmtEgp(p.totalDriverDay));
+  set('pBreakdown', '- '+fmtEgp(p.totalBreakdown));
+  set('pOtherVar',  '- '+fmtEgp(p.totalOtherVar));
+  set('pSalary',    '- '+fmtEgp(p.driverSalary));
+  set('pHelper',    '- '+fmtEgp(p.helperSalary));
+  set('pOtherFixed','- '+fmtEgp(p.otherFixedTotal));
+  const nb = document.getElementById('acNetBox');
+  const isP = p.netProfit>=0;
+  nb.className = 'ac-net '+(isP?'profit':'loss');
+  set('acNetVal', (isP?'':'-')+fmtEgp(Math.abs(p.netProfit)));
+  set('acNetSub', isP
+    ?`هامش ربح: ${p.totalRevenue?((p.netProfit/p.totalRevenue)*100).toFixed(1):0}%`
+    :'الإيرادات لا تغطي المصاريف');
+}
+
+function canDeleteEntry(){
+  try{
+    const user=JSON.parse(localStorage.getItem('linkedoff_user')||'null');
+    if(!user) return false;
+    if(window.RBAC&&window.RBAC.getRole()==='admin') return true;
+    return (loadSettings().deleteAllowList||[]).includes(user.email);
+  }catch{return false;}
+}
+
+function renderEntries(entries, s){
+  const list=document.getElementById('acEntriesList');
+  const canDel=canDeleteEntry();
+  if(!entries.length){
+    list.innerHTML=`<div class="ac-empty"><div class="ei">📋</div><p>${selectedDay?'لا توجد بيانات لهذا اليوم.':'لا توجد بيانات في هذا الشهر.<br>اضغط "إضافة يوم عمل" لإدخال أول سجل.'}</p></div>`;
+    return;
+  }
+  list.innerHTML=entries.map(e=>{
+    const d=new Date(e.date+'T00:00:00');
+    const ds=`${d.getDate()} ${MONTHS_AR[d.getMonth()]}`;
+    return `<div class="ac-row">
+      <div class="ac-row-date">${ds}</div>
+      <div class="ac-row-desc">${escHtml(e.client||'—')}<small>${escHtml(e.route||'')}</small></div>
+      <div style="text-align:center">${e.tripsCount||1}</div>
+      <div class="ac-row-rev">${fmt(e.revenue)} ج</div>
+      <div class="ac-row-diesel">${fmt(e.dieselL,1)} ل</div>
+      <div class="ac-row-cost">${fmt(e.breakdownCost)} ج</div>
+      <div class="ac-row-notes" title="${escHtml(e.notes||'')}">${escHtml(e.notes||'—')}</div>
+      <div class="ac-row-actions">
+        <button class="ac-act ac-act-edit" onclick="editEntry('${e.id}')" title="تعديل">✎</button>
+        ${canDel?`<button class="ac-act ac-act-delete" onclick="deleteEntry('${e.id}')" title="حذف">🗑</button>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── Entry modal ───────────────────────────────────────────────────────────────
+let _editId = null;
+
+function openEntryModal(id=null){
+  _editId = id;
+  const s = loadSettings();
+  if(id){
+    const e = loadEntries().find(x=>x.id===id);
+    if(!e) return;
+    document.getElementById('entryModalTitle').textContent='✎ تعديل يوم عمل';
+    document.getElementById('fDate').value        = e.date||'';
+    document.getElementById('fClient').value      = e.client||'';
+    document.getElementById('fRoute').value       = e.route||'';
+    document.getElementById('fTripsCount').value  = e.tripsCount||1;
+    document.getElementById('fRevenue').value     = e.revenue||'';
+    document.getElementById('fDieselL').value     = e.dieselL||'';
+    document.getElementById('fDieselPrice').value = e.dieselPriceOverride||'';
+    document.getElementById('fBreakdown').value   = e.breakdownCost||'';
+    document.getElementById('fOtherExp').value    = e.otherExp||'';
+    document.getElementById('fDriverDaily').value = e.driverDailyExpOverride??'';
+    document.getElementById('fNotes').value       = e.notes||'';
+  } else {
+    document.getElementById('entryModalTitle').textContent='➕ إضافة يوم عمل';
+    document.getElementById('fDate').value        = new Date().toISOString().slice(0,10);
+    document.getElementById('fClient').value      = '';
+    document.getElementById('fRoute').value       = '';
+    document.getElementById('fTripsCount').value  = 1;
+    document.getElementById('fRevenue').value     = '';
+    document.getElementById('fDieselL').value     = '';
+    document.getElementById('fDieselPrice').value = '';
+    document.getElementById('fBreakdown').value   = '';
+    document.getElementById('fOtherExp').value    = '';
+    document.getElementById('fDriverDaily').value = s.driverDailyExp||'';
+    document.getElementById('fNotes').value       = '';
+  }
+  calcFuelPreview();
+  document.getElementById('entryModal').classList.add('open');
+}
+function closeEntryModal(){ document.getElementById('entryModal').classList.remove('open'); _editId=null; }
+function editEntry(id)  { openEntryModal(id); }
+
+['fDieselL','fDieselPrice'].forEach(id=>document.getElementById(id)?.addEventListener('input',calcFuelPreview));
+function calcFuelPreview(){
+  const s=loadSettings(), l=parseFloat(document.getElementById('fDieselL')?.value||'0')||0;
+  const p=parseFloat(document.getElementById('fDieselPrice')?.value||'')||parseFloat(s.dieselPrice)||0;
+  document.getElementById('fFuelCost').value=(l*p).toFixed(2);
+}
+
+function saveEntry(){
+  const date = document.getElementById('fDate').value;
+  if(!date){acToast('⚠️ حدد التاريخ');return;}
+  const dd = document.getElementById('fDriverDaily').value;
+  const entry = {
+    id:      _editId||uid(), date,
+    client:  document.getElementById('fClient').value.trim(),
+    route:   document.getElementById('fRoute').value.trim(),
+    tripsCount: parseInt(document.getElementById('fTripsCount').value)||1,
+    revenue:    parseFloat(document.getElementById('fRevenue').value)||0,
+    dieselL:    parseFloat(document.getElementById('fDieselL').value)||0,
+    dieselPriceOverride: document.getElementById('fDieselPrice').value?parseFloat(document.getElementById('fDieselPrice').value):null,
+    breakdownCost: parseFloat(document.getElementById('fBreakdown').value)||0,
+    otherExp:      parseFloat(document.getElementById('fOtherExp').value)||0,
+    driverDailyExpOverride: dd!==''?parseFloat(dd)||0:null,
+    notes: document.getElementById('fNotes').value.trim(),
+  };
+  const entries=loadEntries(), idx=entries.findIndex(e=>e.id===entry.id);
+  if(idx>=0) entries[idx]=entry; else entries.push(entry);
+  saveEntries(entries);
+  closeEntryModal(); renderAll();
+  acToast(idx>=0?'✓ تم التعديل':'✓ تم الحفظ');
+}
+
+function deleteEntry(id){
+  if(!canDeleteEntry()){acToast('⛔ لا تملك صلاحية الحذف');return;}
+  if(!confirm('هل أنت متأكد من حذف هذا السجل؟')) return;
+  saveEntries(loadEntries().filter(e=>e.id!==id));
+  renderAll(); acToast('🗑 تم الحذف');
+}
+
+// ── Generate report ───────────────────────────────────────────────────────────
+function generateReport(){
+  const s=loadSettings(), entries=getAllMonthEntries(), pnl=calcPnL(entries,s);
+  if(!entries.length){acToast('⚠️ لا توجد بيانات لهذا الشهر');return;}
+  const [yr,mn]=document.getElementById('monthSelect').value.split('-');
+  const ml=`${MONTHS_AR[parseInt(mn)-1]} ${yr}`;
+
+  // ── Header ─────────────────────────────────────────────────────────────────
+  document.getElementById('rTitle').textContent    = `تقرير تشغيل ${s.vehicleName||'أكتروس'}`;
+  document.getElementById('rSubtitle').textContent =
+    `${ml}${s.vehiclePlate?' | لوحة: '+s.vehiclePlate:''}${s.driverName?' | السائق: '+s.driverName:''}`;
+  document.getElementById('rDate').textContent =
+    'تاريخ الإصدار: '+new Date().toLocaleDateString('ar-EG',{year:'numeric',month:'long',day:'numeric'});
+
+  // ── Summary stats ──────────────────────────────────────────────────────────
+  const isP=pnl.netProfit>=0;
+  document.getElementById('rStats').innerHTML=[
+    {val:fmtEgp(pnl.totalRevenue),  lbl:'💰 إجمالي الإيرادات', c:'var(--primary,#00A859)'},
+    {val:fmtEgp(pnl.totalExpenses), lbl:'💸 إجمالي المصاريف',  c:'#ef4444'},
+    {val:pnl.workDays+' يوم | '+pnl.totalTrips+' نقلة', lbl:'📅 الأيام / النقلات', c:'var(--text,#f0f0f0)'},
+    {val:(isP?'+':'-')+fmtEgp(Math.abs(pnl.netProfit)), lbl:isP?'✅ صافي الربح':'❌ صافي الخسارة', c:isP?'var(--primary,#00A859)':'#ef4444'},
+  ].map(x=>`<div class="ac-rpt-stat"><div class="ac-rpt-stat-val" style="color:${x.c}">${x.val}</div><div class="ac-rpt-stat-lbl">${x.lbl}</div></div>`).join('');
+
+  // ── Daily entries table ────────────────────────────────────────────────────
+  document.getElementById('rTableBody').innerHTML = entries.map(e=>{
+    const price=(parseFloat(e.dieselPriceOverride)||parseFloat(s.dieselPrice)||0);
+    const fc=(parseFloat(e.dieselL)||0)*price;
+    const dd=(e.driverDailyExpOverride!==null&&e.driverDailyExpOverride!==undefined&&e.driverDailyExpOverride!=='')
+      ?parseFloat(e.driverDailyExpOverride)||0:parseFloat(s.driverDailyExp)||0;
+    const d=new Date(e.date+'T00:00:00'), ds=`${d.getDate()} ${MONTHS_AR[d.getMonth()]}`;
+    return `<tr>
+      <td>${escHtml(ds)}</td>
+      <td>${escHtml(e.client||'—')}${e.route?'<br><small style="color:var(--muted,#888)">'+escHtml(e.route)+'</small>':''}</td>
+      <td class="ltr" style="text-align:center">${e.tripsCount||1}</td>
+      <td class="ltr" style="color:#00A859;font-weight:700">${fmt(e.revenue)}</td>
+      <td class="ltr">${fmt(e.dieselL,1)}</td>
+      <td class="ltr" style="color:#fbbf24">${fmt(fc)}</td>
+      <td class="ltr" style="color:#ef4444">${fmt(e.breakdownCost)}</td>
+      <td class="ltr">${fmt(dd)}</td>
+      <td class="ltr">${fmt(e.otherExp)}</td>
+      <td style="font-size:11px;color:var(--muted,#888)">${escHtml(e.notes||'')}</td>
+    </tr>`;
+  }).join('');
+
+  // ── Costs breakdown (variable | fixed) ────────────────────────────────────
+  const varTotal   = pnl.totalFuelCost+pnl.driverTripAmt+pnl.totalDriverDay+pnl.totalBreakdown+pnl.totalOtherVar;
+  const fixedTotal = pnl.driverSalary+pnl.helperSalary+pnl.otherFixedTotal;
+  const cr=(ll,lv)=>`<div class="ac-rpt-cost-row"><span class="ll">${ll}</span><span class="lv">${lv}</span></div>`;
+  document.getElementById('rCosts').innerHTML=
+    `<div class="ac-rpt-rev"><span class="ll">💰 إجمالي الإيرادات</span><span class="lv ac-plus">${fmtEgp(pnl.totalRevenue)}</span></div>
+     <div class="ac-rpt-cost-grid">
+       <div class="ac-rpt-cost-sect">
+         <div class="ac-rpt-cost-title">⚙️ مصاريف متغيرة</div>
+         ${cr('⛽ تكلفة الوقود',               fmtEgp(pnl.totalFuelCost))}
+         ${cr('🧑‍✈️ نسبة السائق من النقلات',  fmtEgp(pnl.driverTripAmt))}
+         ${cr('📅 مصاريف يومية السائق',        fmtEgp(pnl.totalDriverDay))}
+         ${cr('🔧 أعطال وصيانة',              fmtEgp(pnl.totalBreakdown))}
+         ${cr('📌 مصاريف متغيرة أخرى',        fmtEgp(pnl.totalOtherVar))}
+         <div class="ac-rpt-cost-ttl"><span>مجموع المتغيرة</span><span style="color:#ef4444">${fmtEgp(varTotal)}</span></div>
+       </div>
+       <div class="ac-rpt-cost-sect">
+         <div class="ac-rpt-cost-title">📌 مصاريف ثابتة شهرية</div>
+         ${cr('🧑‍✈️ راتب السائق', fmtEgp(pnl.driverSalary))}
+         ${cr('👷 أجرة التباع',  fmtEgp(pnl.helperSalary))}
+         ${pnl.otherFixedTotal?cr('🗂️ ثابتة أخرى', fmtEgp(pnl.otherFixedTotal)):''}
+         <div class="ac-rpt-cost-ttl"><span>مجموع الثابتة</span><span style="color:#ef4444">${fmtEgp(fixedTotal)}</span></div>
+       </div>
+     </div>
+     <div class="ac-rpt-rev" style="margin-top:10px;font-weight:900;">
+       <span class="ll" style="font-weight:900;color:var(--text,#f0f0f0);">💸 إجمالي المصاريف</span>
+       <span class="lv ac-minus">${fmtEgp(pnl.totalExpenses)}</span>
+     </div>`;
+
+  // ── Net result ─────────────────────────────────────────────────────────────
+  document.getElementById('rNetResult').className='ac-net-result '+(isP?'profit':'loss');
+  document.getElementById('rNetEmoji').textContent = isP?'✅':'❌';
+  document.getElementById('rNetValue').textContent = (isP?'+':'-')+fmtEgp(Math.abs(pnl.netProfit));
+  document.getElementById('rNetNote').textContent  = isP
+    ?`هامش ربح: ${pnl.totalRevenue?((pnl.netProfit/pnl.totalRevenue)*100).toFixed(1):0}% — إيرادات: ${fmtEgp(pnl.totalRevenue)}`
+    :`خسارة: ${fmtEgp(Math.abs(pnl.netProfit))} — إيرادات: ${fmtEgp(pnl.totalRevenue)}`;
+
+  // ── Share bar ──────────────────────────────────────────────────────────────
+  const waText = buildWaText(s, pnl, ml);
+  const enc    = encodeURIComponent(waText);
+  const nums   = (s.ownerNumbers||['+966566114725']).filter(Boolean);
+  document.getElementById('rShareBar').innerHTML =
+    `<div class="ac-share-label">📲 مشاركة نصية عبر واتساب</div>`
+    + nums.map(n=>`<button class="ac-share-btn ac-share-wa" onclick="window.open('https://wa.me/${n.replace(/\D/g,'')}?text=${enc}','_blank')">واتساب (${n})</button>`).join('')
+    + `<div class="ac-share-label" style="margin-top:8px;">📄 تصدير / مشاركة PDF</div>`
+    + `<button class="ac-share-btn ac-share-pdf" onclick="exportAsPDF()">📄 فتح نسخة PDF قابلة للمشاركة</button>`;
+
+  document.getElementById('reportModal').classList.add('open');
+}
+function closeReportModal(){ document.getElementById('reportModal').classList.remove('open'); }
+
+// ── Export as PDF (standalone printable window) ───────────────────────────────
+function exportAsPDF(){
+  const s=loadSettings(), entries=getAllMonthEntries();
+  if(!entries.length){acToast('⚠️ لا توجد بيانات لهذا الشهر');return;}
+  const pnl=calcPnL(entries,s);
+  const [yr,mn]=document.getElementById('monthSelect').value.split('-');
+  const ml=`${MONTHS_AR[parseInt(mn)-1]} ${yr}`;
+  const win=window.open('','_blank','width=960,height=720,scrollbars=yes');
+  if(!win){acToast('⚠️ فعّل النوافذ المنبثقة لتصدير PDF');return;}
+  win.document.write(buildPrintHTML(s,pnl,ml,entries));
+  win.document.close();
+}
+
+function buildPrintHTML(s,pnl,ml,entries){
+  const isP=pnl.netProfit>=0;
+  const today=new Date().toLocaleDateString('ar-EG',{year:'numeric',month:'long',day:'numeric'});
+  const varTotal  =pnl.totalFuelCost+pnl.driverTripAmt+pnl.totalDriverDay+pnl.totalBreakdown+pnl.totalOtherVar;
+  const fixedTotal=pnl.driverSalary+pnl.helperSalary+pnl.otherFixedTotal;
+  const f=(n,d=0)=>(parseFloat(n)||0).toLocaleString('ar-EG',{minimumFractionDigits:d,maximumFractionDigits:d});
+  const fe=n=>f(n)+' ج.م';
+  const tr=(ll,lv)=>`<tr><td style="color:#6b7280;padding:5px 0;border-bottom:1px solid #f3f4f6">${ll}</td><td style="font-weight:700;color:#991b1b;direction:ltr;text-align:left;padding:5px 0;border-bottom:1px solid #f3f4f6">${lv}</td></tr>`;
+
+  const rowsHtml=entries.map(e=>{
+    const price=parseFloat(e.dieselPriceOverride)||parseFloat(s.dieselPrice)||0;
+    const fc=(parseFloat(e.dieselL)||0)*price;
+    const dd=(e.driverDailyExpOverride!==null&&e.driverDailyExpOverride!==undefined&&e.driverDailyExpOverride!=='')
+      ?parseFloat(e.driverDailyExpOverride)||0:parseFloat(s.driverDailyExp)||0;
+    const d=new Date(e.date+'T00:00:00');
+    const ds=`${d.getDate()} ${MONTHS_AR[d.getMonth()]}`;
+    return `<tr>
+      <td>${escHtml(ds)}</td>
+      <td style="max-width:130px">${escHtml(e.client||'—')}${e.route?'<br><small style="color:#9ca3af">'+escHtml(e.route)+'</small>':''}</td>
+      <td style="text-align:center">${e.tripsCount||1}</td>
+      <td style="color:#065f46;font-weight:700;direction:ltr">${f(e.revenue)}</td>
+      <td style="direction:ltr">${f(e.dieselL,1)}</td>
+      <td style="color:#92400e;direction:ltr">${f(fc)}</td>
+      <td style="color:#991b1b;direction:ltr">${f(e.breakdownCost)}</td>
+      <td style="direction:ltr">${f(dd)}</td>
+      <td style="direction:ltr">${f(e.otherExp)}</td>
+      <td style="font-size:10px;color:#9ca3af">${escHtml(e.notes||'')}</td>
+    </tr>`;
+  }).join('');
+
+  return `<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>تقرير تشغيل ${escHtml(s.vehicleName||'أكتروس')} — ${ml}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Cairo',sans-serif;direction:rtl;background:#fff;color:#111;padding:24px;max-width:960px;margin:0 auto;font-size:13px}
+    .ph{text-align:center;padding-bottom:18px;margin-bottom:22px;border-bottom:3px solid #00A859}
+    .ph .ic{font-size:50px;margin-bottom:8px}
+    .ph h1{font-size:22px;font-weight:900}
+    .ph .meta{font-size:12px;color:#6b7280;margin-top:6px;line-height:2}
+    .ph .dt{font-size:11px;color:#9ca3af;margin-top:4px}
+    .ps{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:22px}
+    .ps-c{border:1px solid #e5e7eb;border-radius:10px;padding:12px 14px;text-align:center;background:#f9fafb}
+    .ps-v{font-size:15px;font-weight:900;margin-bottom:4px}
+    .ps-l{font-size:11px;color:#6b7280}
+    .sec{margin-bottom:22px}
+    .sec-t{font-size:13px;font-weight:700;color:#111;border-bottom:2px solid #e5e7eb;padding-bottom:7px;margin-bottom:12px}
+    table{width:100%;border-collapse:collapse;font-size:11px}
+    th{background:#f3f4f6;padding:8px 9px;text-align:right;font-weight:700;color:#374151;border-bottom:2px solid #e5e7eb;white-space:nowrap}
+    td{padding:7px 9px;border-bottom:1px solid #f3f4f6;vertical-align:top}
+    tr:last-child td{border-bottom:none}
+    tr:nth-child(even) td{background:#fafafa}
+    .costs{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:12px}
+    .cost-s{background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:14px}
+    .cost-t{font-size:11px;font-weight:700;color:#374151;margin-bottom:10px;padding-bottom:7px;border-bottom:1px solid #e5e7eb;text-transform:uppercase;letter-spacing:.4px}
+    .cost-s table{font-size:12px}
+    .cost-ttl{display:flex;justify-content:space-between;padding:8px 0 0;border-top:2px solid #e5e7eb;margin-top:6px;font-weight:900;font-size:12px}
+    .rev-r{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #e5e7eb;font-size:13px}
+    .exp-r{display:flex;justify-content:space-between;padding:10px 0 0;border-top:2px solid #111;margin-top:10px;font-size:14px;font-weight:900}
+    .net{border-radius:12px;padding:22px;text-align:center;margin-top:20px}
+    .net.p{background:#f0fdf4;border:2px solid #86efac}
+    .net.l{background:#fef2f2;border:2px solid #fca5a5}
+    .net-ic{font-size:38px;margin-bottom:8px}
+    .net-lb{font-size:12px;color:#6b7280;margin-bottom:5px}
+    .net-vl{font-size:28px;font-weight:900}
+    .net.p .net-vl{color:#059669}.net.l .net-vl{color:#dc2626}
+    .net-nt{font-size:12px;color:#6b7280;margin-top:6px}
+    .foot{text-align:center;font-size:10px;color:#9ca3af;margin-top:24px;padding-top:12px;border-top:1px solid #e5e7eb}
+    @media print{body{padding:10px}.ps{grid-template-columns:repeat(2,1fr)}}
+  </style>
+</head>
+<body onload="window.print()">
+  <div class="ph">
+    <div class="ic">🚛</div>
+    <h1>تقرير تشغيل — ${escHtml(s.vehicleName||'أكتروس')}</h1>
+    <div class="meta">
+      📅 الفترة: <strong>${ml}</strong>
+      ${s.vehiclePlate?' &nbsp;|&nbsp; 🔖 اللوحة: <strong>'+escHtml(s.vehiclePlate)+'</strong>':''}
+      ${s.driverName  ?' &nbsp;|&nbsp; 🧑‍✈️ السائق: <strong>'+escHtml(s.driverName)  +'</strong>':''}
+    </div>
+    <div class="dt">تاريخ الإصدار: ${today}</div>
+  </div>
+
+  <div class="ps">
+    <div class="ps-c"><div class="ps-v" style="color:#059669">${fe(pnl.totalRevenue)}</div><div class="ps-l">💰 إجمالي الإيرادات</div></div>
+    <div class="ps-c"><div class="ps-v" style="color:#dc2626">${fe(pnl.totalExpenses)}</div><div class="ps-l">💸 إجمالي المصاريف</div></div>
+    <div class="ps-c"><div class="ps-v">${pnl.workDays} يوم | ${pnl.totalTrips} نقلة</div><div class="ps-l">📅 أيام العمل / النقلات</div></div>
+    <div class="ps-c"><div class="ps-v" style="color:${isP?'#059669':'#dc2626'}">${isP?'+':'-'}${fe(Math.abs(pnl.netProfit))}</div><div class="ps-l">${isP?'✅ صافي الربح':'❌ صافي الخسارة'}</div></div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-t">📅 تفاصيل أيام العمل</div>
+    <table>
+      <thead><tr>
+        <th>التاريخ</th><th>العميل / الوصف</th><th>نقلات</th>
+        <th>الإيراد</th><th>ديزل (ل)</th><th>وقود</th>
+        <th>أعطال</th><th>مصاريف سائق</th><th>أخرى</th><th>ملاحظات</th>
+      </tr></thead>
+      <tbody>${rowsHtml}</tbody>
+    </table>
+  </div>
+
+  <div class="sec">
+    <div class="sec-t">💸 تفصيل المصاريف</div>
+    <div class="rev-r"><span style="color:#374151">💰 إجمالي الإيرادات</span><span style="font-weight:900;color:#065f46">${fe(pnl.totalRevenue)}</span></div>
+    <div class="costs">
+      <div class="cost-s">
+        <div class="cost-t">⚙️ مصاريف متغيرة</div>
+        <table><tbody>
+          ${tr('⛽ تكلفة الوقود',               fe(pnl.totalFuelCost))}
+          ${tr('🧑‍✈️ نسبة السائق من النقلات',  fe(pnl.driverTripAmt))}
+          ${tr('📅 مصاريف يومية السائق',        fe(pnl.totalDriverDay))}
+          ${tr('🔧 أعطال وصيانة',              fe(pnl.totalBreakdown))}
+          ${tr('📌 مصاريف متغيرة أخرى',        fe(pnl.totalOtherVar))}
+        </tbody></table>
+        <div class="cost-ttl"><span>مجموع المتغيرة</span><span style="color:#dc2626">${fe(varTotal)}</span></div>
+      </div>
+      <div class="cost-s">
+        <div class="cost-t">📌 مصاريف ثابتة شهرية</div>
+        <table><tbody>
+          ${tr('🧑‍✈️ راتب السائق', fe(pnl.driverSalary))}
+          ${tr('👷 أجرة التباع',  fe(pnl.helperSalary))}
+          ${pnl.otherFixedTotal?tr('🗂️ ثابتة أخرى', fe(pnl.otherFixedTotal)):''}
+        </tbody></table>
+        <div class="cost-ttl"><span>مجموع الثابتة</span><span style="color:#dc2626">${fe(fixedTotal)}</span></div>
+      </div>
+    </div>
+    <div class="exp-r"><span>💸 إجمالي المصاريف</span><span style="color:#dc2626">${fe(pnl.totalExpenses)}</span></div>
+  </div>
+
+  <div class="net ${isP?'p':'l'}">
+    <div class="net-ic">${isP?'✅':'❌'}</div>
+    <div class="net-lb">صافي الربح / الخسارة للشهر — ${ml}</div>
+    <div class="net-vl">${isP?'+':'-'}${fe(Math.abs(pnl.netProfit))}</div>
+    <div class="net-nt">${isP
+      ?`هامش ربح: ${pnl.totalRevenue?((pnl.netProfit/pnl.totalRevenue)*100).toFixed(1):0}% — إيرادات: ${fe(pnl.totalRevenue)}`
+      :`خسارة: ${fe(Math.abs(pnl.netProfit))} — الإيرادات لا تغطي المصاريف`}</div>
+  </div>
+
+  <div class="foot">تم الإعداد بواسطة LinkedOFF KSA — AceAlBastoni &nbsp;|&nbsp; ${today}</div>
+</body></html>`;}
+
+function buildWaText(s,p,ml){
+  const isP=p.netProfit>=0;
+  return [
+    `🚛 *تقرير تشغيل — ${s.vehicleName||'أكتروس'}${s.vehiclePlate?' | '+s.vehiclePlate:''}*`,
+    `📅 الفترة: *${ml}*`,
+    s.driverName?`👤 السائق: ${s.driverName}`:'',
+    `─────────────────────────`,
+    `📈 *الإيرادات*`,
+    `• إجمالي النقلات: *${fmtEgp(p.totalRevenue)}*`,
+    `• عدد النقلات: ${p.totalTrips} نقلة | أيام العمل: ${p.workDays} يوم`,
+    ``,
+    `💸 *المصاريف التشغيلية*`,
+    `• وقود: ${fmtEgp(p.totalFuelCost)} (${fmt(p.totalDieselL,1)} لتر)`,
+    `• نسبة السائق من النقلات: ${fmtEgp(p.driverTripAmt)}`,
+    `• مصاريف يومية السائق: ${fmtEgp(p.totalDriverDay)}`,
+    `• أعطال وصيانة: ${fmtEgp(p.totalBreakdown)}`,
+    `• مصاريف متغيرة أخرى: ${fmtEgp(p.totalOtherVar)}`,
+    ``,
+    `💼 *الرواتب والثوابت*`,
+    `• راتب السائق: ${fmtEgp(p.driverSalary)}`,
+    `• أجرة التباع: ${fmtEgp(p.helperSalary)}`,
+    p.otherFixedTotal?`• مصاريف ثابتة أخرى: ${fmtEgp(p.otherFixedTotal)}`:'',
+    ``,
+    `─────────────────────────`,
+    `💸 *إجمالي المصاريف: ${fmtEgp(p.totalExpenses)}*`,
+    `─────────────────────────`,
+    isP?`✅ *صافي الربح: +${fmtEgp(p.netProfit)}*`:`❌ *صافي الخسارة: -${fmtEgp(Math.abs(p.netProfit))}*`,
+    isP?`   هامش ربح: ${p.totalRevenue?((p.netProfit/p.totalRevenue)*100).toFixed(1):0}%`:`   الإيرادات لا تغطي المصاريف`,
+    ``,
+    `_تم الإعداد بواسطة LinkedOFF KSA_`,
+  ].filter(l=>l!==false&&l!==null&&l!==undefined).join('\n');
+}
+
+// Close on overlay click
+['entryModal','reportModal'].forEach(id=>{
+  document.getElementById(id).addEventListener('click',function(e){if(e.target===this)(id==='entryModal'?closeEntryModal:closeReportModal)();});
+});
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', ()=>{ buildMonthPicker(); renderAll(); });
+</script>
+<script src="js/ui.js"></script>
+</body>
+</html>

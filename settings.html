@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>الإعدادات - LinkedOFF</title>
+  <title>إعدادات الحساب - LinkedOFF</title>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
   <link rel="stylesheet" href="css/enhancements.css">
@@ -241,179 +241,6 @@
       font-family: 'Cairo', sans-serif;
     }
 
-    /* ── RBAC Admin Panel ─────────────────────────────────── */
-    .rbac-panel { display: none; }
-    .rbac-panel.rbac-visible { display: block; }
-
-    .rbac-intro {
-      font-size: 0.82rem;
-      color: #888;
-      line-height: 1.65;
-      margin-bottom: 18px;
-      padding: 10px 14px;
-      background: rgba(0,0,0,.03);
-      border-radius: 10px;
-      border-right: 3px solid rgba(251,191,36,.5);
-    }
-    body.dark-mode .rbac-intro { background: rgba(255,255,255,.04); }
-
-    .rbac-badge-admin {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      background: rgba(251,191,36,.12);
-      color: #92400e;
-      border: 1px solid rgba(251,191,36,.35);
-      border-radius: 20px;
-      padding: 2px 10px;
-      font-size: 0.72rem;
-      font-weight: 700;
-      margin-right: auto;
-    }
-    body.dark-mode .rbac-badge-admin { color: #fbbf24; background: rgba(251,191,36,.15); }
-
-    /* Table */
-    .rbac-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 12px; border: 1px solid rgba(0,0,0,.06); }
-    body.dark-mode .rbac-table-wrap { border-color: rgba(255,255,255,.06); }
-
-    .rbac-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-family: 'Cairo', sans-serif;
-      min-width: 400px;
-    }
-
-    .rbac-table thead {
-      background: rgba(0,168,89,.05);
-    }
-    body.dark-mode .rbac-table thead { background: rgba(0,168,89,.08); }
-
-    .rbac-table th {
-      padding: 11px 16px;
-      font-size: 0.8rem;
-      font-weight: 800;
-      color: #555;
-      text-align: right;
-      border-bottom: 1px solid rgba(0,0,0,.06);
-      white-space: nowrap;
-    }
-    body.dark-mode .rbac-table th { color: #aaa; border-color: rgba(255,255,255,.06); }
-
-    .rbac-table th.rbac-th-center { text-align: center; }
-
-    .rbac-table td {
-      padding: 10px 16px;
-      font-size: 0.84rem;
-      border-bottom: 1px solid rgba(0,0,0,.04);
-      vertical-align: middle;
-    }
-    body.dark-mode .rbac-table td { border-color: rgba(255,255,255,.04); }
-
-    .rbac-table tr:last-child td { border-bottom: none; }
-
-    .rbac-table tbody tr:hover { background: rgba(0,168,89,.03); }
-    body.dark-mode .rbac-table tbody tr:hover { background: rgba(255,255,255,.03); }
-
-    .rbac-page-cell { display: flex; flex-direction: column; gap: 2px; }
-    .rbac-page-name-row { display: flex; align-items: center; gap: 8px; font-weight: 700; color: #333; }
-    body.dark-mode .rbac-page-name-row { color: #e0e0f0; }
-    .rbac-page-file { font-size: 0.7rem; color: #bbb; font-family: monospace; padding-right: 24px; }
-
-    .rbac-td-center { text-align: center; }
-
-    /* Admin checkmark (always on) */
-    .rbac-always-check {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 28px; height: 28px;
-      background: rgba(251,191,36,.12);
-      border: 1px solid rgba(251,191,36,.3);
-      border-radius: 8px;
-      font-size: 14px;
-    }
-
-    /* Row when user is blocked */
-    .rbac-table tbody tr.rbac-row-blocked { background: rgba(239,68,68,.03); }
-    body.dark-mode .rbac-table tbody tr.rbac-row-blocked { background: rgba(239,68,68,.06); }
-    .rbac-row-blocked .rbac-page-name-row { color: #ef4444 !important; opacity: 0.8; }
-
-    /* Save row */
-    .rbac-actions {
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      gap: 10px;
-      margin-top: 18px;
-      padding-top: 14px;
-      border-top: 1px solid rgba(0,0,0,.06);
-      flex-wrap: wrap;
-    }
-    body.dark-mode .rbac-actions { border-color: rgba(255,255,255,.06); }
-
-    /* Legend */
-    .rbac-legend {
-      display: flex;
-      gap: 16px;
-      font-size: 0.75rem;
-      color: #999;
-      margin-bottom: 14px;
-      flex-wrap: wrap;
-    }
-    .rbac-legend-item { display: flex; align-items: center; gap: 5px; }
-
-    /* ── Access Pill (replaces toggle) ── */
-    .rbac-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 6px 14px;
-      border-radius: 20px;
-      cursor: pointer;
-      font-size: 0.82rem;
-      font-weight: 700;
-      font-family: 'Cairo', sans-serif;
-      user-select: none;
-      transition: background .2s, border-color .2s, transform .12s;
-      border: 2px solid;
-      white-space: nowrap;
-    }
-
-    .rbac-pill input { display: none; }
-
-    .rbac-pill:active { transform: scale(0.97); }
-
-    /* ON → green */
-    .rbac-pill--on {
-      background: rgba(0,168,89,.1);
-      color: #007a40;
-      border-color: rgba(0,168,89,.35);
-    }
-    body.dark-mode .rbac-pill--on { color: #00d66f; background: rgba(0,168,89,.15); }
-    .rbac-pill--on:hover { background: rgba(0,168,89,.2); border-color: rgba(0,168,89,.55); }
-
-    /* OFF → red */
-    .rbac-pill--off {
-      background: rgba(239,68,68,.08);
-      color: #c81e1e;
-      border-color: rgba(239,68,68,.3);
-    }
-    body.dark-mode .rbac-pill--off { color: #f87171; background: rgba(239,68,68,.14); }
-    .rbac-pill--off:hover { background: rgba(239,68,68,.16); border-color: rgba(239,68,68,.5); }
-
-    /* ── Category separator row inside RBAC table ── */
-    .rbac-category-row td {
-      background: rgba(0,0,0,.035);
-      font-size: 0.72rem;
-      font-weight: 900;
-      color: #888;
-      padding: 7px 16px;
-      letter-spacing: 0.5px;
-    }
-    body.dark-mode .rbac-category-row td { background: rgba(255,255,255,.04); color: #666; }
-    .rbac-category-row:hover { background: transparent !important; }
-    body.dark-mode .rbac-category-row:hover { background: transparent !important; }
-
     /* ── Section lock badge (shown in section title for admin-only sections) ── */
     .rbac-section-lock {
       display: inline-flex;
@@ -472,11 +299,19 @@
       <a href="analytics.html"           class="nav-item"><span class="nav-ic">📈</span><span>تحليلات السوق</span></a>
       <a href="saved.html"               class="nav-item"><span class="nav-ic">💾</span><span>الوظائف المحفوظة</span></a>
       <a href="history.html"             class="nav-item"><span class="nav-ic">📬</span><span>سجل الإرسال</span></a>
-      <a href="engines-interactive.html" class="nav-item"><span class="nav-ic">⚙️</span><span>المحركات</span></a>
-      <a href="users.html"               class="nav-item"><span class="nav-ic">👥</span><span>إدارة المستخدمين</span></a>
       <a href="about.html"               class="nav-item"><span class="nav-ic">👤</span><span>عن المطوّر</span></a>
       <a href="pricing.html"             class="nav-item"><span class="nav-ic">💳</span><span>الباقات</span></a>
-      <a href="settings.html"            class="nav-item active"><span class="nav-ic">🔧</span><span>الإعدادات</span></a>
+      <a href="actros.html"              class="nav-item"><span class="nav-ic">🚛</span><span>إدارة أكتروس</span></a>
+      <div class="sidebar-group" id="sidebarSettingsGroup">
+        <div class="sidebar-section-header" onclick="toggleSidebarGroup(this)"><span>🔧 الإعدادات</span><span class="group-chevron">›</span></div>
+        <a href="settings.html" data-group-page="settings.html" class="nav-item nav-sub-item active"><span class="nav-ic">👤</span><span>إعدادات الحساب</span></a>
+        <a href="users.html" data-group-page="users.html" class="nav-item nav-sub-item"><span class="nav-ic">👥</span><span>إعدادات المستخدمين</span></a>
+        <a href="settings-pages.html" data-group-page="settings-pages.html" class="nav-item nav-sub-item"><span class="nav-ic">📄</span><span>إعدادات الصفحات</span></a>
+        <a href="settings-datasource.html" data-group-page="settings-datasource.html" class="nav-item nav-sub-item"><span class="nav-ic">🗄️</span><span>مصادر البيانات</span></a>
+        <a href="settings-api.html" data-group-page="settings-api.html" class="nav-item nav-sub-item"><span class="nav-ic">🔑</span><span>إعدادات الـ API</span></a>
+        <a href="actros-settings.html" data-group-page="actros-settings.html" class="nav-item nav-sub-item"><span class="nav-ic">🚛</span><span>إعدادات أكتروس</span></a>
+        <a href="engines-interactive.html" data-group-page="engines-interactive.html" class="nav-item nav-sub-item"><span class="nav-ic">⚙️</span><span>إعدادات المحركات</span></a>
+      </div>
     </nav>
 
     <div class="sidebar-footer">
@@ -491,7 +326,7 @@
       <button class="sidebar-toggle" type="button" aria-label="فتح/إغلاق القائمة" onclick="toggleSidebar()">
         <span class="toggle-bars"></span>
       </button>
-      <div class="topbar-title">🔧 الإعدادات</div>
+      <div class="topbar-title">👤 إعدادات الحساب</div>
       <div class="topbar-actions">
         <button id="darkModeBtn" onclick="toggleDarkMode()" title="وضع ليلي" style="
           background:none;border:1px solid #ddd;border-radius:8px;
@@ -628,52 +463,7 @@
           </div>
         </div>
 
-        <!-- ═══ RBAC Admin Panel (admin only) ═══ -->
-        <div class="st-section rbac-panel" id="rbacPanel" style="animation-delay:.28s">
-          <div class="st-section-title">
-            🛡️ إدارة صلاحيات الوصول
-            <span class="rbac-badge-admin">👑 للمديرين فقط</span>
-          </div>
-
-          <div class="rbac-intro">
-            حدّد الصفحات وأقسام الإعدادات التي يمكن للمستخدمين العاديين الوصول إليها.
-            المديرون يمتلكون دائماً صلاحية الوصول الكامل بصرف النظر عن هذه الإعدادات.
-            التغييرات تُطبَّق فوراً على المستخدم الحالي.
-          </div>
-
-          <div class="rbac-legend">
-            <div class="rbac-legend-item">
-              <span style="display:inline-flex;align-items:center;gap:5px;background:rgba(0,168,89,.1);color:#007a40;border:1.5px solid rgba(0,168,89,.35);border-radius:14px;padding:2px 10px;font-size:0.75rem;font-weight:700;">✅ مسموح</span>
-              <span>المستخدم يمكنه الوصول</span>
-            </div>
-            <div class="rbac-legend-item">
-              <span style="display:inline-flex;align-items:center;gap:5px;background:rgba(239,68,68,.08);color:#c81e1e;border:1.5px solid rgba(239,68,68,.3);border-radius:14px;padding:2px 10px;font-size:0.75rem;font-weight:700;">🔴 محظور</span>
-              <span>Admin فقط</span>
-            </div>
-          </div>
-
-          <div class="rbac-table-wrap">
-            <table class="rbac-table">
-              <thead>
-                <tr>
-                  <th>الصفحة / القسم</th>
-                  <th class="rbac-th-center">👑 مدير النظام</th>
-                  <th class="rbac-th-center">👤 مستخدم عادي</th>
-                </tr>
-              </thead>
-              <tbody id="rbacTableBody">
-                <!-- populated dynamically -->
-              </tbody>
-            </table>
-          </div>
-
-          <div class="rbac-actions">
-            <span id="rbacUnsavedBadge" style="display:none;font-size:0.75rem;color:#f59e0b;font-weight:700;">⚠️ يوجد تغييرات غير محفوظة</span>
-            <button class="st-btn st-btn-outline" onclick="rbacResetDefaults()">↩️ استعادة الافتراضي</button>
-            <button class="st-btn st-btn-primary" onclick="rbacSave()">💾 حفظ التغييرات</button>
-          </div>
-        </div>
-        <!-- ════════════════════════════════════════════════ -->
+        <!-- إدارة صلاحيات الوصول انتقلت إلى settings-pages.html -->
 
         <!-- App info -->
         <div class="st-section" id="stSecAppInfo" style="animation-delay:.3s">
@@ -851,31 +641,11 @@
     var toggle = document.getElementById('stRememberSearch');
     if (toggle && rem === '0') toggle.checked = false;
 
-    /* Init RBAC panel (admin only) */
-    initRbacPanel();
-
     /* Apply section visibility based on role */
     initSettingsSections();
   });
 
-  /* ══════════════════════════════════════════════════════
-     RBAC Admin Panel
-     ══════════════════════════════════════════════════════ */
-
-  /* All managed pages */
-  var RBAC_PAGES = [
-    { file: 'search.html',              icon: '🔍', name: 'البحث عن الوظائف'   },
-    { file: 'dashboard.html',           icon: '📊', name: 'لوحة التحكم'        },
-    { file: 'analytics.html',           icon: '📈', name: 'تحليلات السوق'       },
-    { file: 'saved.html',               icon: '💾', name: 'الوظائف المحفوظة'   },
-    { file: 'history.html',             icon: '📬', name: 'سجل الإرسال'        },
-    { file: 'engines-interactive.html', icon: '⚙️', name: 'المحركات'           },
-    { file: 'settings.html',            icon: '🔧', name: 'الإعدادات'          },
-    { file: 'about.html',               icon: '👤', name: 'عن المطوّر'         },
-    { file: 'pricing.html',             icon: '💳', name: 'الباقات'            },
-  ];
-
-  /* Settings page sections that can be role-controlled */
+  /* ── Settings sections visibility (controlled by feature access) ── */
   var RBAC_FEATURES = [
     { key: 'settings.appearance',     icon: '🎨', name: 'قسم: المظهر',         sectionId: 'stSecAppearance'  },
     { key: 'settings.searchPrefs',    icon: '🔍', name: 'قسم: تفضيلات البحث',  sectionId: 'stSecSearchPrefs' },
@@ -883,9 +653,7 @@
     { key: 'settings.dataManagement', icon: '🗂️', name: 'قسم: إدارة البيانات', sectionId: 'stSecDataMgmt'    },
   ];
 
-  /* Features that are admin-only by default (before any admin override) */
   var DEFAULT_ADMIN_FEATURES = ['settings.dataManagement'];
-
   var RBAC_LS_KEY = 'linkedoff_rbac_config';
 
   function getRbacStored() {
@@ -894,17 +662,6 @@
     } catch (e) { return { pageAccess: {}, featureAccess: {} }; }
   }
 
-  /* ── Page access helpers ── */
-  function rbacIsAdminOnly(file) {
-    var stored = getRbacStored();
-    if (stored.pageAccess && stored.pageAccess[file] !== undefined) {
-      return stored.pageAccess[file] === 'admin';
-    }
-    var cfg = (window.APP_CONFIG && APP_CONFIG.pageAccess) || {};
-    return cfg[file] === 'admin';
-  }
-
-  /* ── Feature (section) access helpers ── */
   function rbacIsFeatureAdminOnly(key) {
     var stored = getRbacStored();
     if (stored.featureAccess && stored.featureAccess[key] !== undefined) {
@@ -913,7 +670,6 @@
     return DEFAULT_ADMIN_FEATURES.indexOf(key) !== -1;
   }
 
-  /* ── Apply section visibility based on current role ── */
   function initSettingsSections() {
     var role    = window.RBAC ? RBAC.getRole() : 'user';
     var isAdmin = role === 'admin';
@@ -929,7 +685,6 @@
       } else {
         el.style.display = '';
 
-        /* For admins: inject a lock badge on sections that are admin-only */
         var title = el.querySelector('.st-section-title');
         if (title) {
           var existingLock = title.querySelector('.rbac-section-lock');
@@ -944,137 +699,6 @@
         }
       }
     });
-  }
-
-  /* ── Panel init ── */
-  function initRbacPanel() {
-    if (!window.RBAC || RBAC.getRole() !== 'admin') return;
-    var panel = document.getElementById('rbacPanel');
-    if (panel) panel.classList.add('rbac-visible');
-    buildRbacTable();
-  }
-
-  /* ── Build a single RBAC table row ── */
-  function buildRbacRow(id, icon, name, subtitle, type, adminOnly) {
-    var userCanAccess = !adminOnly;
-    var pillClass = userCanAccess ? 'rbac-pill--on' : 'rbac-pill--off';
-    var pillIcon  = userCanAccess ? '✅' : '🔴';
-    var pillText  = userCanAccess ? 'مسموح' : 'محظور';
-
-    var tr = document.createElement('tr');
-    if (adminOnly) tr.classList.add('rbac-row-blocked');
-
-    tr.innerHTML =
-      '<td>' +
-        '<div class="rbac-page-cell">' +
-          '<div class="rbac-page-name-row">' +
-            '<span style="font-size:16px">' + icon + '</span>' +
-            '<span>' + name + '</span>' +
-          '</div>' +
-          '<div class="rbac-page-file">' + subtitle + '</div>' +
-        '</div>' +
-      '</td>' +
-      '<td class="rbac-td-center">' +
-        '<span class="rbac-always-check" title="المدير يملك وصولاً دائماً">👑</span>' +
-      '</td>' +
-      '<td class="rbac-td-center">' +
-        '<label class="rbac-pill ' + pillClass + '">' +
-          '<input type="checkbox" data-type="' + type + '" data-key="' + id + '"' +
-            (userCanAccess ? ' checked' : '') +
-            ' onchange="rbacOnToggleChange(this)">' +
-          '<span class="rbac-pill-icon">' + pillIcon + '</span>' +
-          '<span class="rbac-pill-text">' + pillText + '</span>' +
-        '</label>' +
-      '</td>';
-
-    return tr;
-  }
-
-  /* ── Build the full RBAC table (pages + settings sections) ── */
-  function buildRbacTable() {
-    var tbody = document.getElementById('rbacTableBody');
-    if (!tbody) return;
-    tbody.innerHTML = '';
-
-    /* ── Category: Pages ── */
-    var catPages = document.createElement('tr');
-    catPages.className = 'rbac-category-row';
-    catPages.innerHTML = '<td colspan="3">📄 الصفحات</td>';
-    tbody.appendChild(catPages);
-
-    RBAC_PAGES.forEach(function (page) {
-      tbody.appendChild(buildRbacRow(page.file, page.icon, page.name, page.file, 'page', rbacIsAdminOnly(page.file)));
-    });
-
-    /* ── Category: Settings Sections ── */
-    var catFeats = document.createElement('tr');
-    catFeats.className = 'rbac-category-row';
-    catFeats.innerHTML = '<td colspan="3">⚙️ أقسام الإعدادات</td>';
-    tbody.appendChild(catFeats);
-
-    RBAC_FEATURES.forEach(function (feat) {
-      tbody.appendChild(buildRbacRow(feat.key, feat.icon, feat.name, 'الإعدادات › ' + feat.name.replace('قسم: ', ''), 'feature', rbacIsFeatureAdminOnly(feat.key)));
-    });
-  }
-
-  /* ── Toggle pill state on click ── */
-  function rbacOnToggleChange(checkbox) {
-    var on   = checkbox.checked;
-    var pill = checkbox.closest('.rbac-pill');
-
-    if (pill) {
-      pill.className = 'rbac-pill ' + (on ? 'rbac-pill--on' : 'rbac-pill--off');
-      var icon = pill.querySelector('.rbac-pill-icon');
-      var text = pill.querySelector('.rbac-pill-text');
-      if (icon) icon.textContent = on ? '✅' : '🔴';
-      if (text) text.textContent = on ? 'مسموح' : 'محظور';
-    }
-
-    var tr = checkbox.closest('tr');
-    if (tr) tr.classList.toggle('rbac-row-blocked', !on);
-
-    var badge = document.getElementById('rbacUnsavedBadge');
-    if (badge) badge.style.display = 'inline';
-  }
-
-  /* ── Save both pageAccess and featureAccess ── */
-  function rbacSave() {
-    var config = { pageAccess: {}, featureAccess: {} };
-
-    document.querySelectorAll('#rbacTableBody input[type="checkbox"]').forEach(function (cb) {
-      var type = cb.getAttribute('data-type');
-      var key  = cb.getAttribute('data-key');
-      if (!cb.checked) {
-        if (type === 'page') {
-          config.pageAccess[key] = 'admin';
-        } else if (type === 'feature') {
-          config.featureAccess[key] = 'admin';
-        }
-      }
-    });
-
-    localStorage.setItem(RBAC_LS_KEY, JSON.stringify(config));
-
-    /* Re-apply section visibility immediately */
-    initSettingsSections();
-
-    var badge = document.getElementById('rbacUnsavedBadge');
-    if (badge) badge.style.display = 'none';
-
-    toast('✅ تم حفظ الصلاحيات بنجاح');
-  }
-
-  /* ── Reset to defaults ── */
-  function rbacResetDefaults() {
-    if (!confirm('هل تريد حذف كل التخصيصات والرجوع للإعدادات الافتراضية؟')) return;
-    localStorage.removeItem(RBAC_LS_KEY);
-    buildRbacTable();
-    initSettingsSections();
-
-    var badge = document.getElementById('rbacUnsavedBadge');
-    if (badge) badge.style.display = 'none';
-
-    toast('✅ تم استعادة الإعدادات الافتراضية');
   }
 </script>
 </body>

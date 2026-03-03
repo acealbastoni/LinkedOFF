@@ -7,7 +7,12 @@
       "Bash(powershell.exe -ExecutionPolicy Bypass -File \"c:\\\\ffffff\\\\hfghgf\\\\jobhub-ksa\\\\verify_changes.ps1\")",
       "Bash(ls:*)",
       "Bash(test:*)",
-      "Bash(test -f:*)"
+      "Bash(test -f:*)",
+      "Bash(python3:*)",
+      "Bash(node:*)",
+      "Bash(where:*)",
+      "Bash(powershell -Command \"Get-Command python,python3,node -ErrorAction SilentlyContinue | Select Name,Source\")",
+      "Bash(powershell -Command:*)"
     ]
   }
 }

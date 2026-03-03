@@ -1,8 +1,14 @@
 // ===== AUTH CONFIG =====
-const AUTH_CONFIG = {
-  baseURL: 'https://script.google.com/macros/s/AKfycbwJpiH3xUH2EjqR5V9UzjgqHppfxPu6Tr9GmU-IlFig28jyanGW4ATSQUy_THVcMByLtw/exec'
-  // لا تكتب أي query string هنا (زي ?hl=ar) خليه /exec فقط
-};
+// Reads override from localStorage (set via settings-api.html), falls back to default
+const AUTH_CONFIG = (function () {
+  var _default = 'https://script.google.com/macros/s/AKfycbwJpiH3xUH2EjqR5V9UzjgqHppfxPu6Tr9GmU-IlFig28jyanGW4ATSQUy_THVcMByLtw/exec';
+  try {
+    var _cfg = JSON.parse(localStorage.getItem('linkedoff_api_config') || '{}');
+    return { baseURL: (_cfg.auth && _cfg.auth.baseURL) || _default };
+  } catch (e) {
+    return { baseURL: _default };
+  }
+})();
 
 // ===== LocalStorage Keys =====
 const LS_USER_KEY = 'linkedoff_user';

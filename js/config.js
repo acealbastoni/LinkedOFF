@@ -7,9 +7,9 @@
 
 const APP_CONFIG = {
     // Version Info
-    version: '1.3.6',
-    releaseDate: '2026-03-02',
-    buildNumber: '20260302',
+    version: '1.3.7',
+    releaseDate: '2026-03-03',
+    buildNumber: '20260303',
     
     // App Info
     appName: 'LinkedOFF KSA',
@@ -35,7 +35,10 @@ const APP_CONFIG = {
         'settings.html':            'admin',
         'engines-interactive.html': 'admin',
         'users.html':               'admin',
-        // 'admin-panel.html': 'admin',   // example: add more restricted pages here
+        'settings-pages.html':      'admin',
+        'settings-datasource.html': 'admin',
+        'actros-settings.html':     'admin',
+        'settings-api.html':        'admin',
     },
     // ─────────────────────────────────────────────────────────────────────
     

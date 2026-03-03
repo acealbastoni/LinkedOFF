@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>إعدادات أكتروس — LinkedOFF KSA</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/enhancements.css">
+  <link rel="stylesheet" href="css/responsive.css">
+
+  <!-- ═══ EARLY AUTH GUARD ═══ -->
+  <style>body { visibility: hidden; }</style>
+  <script>
+    (function () {
+      try {
+        var user = JSON.parse(localStorage.getItem('linkedoff_user') || 'null');
+        var sess = JSON.parse(localStorage.getItem('linkedoff_session') || 'null');
+        if (!user || !sess || !sess.token || Date.now() > Number(sess.expiresAtMs || 0)) {
+          window.location.replace('login.html');
+        } else {
+          document.addEventListener('DOMContentLoaded', function () {
+            document.body.style.visibility = 'visible';
+          });
+        }
+      } catch (e) { window.location.replace('login.html'); }
+    })();
+  </script>
+  <!-- ════════════════════════ -->
+
+  <script src="js/auth.js"></script>
+  <script>startSessionEnforcer();</script>
+
+  <style>
+    /* ── Actros Settings — Page Styles (prefix: as-) ──────────────── */
+
+    .as-card {
+      background: rgba(255,255,255,.03);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 16px;
+      margin-bottom: 18px;
+      overflow: hidden;
+    }
+    .as-card-head {
+      display: flex; align-items: center; gap: 10px;
+      padding: 14px 20px;
+      border-bottom: 1px solid rgba(255,255,255,.07);
+      font-size: 14px; font-weight: 700;
+    }
+    .as-head-icon {
+      width: 34px; height: 34px; border-radius: 10px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center; font-size: 16px;
+    }
+    .as-card-body { padding: 20px; }
+
+    /* Form grid */
+    .as-grid  { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .as-grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+    .as-s2    { grid-column: span 2; }
+    .as-s3    { grid-column: span 3; }
+
+    .as-field { display: flex; flex-direction: column; gap: 6px; }
+    .as-field label {
+      font-size: 12px; font-weight: 700; color: var(--muted, #888);
+      display: flex; align-items: center; gap: 4px;
+    }
+    .as-field label .req { color: #ef4444; }
+    .as-field input, .as-field select {
+      padding: 10px 14px; border-radius: 11px;
+      border: 1px solid rgba(255,255,255,.1);
+      background: rgba(255,255,255,.04);
+      color: var(--text, #f0f0f0);
+      font-family: 'Cairo', sans-serif; font-size: 14px;
+      outline: none; transition: border-color .2s; width: 100%;
+    }
+    .as-field input:focus, .as-field select:focus { border-color: var(--primary, #00A859); }
+    .as-field input::placeholder { color: rgba(255,255,255,.2); }
+    .as-field .as-hint { font-size: 11px; color: var(--muted, #888); line-height: 1.5; }
+
+    /* Input group with unit */
+    .as-ig {
+      display: flex; border-radius: 11px; overflow: hidden;
+      border: 1px solid rgba(255,255,255,.1); transition: border-color .2s;
+    }
+    .as-ig:focus-within { border-color: var(--primary, #00A859); }
+    .as-ig input {
+      border: none; border-radius: 0; flex: 1;
+      padding: 10px 14px; background: rgba(255,255,255,.04);
+      color: var(--text, #f0f0f0); font-family: 'Cairo', sans-serif; font-size: 14px;
+      outline: none;
+    }
+    .as-ig-unit {
+      display: flex; align-items: center; padding: 0 14px;
+      background: rgba(255,255,255,.06); color: var(--muted, #888);
+      font-size: 12px; font-weight: 700; white-space: nowrap;
+      border-right: 1px solid rgba(255,255,255,.08);
+    }
+
+    /* Dynamic list */
+    .as-dyn-list { display: flex; flex-direction: column; gap: 10px; }
+    .as-dyn-item {
+      display: flex; gap: 10px; align-items: center;
+      background: rgba(255,255,255,.03);
+      border: 1px solid rgba(255,255,255,.07);
+      border-radius: 11px; padding: 10px 14px;
+    }
+    .as-dyn-item input, .as-dyn-item select {
+      padding: 8px 12px; border-radius: 9px;
+      border: 1px solid rgba(255,255,255,.1);
+      background: rgba(255,255,255,.04);
+      color: var(--text, #f0f0f0); font-family: 'Cairo', sans-serif; font-size: 14px;
+      outline: none; flex: 1;
+    }
+    .as-dyn-item input:focus { border-color: var(--primary, #00A859); }
+    .as-dyn-item .as-w130 { width: 130px; flex: none; }
+    .as-dyn-item select.as-w130 { flex: none; }
+
+    .as-btn-remove {
+      width: 32px; height: 32px; border-radius: 8px; border: none;
+      background: rgba(239,68,68,.1); color: #ef4444;
+      cursor: pointer; font-size: 15px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center; transition: background .2s;
+    }
+    .as-btn-remove:hover { background: rgba(239,68,68,.22); }
+
+    .as-btn-add {
+      display: flex; align-items: center; justify-content: center; gap: 7px;
+      width: 100%; padding: 10px 16px; border-radius: 11px; margin-top: 10px;
+      border: 1px dashed rgba(255,255,255,.15);
+      background: transparent; color: var(--muted, #888);
+      font-family: 'Cairo', sans-serif; font-size: 13px; font-weight: 700;
+      cursor: pointer; transition: all .2s;
+    }
+    .as-btn-add:hover {
+      border-color: var(--primary, #00A859);
+      color: var(--primary, #00A859);
+      background: rgba(0,168,89,.05);
+    }
+
+    /* Save button */
+    .as-save-btn {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      width: 100%; padding: 14px; border-radius: 14px; border: none;
+      background: linear-gradient(135deg, var(--primary, #00A859), #00d66f);
+      color: #fff; font-family: 'Cairo', sans-serif;
+      font-size: 15px; font-weight: 900; cursor: pointer;
+      box-shadow: 0 4px 14px rgba(0,168,89,.3);
+      transition: all .2s; margin-top: 8px; margin-bottom: 24px;
+    }
+    .as-save-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,168,89,.45); }
+
+    /* Toast */
+    .as-toast {
+      position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
+      background: #1e293b; border: 1px solid rgba(255,255,255,.15);
+      color: var(--text, #f0f0f0); padding: 12px 26px; border-radius: 30px;
+      font-size: 14px; font-weight: 700;
+      z-index: 9999; opacity: 0; pointer-events: none;
+      transition: opacity .25s, transform .25s; white-space: nowrap;
+    }
+    .as-toast.show { opacity: 1; transform: translateX(-50%) translateY(-6px); }
+
+    /* Delete permission card */
+    .as-perm-list { display: flex; flex-direction: column; gap: 10px; }
+    .as-perm-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 14px; border-radius: 11px;
+      background: rgba(255,255,255,.03);
+      border: 1px solid rgba(255,255,255,.07);
+      cursor: pointer; transition: border-color .2s;
+    }
+    .as-perm-item:hover { border-color: rgba(255,255,255,.15); }
+    .as-perm-item input[type=checkbox] {
+      width: 18px; height: 18px; cursor: pointer;
+      accent-color: var(--primary, #00A859); flex-shrink: 0;
+    }
+    .as-perm-name  { font-size: 13px; font-weight: 700; }
+    .as-perm-email { font-size: 11px; color: var(--muted, #888); }
+    .as-perm-empty { color: var(--muted,#888); font-size: 13px; text-align:center; padding:16px; }
+
+    /* Responsive */
+    @media (max-width: 640px) {
+      .as-grid, .as-grid3 { grid-template-columns: 1fr; }
+      .as-s2, .as-s3 { grid-column: span 1; }
+      .as-dyn-item .as-w130 { width: 100px; }
+    }
+  </style>
+</head>
+<body class="app-page" data-page="actros-settings">
+<div class="app-shell">
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar(false)"></div>
+
+  <aside class="app-sidebar" id="appSidebar" aria-label="القائمة الجانبية">
+    <div class="sidebar-brand">
+      <a href="search.html" class="brand-link">
+        <span class="brand-mark">💼</span>
+        <span class="brand-text">LinkedOFF</span>
+        <span class="brand-sub">AceAlBastoni</span>
+      </a>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="search.html"    class="nav-item"><span class="nav-ic">🔍</span><span>البحث عن الوظائف</span></a>
+      <a href="dashboard.html" class="nav-item"><span class="nav-ic">📊</span><span>لوحة التحكم</span></a>
+      <a href="analytics.html" class="nav-item"><span class="nav-ic">📈</span><span>تحليلات السوق</span></a>
+      <a href="saved.html"     class="nav-item"><span class="nav-ic">💾</span><span>الوظائف المحفوظة</span></a>
+      <a href="history.html"   class="nav-item"><span class="nav-ic">📬</span><span>سجل الإرسال</span></a>
+      <a href="about.html"     class="nav-item"><span class="nav-ic">👤</span><span>عن المطوّر</span></a>
+      <a href="pricing.html"   class="nav-item"><span class="nav-ic">💳</span><span>الباقات</span></a>
+      <a href="actros.html"    class="nav-item"><span class="nav-ic">🚛</span><span>إدارة أكتروس</span></a>
+      <div class="sidebar-group" id="sidebarSettingsGroup">
+        <div class="sidebar-section-header" onclick="toggleSidebarGroup(this)">
+          <span>🔧 الإعدادات</span><span class="group-chevron">›</span>
+        </div>
+        <a href="settings.html"            data-group-page="settings.html"            class="nav-item nav-sub-item"><span class="nav-ic">👤</span><span>إعدادات الحساب</span></a>
+        <a href="users.html"               data-group-page="users.html"               class="nav-item nav-sub-item"><span class="nav-ic">👥</span><span>إعدادات المستخدمين</span></a>
+        <a href="settings-pages.html"      data-group-page="settings-pages.html"      class="nav-item nav-sub-item"><span class="nav-ic">📄</span><span>إعدادات الصفحات</span></a>
+        <a href="settings-datasource.html" data-group-page="settings-datasource.html" class="nav-item nav-sub-item"><span class="nav-ic">🗄️</span><span>مصادر البيانات</span></a>
+        <a href="settings-api.html"        data-group-page="settings-api.html"        class="nav-item nav-sub-item"><span class="nav-ic">🔑</span><span>إعدادات الـ API</span></a>
+        <a href="actros-settings.html"     data-group-page="actros-settings.html"     class="nav-item nav-sub-item active"><span class="nav-ic">🚛</span><span>إعدادات أكتروس</span></a>
+        <a href="engines-interactive.html" data-group-page="engines-interactive.html" class="nav-item nav-sub-item"><span class="nav-ic">⚙️</span><span>إعدادات المحركات</span></a>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="sidebar-logout" type="button" onclick="performLogout('👋 تم تسجيل الخروج', false)">
+        <span class="nav-ic">🚪</span><span>تسجيل الخروج</span>
+      </button>
+    </div>
+  </aside>
+
+  <div class="app-main">
+    <header class="app-topbar">
+      <button class="sidebar-toggle" type="button" aria-label="فتح/إغلاق القائمة" onclick="toggleSidebar()">
+        <span class="toggle-bars"></span>
+      </button>
+      <div class="topbar-title">⚙️ إعدادات أكتروس</div>
+      <div class="topbar-actions">
+        <button id="darkModeBtn" onclick="toggleDarkMode()" title="وضع ليلي" style="
+          background:none;border:1px solid rgba(255,255,255,.2);border-radius:8px;
+          padding:6px 10px;cursor:pointer;font-size:18px;line-height:1;
+          transition:background .2s,border-color .2s;">🌙</button>
+      </div>
+    </header>
+
+    <main class="app-content">
+
+      <!-- 1. Vehicle Info -->
+      <div class="as-card">
+        <div class="as-card-head">
+          <div class="as-head-icon" style="background:rgba(96,165,250,.12);color:#60a5fa;">🚛</div>
+          <div>بيانات السيارة</div>
+        </div>
+        <div class="as-card-body">
+          <div class="as-grid">
+            <div class="as-field">
+              <label>اسم / رقم السيارة</label>
+              <input type="text" id="vehicleName" placeholder="مثال: أكتروس 1 — سيد محمد">
+            </div>
+            <div class="as-field">
+              <label>رقم اللوحة</label>
+              <input type="text" id="vehiclePlate" placeholder="مثال: أ ب ج 1234" dir="ltr">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Fuel -->
+      <div class="as-card">
+        <div class="as-card-head">
+          <div class="as-head-icon" style="background:rgba(251,191,36,.12);color:#fbbf24;">⛽</div>
+          <div>أسعار الوقود</div>
+        </div>
+        <div class="as-card-body">
+          <div class="as-grid">
+            <div class="as-field">
+              <label>سعر لتر الديزل <span class="req">*</span></label>
+              <div class="as-ig">
+                <input type="number" id="dieselPrice" placeholder="0" min="0" step="0.01">
+                <div class="as-ig-unit">ج.م / لتر</div>
+              </div>
+              <div class="as-hint">يُستخدم افتراضياً في الحساب — يمكن تجاوزه في كل دخول يومي</div>
+            </div>
+            <div class="as-field">
+              <label>متوسط استهلاك الوقود</label>
+              <div class="as-ig">
+                <input type="number" id="fuelPer100km" placeholder="مثال: 35" min="0" step="0.1">
+                <div class="as-ig-unit">لتر / 100كم</div>
+              </div>
+              <div class="as-hint">اختياري — للمرجعية فقط</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Driver -->
+      <div class="as-card">
+        <div class="as-card-head">
+          <div class="as-head-icon" style="background:rgba(0,168,89,.12);color:#00A859;">🧑‍✈️</div>
+          <div>بيانات السائق</div>
+        </div>
+        <div class="as-card-body">
+          <div class="as-grid3">
+            <div class="as-field as-s3">
+              <label>اسم السائق</label>
+              <input type="text" id="driverName" placeholder="مثال: محمد أحمد">
+            </div>
+            <div class="as-field">
+              <label>الراتب الشهري <span class="req">*</span></label>
+              <div class="as-ig">
+                <input type="number" id="driverSalary" placeholder="0" min="0">
+                <div class="as-ig-unit">ج.م</div>
+              </div>
+            </div>
+            <div class="as-field">
+              <label>نسبته من النقلات <span class="req">*</span></label>
+              <div class="as-ig">
+                <input type="number" id="driverTripPct" placeholder="0" min="0" max="100" step="0.01">
+                <div class="as-ig-unit">%</div>
+              </div>
+              <div class="as-hint">من إجمالي إيرادات النقلات في الشهر</div>
+            </div>
+            <div class="as-field">
+              <label>مصاريفه اليومية الثابتة</label>
+              <div class="as-ig">
+                <input type="number" id="driverDailyExp" placeholder="0" min="0">
+                <div class="as-ig-unit">ج.م / يوم</div>
+              </div>
+              <div class="as-hint">تُحتسب بضرب عدد أيام العمل</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. Helper -->
+      <div class="as-card">
+        <div class="as-card-head">
+          <div class="as-head-icon" style="background:rgba(167,139,250,.12);color:#a78bfa;">👷</div>
+          <div>بيانات التباع (المساعد)</div>
+        </div>
+        <div class="as-card-body">
+          <div class="as-grid">
+            <div class="as-field">
+              <label>اسم التباع</label>
+              <input type="text" id="helperName" placeholder="مثال: علي حسن">
+            </div>
+            <div class="as-field">
+              <label>الأجرة الشهرية <span class="req">*</span></label>
+              <div class="as-ig">
+                <input type="number" id="helperSalary" placeholder="0" min="0">
+                <div class="as-ig-unit">ج.م</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. Other Fixed Expenses -->
+      <div class="as-card">
+        <div class="as-card-head">
+          <div class="as-head-icon" style="background:rgba(239,68,68,.12);color:#ef4444;">📋</div>
+          <div>مصاريف ثابتة إضافية</div>
+        </div>
+        <div class="as-card-body">
+          <div class="as-hint" style="margin-bottom:14px;">أضف أي مصاريف ثابتة متكررة (تأمين، صيانة دورية، إيجار، إلخ)</div>
+          <div class="as-dyn-list" id="otherExpensesList"></div>
+          <button class="as-btn-add" onclick="addOtherExpense()">＋ إضافة مصروف ثابت</button>
+        </div>
+      </div>
+
+      <!-- 6. Owner WhatsApp Numbers -->
+      <div class="as-card">
+        <div class="as-card-head">
+          <div class="as-head-icon" style="background:rgba(34,197,94,.12);color:#22c55e;">📱</div>
+          <div>أرقام واتساب المالكين</div>
+        </div>
+        <div class="as-card-body">
+          <div class="as-hint" style="margin-bottom:14px;">أرقام الواتساب التي سيُرسل إليها تقرير التشغيل (مع رمز الدولة)</div>
+          <div class="as-dyn-list" id="ownerNumbersList"></div>
+          <button class="as-btn-add" onclick="addOwnerNumber()">＋ إضافة رقم مالك</button>
+        </div>
+      </div>
+
+      <!-- 7. Delete Permission (admin only) -->
+      <div class="as-card" id="deletePermCard">
+        <div class="as-card-head">
+          <div class="as-head-icon" style="background:rgba(239,68,68,.12);color:#ef4444;">🔐</div>
+          <div>صلاحية الحذف</div>
+        </div>
+        <div class="as-card-body">
+          <div class="as-hint" style="margin-bottom:14px;">
+            حدد المستخدمين الذين يملكون صلاحية حذف سجلات أيام العمل.
+            المدراء يملكون الصلاحية دائماً.
+          </div>
+          <div class="as-perm-list" id="deletePermList">
+            <div class="as-perm-empty">⏳ جارٍ التحميل...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Save -->
+      <button class="as-save-btn" onclick="saveSettings()">💾 حفظ الإعدادات</button>
+
+    </main>
+  </div><!-- app-main -->
+</div><!-- app-shell -->
+
+<!-- Toast -->
+<div class="as-toast" id="asToast"></div>
+
+<!-- Scripts -->
+<script src="js/config.js"></script>
+<script src="js/rbac.js"></script>
+<script>
+/* ════════════════════════════════════════════════════════
+   Actros Settings — Data Management
+   Storage key: 'actros_settings'
+   ════════════════════════════════════════════════════════ */
+
+const SETTINGS_KEY = 'actros_settings';
+
+const DEFAULT_SETTINGS = {
+  vehicleName:    'أكتروس',
+  vehiclePlate:   '',
+  dieselPrice:    0,
+  fuelPer100km:   0,
+  driverName:     '',
+  driverSalary:   0,
+  driverTripPct:  0,
+  driverDailyExp: 0,
+  helperName:     '',
+  helperSalary:   0,
+  otherExpenses:  [],        // [{ id, name, amount, period: 'monthly'|'daily' }]
+  ownerNumbers:   ['+966566114725'],
+};
+
+// ── Load / Save ───────────────────────────────────────────────────────────────
+function loadSettings() {
+  try { return { ...DEFAULT_SETTINGS, ...JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}') }; }
+  catch { return { ...DEFAULT_SETTINGS }; }
+}
+
+function saveSettings() {
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(gatherForm()));
+  asToast('✓ تم حفظ الإعدادات بنجاح');
+}
+
+// ── Gather form values ────────────────────────────────────────────────────────
+function gatherForm() {
+  return {
+    vehicleName:    val('vehicleName'),
+    vehiclePlate:   val('vehiclePlate'),
+    dieselPrice:    num('dieselPrice'),
+    fuelPer100km:   num('fuelPer100km'),
+    driverName:     val('driverName'),
+    driverSalary:   num('driverSalary'),
+    driverTripPct:  num('driverTripPct'),
+    driverDailyExp: num('driverDailyExp'),
+    helperName:     val('helperName'),
+    helperSalary:   num('helperSalary'),
+    otherExpenses:  gatherOtherExpenses(),
+    ownerNumbers:   gatherOwnerNumbers(),
+    deleteAllowList: gatherDeleteAllowList(),
+  };
+}
+
+function val(id) { return (document.getElementById(id)?.value || '').trim(); }
+function num(id) { return parseFloat(document.getElementById(id)?.value || '0') || 0; }
+
+// ── Populate form ─────────────────────────────────────────────────────────────
+function populateForm(s) {
+  setV('vehicleName',    s.vehicleName);
+  setV('vehiclePlate',   s.vehiclePlate);
+  setV('dieselPrice',    s.dieselPrice   || '');
+  setV('fuelPer100km',   s.fuelPer100km  || '');
+  setV('driverName',     s.driverName);
+  setV('driverSalary',   s.driverSalary  || '');
+  setV('driverTripPct',  s.driverTripPct || '');
+  setV('driverDailyExp', s.driverDailyExp|| '');
+  setV('helperName',     s.helperName);
+  setV('helperSalary',   s.helperSalary  || '');
+
+  document.getElementById('otherExpensesList').innerHTML = '';
+  (s.otherExpenses || []).forEach(e => addOtherExpense(e));
+
+  document.getElementById('ownerNumbersList').innerHTML = '';
+  (s.ownerNumbers?.length ? s.ownerNumbers : ['+966566114725']).forEach(n => addOwnerNumber(n));
+}
+
+function setV(id, v) { const el = document.getElementById(id); if (el) el.value = v ?? ''; }
+
+// ── Dynamic: Other Expenses ───────────────────────────────────────────────────
+function addOtherExpense(data = null) {
+  const list = document.getElementById('otherExpensesList');
+  const item = document.createElement('div');
+  item.className = 'as-dyn-item';
+  item.innerHTML = `
+    <input type="text" placeholder="اسم المصروف (مثال: تأمين، إيجار...)"
+           value="${escHtml(data?.name || '')}" style="flex:2;">
+    <input type="number" class="as-w130" placeholder="المبلغ" min="0"
+           value="${data?.amount || ''}">
+    <select class="as-w130">
+      <option value="monthly" ${data?.period !== 'daily' ? 'selected' : ''}>شهري</option>
+      <option value="daily"   ${data?.period === 'daily' ? 'selected' : ''}>يومي</option>
+    </select>
+    <button class="as-btn-remove" onclick="this.closest('.as-dyn-item').remove()" title="حذف">✕</button>
+  `;
+  list.appendChild(item);
+}
+
+function gatherOtherExpenses() {
+  return Array.from(document.querySelectorAll('#otherExpensesList .as-dyn-item')).map(item => ({
+    id:     Math.random().toString(36).slice(2),
+    name:   item.querySelector('input[type=text]')?.value?.trim() || '',
+    amount: parseFloat(item.querySelector('input[type=number]')?.value || '0') || 0,
+    period: item.querySelector('select')?.value || 'monthly',
+  })).filter(e => e.name);
+}
+
+// ── Dynamic: Owner Numbers ────────────────────────────────────────────────────
+function addOwnerNumber(number = '') {
+  const list = document.getElementById('ownerNumbersList');
+  const item = document.createElement('div');
+  item.className = 'as-dyn-item';
+  const numVal  = typeof number === 'string' ? number : '';
+  const nameVal = typeof number === 'object'  ? number?.name || '' : '';
+  item.innerHTML = `
+    <span style="font-size:18px;flex-shrink:0;">📱</span>
+    <input type="tel" placeholder="+966XXXXXXXXX" dir="ltr"
+           value="${escHtml(numVal)}" style="flex:1;">
+    <input type="text" placeholder="اسم المالك (اختياري)"
+           value="${escHtml(nameVal)}" style="flex:1;">
+    <button class="as-btn-remove" onclick="this.closest('.as-dyn-item').remove()" title="حذف">✕</button>
+  `;
+  list.appendChild(item);
+}
+
+function gatherOwnerNumbers() {
+  return Array.from(document.querySelectorAll('#ownerNumbersList .as-dyn-item')).map(item => {
+    return (item.querySelectorAll('input')[0]?.value || '').trim();
+  }).filter(Boolean);
+}
+
+// ── Utilities ─────────────────────────────────────────────────────────────────
+function escHtml(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+let _tt;
+function asToast(msg, ms = 2600) {
+  const el = document.getElementById('asToast');
+  el.textContent = msg; el.classList.add('show');
+  clearTimeout(_tt); _tt = setTimeout(() => el.classList.remove('show'), ms);
+}
+
+// ── Delete Permission ─────────────────────────────────────────────────────────
+function isCurrentUserAdmin(){
+  try{
+    const user=JSON.parse(localStorage.getItem('linkedoff_user')||'null');
+    if(!user) return false;
+    const adminEmails=(window.APP_CONFIG&&window.APP_CONFIG.adminEmails)||[];
+    return user.role==='admin'||adminEmails.includes(user.email);
+  }catch{return false;}
+}
+
+function getRegisteredUsers(){
+  try{
+    const raw=localStorage.getItem('linkedoff_users_registry');
+    if(!raw) return [];
+    const data=JSON.parse(raw);
+    return Array.isArray(data)?data:Object.values(data);
+  }catch{return [];}
+}
+
+function renderDeletePermCard(){
+  const card=document.getElementById('deletePermCard');
+  if(!card) return;
+  if(!isCurrentUserAdmin()){card.style.display='none';return;}
+  const adminEmails=(window.APP_CONFIG&&window.APP_CONFIG.adminEmails)||[];
+  const s=loadSettings();
+  const allowList=s.deleteAllowList||[];
+  const users=getRegisteredUsers().filter(u=>u&&u.email&&u.role!=='admin'&&!adminEmails.includes(u.email));
+  const list=document.getElementById('deletePermList');
+  if(!users.length){
+    list.innerHTML='<div class="as-perm-empty">لا يوجد مستخدمون مسجلون بعد.</div>';
+    return;
+  }
+  list.innerHTML=users.map(u=>`
+    <label class="as-perm-item">
+      <input type="checkbox" class="del-perm-cb" value="${escHtml(u.email)}"${allowList.includes(u.email)?' checked':''}>
+      <div>
+        <div class="as-perm-name">${escHtml(u.name||u.email)}</div>
+        <div class="as-perm-email">${escHtml(u.email)}</div>
+      </div>
+    </label>`).join('');
+}
+
+function gatherDeleteAllowList(){
+  return Array.from(document.querySelectorAll('.del-perm-cb:checked')).map(cb=>cb.value);
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => { populateForm(loadSettings()); renderDeletePermCard(); });
+</script>
+<script src="js/ui.js"></script>
+</body>
+</html>

@@ -1041,6 +1041,92 @@ body.app-page{
   font-size: 14px;
 }
 
+/* Sidebar settings group (collapsible section) */
+.sidebar-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition: gap 0.22s ease;
+}
+
+.sidebar-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px 6px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  color: rgba(255,255,255,0.35);
+  letter-spacing: 0.7px;
+  margin-top: 6px;
+  cursor: pointer;
+  user-select: none;
+  border-radius: 8px;
+  transition: background 0.15s ease;
+}
+
+.sidebar-section-header:hover {
+  background: rgba(255,255,255,0.05);
+  color: rgba(255,255,255,0.55);
+}
+
+/* Chevron indicator */
+.group-chevron {
+  font-size: 13px;
+  color: rgba(255,255,255,0.25);
+  flex-shrink: 0;
+  transition: transform 0.22s ease, color 0.15s ease;
+  transform: rotate(90deg); /* pointing down = expanded */
+  display: inline-block;
+  line-height: 1;
+}
+
+.sidebar-section-header:hover .group-chevron {
+  color: rgba(255,255,255,0.5);
+}
+
+.sidebar-group.collapsed .group-chevron {
+  transform: rotate(0deg); /* pointing right = collapsed */
+}
+
+.sidebar-group.collapsed {
+  gap: 0;
+}
+
+/* Sub-items with collapse animation */
+.sidebar-nav .nav-sub-item {
+  margin-right: 10px;
+  font-size: 0.84rem;
+  border-right: 2px solid rgba(0,168,89,0.18);
+  padding-right: 14px !important;
+  overflow: hidden;
+  max-height: 80px;
+  opacity: 1;
+  transition:
+    max-height 0.22s ease,
+    opacity    0.18s ease,
+    margin     0.2s  ease,
+    padding    0.2s  ease,
+    border     0.2s  ease;
+}
+
+.sidebar-group.collapsed .nav-sub-item {
+  max-height: 0 !important;
+  opacity: 0;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  pointer-events: none;
+}
+
+.sidebar-nav .nav-sub-item:hover {
+  border-right-color: rgba(0,168,89,0.45);
+}
+
+.sidebar-nav .nav-sub-item.active {
+  border-right-color: rgba(0,168,89,0.75);
+}
+
 .sidebar-footer{
   margin-top: 14px;
   padding-top: 14px;

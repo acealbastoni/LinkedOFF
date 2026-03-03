@@ -90,6 +90,17 @@ const RBAC = {
       }
     });
 
+    // Apply group config (collapse state + visible pages + role-based hide)
+    this.initSidebarGroup();
+
+    // Hide sidebar groups if all sub-items are hidden (after config applied)
+    document.querySelectorAll('.sidebar-nav .sidebar-group').forEach(group => {
+      const items = group.querySelectorAll('.nav-item');
+      if (items.length > 0 && Array.from(items).every(item => item.style.display === 'none')) {
+        group.style.display = 'none';
+      }
+    });
+
     // Inject role badge + user name under the brand logo
     this._injectSidebarMeta(role);
 
@@ -186,6 +197,47 @@ const RBAC = {
 
     brand.appendChild(meta);
   },
+
+  // ── Sidebar Group (Collapsible + Configurable) ────────────────────────────
+
+  /**
+   * 1. Restores collapsed state from localStorage.
+   * 2. Hides the whole group for certain roles (from linkedoff_settings_group_cfg).
+   * 3. Hides individual sub-items not in the configured visiblePages list.
+   */
+  initSidebarGroup() {
+    // 1) Restore collapse state
+    const isCollapsed = localStorage.getItem('linkedoff_sidebar_group_collapsed') === '1';
+    document.querySelectorAll('#sidebarSettingsGroup').forEach(group => {
+      if (isCollapsed) group.classList.add('collapsed');
+    });
+
+    // 2 & 3) Apply config
+    try {
+      const cfgRaw = localStorage.getItem('linkedoff_settings_group_cfg');
+      if (!cfgRaw) return;
+      const cfg = JSON.parse(cfgRaw);
+      const role = this.getRole();
+
+      // Hide entire group for configured roles
+      if (cfg.hideForRoles && cfg.hideForRoles.includes(role)) {
+        document.querySelectorAll('#sidebarSettingsGroup').forEach(el => {
+          el.style.display = 'none';
+        });
+        return;
+      }
+
+      // Hide sub-items not in visiblePages
+      if (cfg.visiblePages && cfg.visiblePages.length > 0) {
+        document.querySelectorAll('[data-group-page]').forEach(item => {
+          const page = item.getAttribute('data-group-page');
+          if (!cfg.visiblePages.includes(page)) {
+            item.style.display = 'none';
+          }
+        });
+      }
+    } catch (e) { /* ignore */ }
+  },
 };
 
 // ── Auto-Initialize on DOM Ready ─────────────────────────────────────────────
@@ -208,3 +260,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // ── Expose globally ───────────────────────────────────────────────────────────
 window.RBAC = RBAC;
+
+// Toggle sidebar group collapse (called from onclick in HTML)
+window.toggleSidebarGroup = function (header) {
+  const group = header.closest('.sidebar-group');
+  if (!group) return;
+  const isCollapsed = group.classList.toggle('collapsed');
+  try {
+    localStorage.setItem('linkedoff_sidebar_group_collapsed', isCollapsed ? '1' : '0');
+  } catch (e) { /* ignore */ }
+};

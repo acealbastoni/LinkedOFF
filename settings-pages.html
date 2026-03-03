@@ -1,0 +1,706 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>إعدادات الصفحات - LinkedOFF</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/enhancements.css">
+  <link rel="stylesheet" href="css/responsive.css">
+  <link rel="icon" type="image/svg+xml" href="img/icon-linkedoff.svg">
+
+  <!-- ═══ EARLY AUTH GUARD ═══ -->
+  <style>body { visibility: hidden; }</style>
+  <script>
+    (function () {
+      try {
+        var user = JSON.parse(localStorage.getItem('linkedoff_user') || 'null');
+        var sess = JSON.parse(localStorage.getItem('linkedoff_session') || 'null');
+        if (!user || !sess || !sess.token || Date.now() > Number(sess.expiresAtMs || 0)) {
+          window.location.replace('login.html');
+        } else {
+          document.addEventListener('DOMContentLoaded', function () {
+            document.body.style.visibility = 'visible';
+          });
+        }
+      } catch (e) { window.location.replace('login.html'); }
+    })();
+  </script>
+  <script src="js/auth.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/rbac.js"></script>
+  <script>startSessionEnforcer();</script>
+
+  <style>
+    .st-wrapper { max-width: 720px; margin: 0 auto; padding-bottom: 60px; }
+
+    .st-section {
+      background: #fff;
+      border: 1px solid rgba(0,0,0,.07);
+      border-radius: 18px;
+      padding: 24px 26px;
+      margin-bottom: 18px;
+      animation: _cardIn .35s ease both;
+    }
+    body.dark-mode .st-section {
+      background: #1e1e2e;
+      border-color: rgba(255,255,255,.07);
+    }
+
+    .st-section-title {
+      font-size: 0.95rem;
+      font-weight: 900;
+      color: #333;
+      margin-bottom: 18px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(0,0,0,.06);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    body.dark-mode .st-section-title { color: #e0e0f0; border-color: rgba(255,255,255,.06); }
+
+    .st-btn {
+      padding: 9px 20px;
+      border-radius: 10px;
+      font-family: 'Cairo', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      transition: transform .15s, box-shadow .15s;
+    }
+    .st-btn-primary {
+      background: linear-gradient(135deg, #00A859, #00D66F);
+      color: #fff;
+      box-shadow: 0 3px 12px rgba(0,168,89,.3);
+    }
+    .st-btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(0,168,89,.38); }
+    .st-btn-outline {
+      background: none;
+      border: 1.5px solid #dde1ec !important;
+      color: #666;
+    }
+    body.dark-mode .st-btn-outline { border-color: #383858 !important; color: #aaa; }
+    .st-btn-outline:hover { border-color: var(--primary-color) !important; color: var(--primary-color); }
+
+    /* ── RBAC Panel ─────────────────────────────────── */
+    .rbac-intro {
+      font-size: 0.82rem;
+      color: #888;
+      line-height: 1.65;
+      margin-bottom: 18px;
+      padding: 10px 14px;
+      background: rgba(0,0,0,.03);
+      border-radius: 10px;
+      border-right: 3px solid rgba(251,191,36,.5);
+    }
+    body.dark-mode .rbac-intro { background: rgba(255,255,255,.04); }
+
+    .rbac-badge-admin {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(251,191,36,.12);
+      color: #92400e;
+      border: 1px solid rgba(251,191,36,.35);
+      border-radius: 20px;
+      padding: 2px 10px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      margin-right: auto;
+    }
+    body.dark-mode .rbac-badge-admin { color: #fbbf24; background: rgba(251,191,36,.15); }
+
+    .rbac-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 12px; border: 1px solid rgba(0,0,0,.06); }
+    body.dark-mode .rbac-table-wrap { border-color: rgba(255,255,255,.06); }
+
+    .rbac-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: 'Cairo', sans-serif;
+      min-width: 400px;
+    }
+    .rbac-table thead { background: rgba(0,168,89,.05); }
+    body.dark-mode .rbac-table thead { background: rgba(0,168,89,.08); }
+
+    .rbac-table th {
+      padding: 11px 16px;
+      font-size: 0.8rem;
+      font-weight: 800;
+      color: #555;
+      text-align: right;
+      border-bottom: 1px solid rgba(0,0,0,.06);
+      white-space: nowrap;
+    }
+    body.dark-mode .rbac-table th { color: #aaa; border-color: rgba(255,255,255,.06); }
+    .rbac-table th.rbac-th-center { text-align: center; }
+
+    .rbac-table td {
+      padding: 10px 16px;
+      font-size: 0.84rem;
+      border-bottom: 1px solid rgba(0,0,0,.04);
+      vertical-align: middle;
+    }
+    body.dark-mode .rbac-table td { border-color: rgba(255,255,255,.04); }
+    .rbac-table tr:last-child td { border-bottom: none; }
+    .rbac-table tbody tr:hover { background: rgba(0,168,89,.03); }
+    body.dark-mode .rbac-table tbody tr:hover { background: rgba(255,255,255,.03); }
+
+    .rbac-page-cell { display: flex; flex-direction: column; gap: 2px; }
+    .rbac-page-name-row { display: flex; align-items: center; gap: 8px; font-weight: 700; color: #333; }
+    body.dark-mode .rbac-page-name-row { color: #e0e0f0; }
+    .rbac-page-file { font-size: 0.7rem; color: #bbb; font-family: monospace; padding-right: 24px; }
+
+    .rbac-td-center { text-align: center; }
+
+    .rbac-always-check {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px; height: 28px;
+      background: rgba(251,191,36,.12);
+      border: 1px solid rgba(251,191,36,.3);
+      border-radius: 8px;
+      font-size: 14px;
+    }
+
+    .rbac-table tbody tr.rbac-row-blocked { background: rgba(239,68,68,.03); }
+    body.dark-mode .rbac-table tbody tr.rbac-row-blocked { background: rgba(239,68,68,.06); }
+    .rbac-row-blocked .rbac-page-name-row { color: #ef4444 !important; opacity: 0.8; }
+
+    .rbac-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 18px;
+      padding-top: 14px;
+      border-top: 1px solid rgba(0,0,0,.06);
+      flex-wrap: wrap;
+    }
+    body.dark-mode .rbac-actions { border-color: rgba(255,255,255,.06); }
+
+    .rbac-legend {
+      display: flex;
+      gap: 16px;
+      font-size: 0.75rem;
+      color: #999;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+    .rbac-legend-item { display: flex; align-items: center; gap: 5px; }
+
+    .rbac-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 0.82rem;
+      font-weight: 700;
+      font-family: 'Cairo', sans-serif;
+      user-select: none;
+      transition: background .2s, border-color .2s, transform .12s;
+      border: 2px solid;
+      white-space: nowrap;
+    }
+    .rbac-pill input { display: none; }
+    .rbac-pill:active { transform: scale(0.97); }
+
+    .rbac-pill--on {
+      background: rgba(0,168,89,.1);
+      color: #007a40;
+      border-color: rgba(0,168,89,.35);
+    }
+    body.dark-mode .rbac-pill--on { color: #00d66f; background: rgba(0,168,89,.15); }
+    .rbac-pill--on:hover { background: rgba(0,168,89,.2); border-color: rgba(0,168,89,.55); }
+
+    .rbac-pill--off {
+      background: rgba(239,68,68,.08);
+      color: #c81e1e;
+      border-color: rgba(239,68,68,.3);
+    }
+    body.dark-mode .rbac-pill--off { color: #f87171; background: rgba(239,68,68,.14); }
+    .rbac-pill--off:hover { background: rgba(239,68,68,.16); border-color: rgba(239,68,68,.5); }
+
+    .rbac-category-row td {
+      background: rgba(0,0,0,.035);
+      font-size: 0.72rem;
+      font-weight: 900;
+      color: #888;
+      padding: 7px 16px;
+      letter-spacing: 0.5px;
+    }
+    body.dark-mode .rbac-category-row td { background: rgba(255,255,255,.04); color: #666; }
+    .rbac-category-row:hover { background: transparent !important; }
+    body.dark-mode .rbac-category-row:hover { background: transparent !important; }
+
+    /* Toggle switch (for group config panel) */
+    .st-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid rgba(0,0,0,.04); flex-wrap: wrap; }
+    .st-row:last-child { border-bottom: none; }
+    body.dark-mode .st-row { border-color: rgba(255,255,255,.04); }
+    .st-row-label { font-size: 0.88rem; font-weight: 700; color: #444; display: flex; flex-direction: column; gap: 2px; }
+    body.dark-mode .st-row-label { color: #c0c0d0; }
+    .st-row-sub { font-size: 0.76rem; color: #999; font-weight: 400; }
+    .st-toggle { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
+    .st-toggle input { opacity: 0; width: 0; height: 0; }
+    .st-toggle-slider { position: absolute; inset: 0; background: #dde1ec; border-radius: 24px; cursor: pointer; transition: background .2s; }
+    .st-toggle-slider::before { content:''; position:absolute; width:18px; height:18px; left:3px; top:3px; background:#fff; border-radius:50%; transition:transform .2s; box-shadow:0 1px 4px rgba(0,0,0,.15); }
+    .st-toggle input:checked + .st-toggle-slider { background: var(--primary-color, #00A859); }
+    .st-toggle input:checked + .st-toggle-slider::before { transform: translateX(20px); }
+
+    /* Group page row */
+    .group-page-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 9px 0; border-bottom: 1px solid rgba(0,0,0,.04);
+    }
+    body.dark-mode .group-page-row { border-color: rgba(255,255,255,.04); }
+    .group-page-row:last-child { border-bottom: none; }
+    .group-page-info { display: flex; align-items: center; gap: 8px; }
+    .group-page-info .page-name { font-size: 0.86rem; font-weight: 700; color: #333; }
+    body.dark-mode .group-page-info .page-name { color: #e0e0f0; }
+    .group-page-info .page-file { font-size: 0.7rem; color: #bbb; font-family: monospace; }
+
+    /* Toast */
+    #stToast {
+      position: fixed;
+      bottom: 72px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: #00A859;
+      color: #fff;
+      padding: 10px 22px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      font-family: 'Cairo', sans-serif;
+      z-index: 9999;
+      opacity: 0;
+      transition: all .3s;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+  </style>
+</head>
+
+<body class="app-page" data-page="settings-pages">
+<div class="app-shell">
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar(false)"></div>
+
+  <aside class="app-sidebar" id="appSidebar" aria-label="القائمة الجانبية">
+    <div class="sidebar-brand">
+      <a href="search.html" class="brand-link">
+        <span class="brand-mark">💼</span>
+        <span class="brand-text">LinkedOFF</span>
+        <span class="brand-sub">AceAlBastoni</span>
+      </a>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a href="search.html"              class="nav-item"><span class="nav-ic">🔍</span><span>البحث عن الوظائف</span></a>
+      <a href="dashboard.html"           class="nav-item"><span class="nav-ic">📊</span><span>لوحة التحكم</span></a>
+      <a href="analytics.html"           class="nav-item"><span class="nav-ic">📈</span><span>تحليلات السوق</span></a>
+      <a href="saved.html"               class="nav-item"><span class="nav-ic">💾</span><span>الوظائف المحفوظة</span></a>
+      <a href="history.html"             class="nav-item"><span class="nav-ic">📬</span><span>سجل الإرسال</span></a>
+      <a href="about.html"               class="nav-item"><span class="nav-ic">👤</span><span>عن المطوّر</span></a>
+      <a href="pricing.html"             class="nav-item"><span class="nav-ic">💳</span><span>الباقات</span></a>
+      <a href="actros.html"              class="nav-item"><span class="nav-ic">🚛</span><span>إدارة أكتروس</span></a>
+      <div class="sidebar-group" id="sidebarSettingsGroup">
+        <div class="sidebar-section-header" onclick="toggleSidebarGroup(this)"><span>🔧 الإعدادات</span><span class="group-chevron">›</span></div>
+        <a href="settings.html" data-group-page="settings.html" class="nav-item nav-sub-item"><span class="nav-ic">👤</span><span>إعدادات الحساب</span></a>
+        <a href="users.html" data-group-page="users.html" class="nav-item nav-sub-item"><span class="nav-ic">👥</span><span>إعدادات المستخدمين</span></a>
+        <a href="settings-pages.html" data-group-page="settings-pages.html" class="nav-item nav-sub-item active"><span class="nav-ic">📄</span><span>إعدادات الصفحات</span></a>
+        <a href="settings-datasource.html" data-group-page="settings-datasource.html" class="nav-item nav-sub-item"><span class="nav-ic">🗄️</span><span>مصادر البيانات</span></a>
+        <a href="settings-api.html" data-group-page="settings-api.html" class="nav-item nav-sub-item"><span class="nav-ic">🔑</span><span>إعدادات الـ API</span></a>
+        <a href="actros-settings.html" data-group-page="actros-settings.html" class="nav-item nav-sub-item"><span class="nav-ic">🚛</span><span>إعدادات أكتروس</span></a>
+        <a href="engines-interactive.html" data-group-page="engines-interactive.html" class="nav-item nav-sub-item"><span class="nav-ic">⚙️</span><span>إعدادات المحركات</span></a>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="sidebar-logout" type="button" onclick="performLogout('👋 تم تسجيل الخروج', false)">
+        <span class="nav-ic">🚪</span><span>تسجيل الخروج</span>
+      </button>
+    </div>
+  </aside>
+
+  <div class="app-main">
+    <header class="app-topbar">
+      <button class="sidebar-toggle" type="button" aria-label="فتح/إغلاق القائمة" onclick="toggleSidebar()">
+        <span class="toggle-bars"></span>
+      </button>
+      <div class="topbar-title">📄 إعدادات الصفحات</div>
+      <div class="topbar-actions">
+        <button id="darkModeBtn" onclick="toggleDarkMode()" title="وضع ليلي" style="
+          background:none;border:1px solid #ddd;border-radius:8px;
+          padding:6px 10px;cursor:pointer;font-size:18px;line-height:1;
+          transition:background .2s,border-color .2s;
+        ">🌙</button>
+      </div>
+    </header>
+
+    <main class="app-content" style="padding:24px 20px;">
+      <div class="st-wrapper">
+
+        <!-- RBAC Panel -->
+        <div class="st-section" id="rbacPanel">
+          <div class="st-section-title">
+            🛡️ إدارة صلاحيات الوصول
+            <span class="rbac-badge-admin">👑 للمديرين فقط</span>
+          </div>
+
+          <div class="rbac-intro">
+            حدّد الصفحات التي يمكن للمستخدمين العاديين الوصول إليها.
+            المديرون يمتلكون دائماً صلاحية الوصول الكامل بصرف النظر عن هذه الإعدادات.
+            التغييرات تُطبَّق فوراً.
+          </div>
+
+          <div class="rbac-legend">
+            <div class="rbac-legend-item">
+              <span style="display:inline-flex;align-items:center;gap:5px;background:rgba(0,168,89,.1);color:#007a40;border:1.5px solid rgba(0,168,89,.35);border-radius:14px;padding:2px 10px;font-size:0.75rem;font-weight:700;">✅ مسموح</span>
+              <span>المستخدم يمكنه الوصول</span>
+            </div>
+            <div class="rbac-legend-item">
+              <span style="display:inline-flex;align-items:center;gap:5px;background:rgba(239,68,68,.08);color:#c81e1e;border:1.5px solid rgba(239,68,68,.3);border-radius:14px;padding:2px 10px;font-size:0.75rem;font-weight:700;">🔴 محظور</span>
+              <span>Admin فقط</span>
+            </div>
+          </div>
+
+          <div class="rbac-table-wrap">
+            <table class="rbac-table">
+              <thead>
+                <tr>
+                  <th>الصفحة</th>
+                  <th class="rbac-th-center">👑 مدير النظام</th>
+                  <th class="rbac-th-center">👤 مستخدم عادي</th>
+                </tr>
+              </thead>
+              <tbody id="rbacTableBody">
+                <!-- populated dynamically -->
+              </tbody>
+            </table>
+          </div>
+
+          <div class="rbac-actions">
+            <span id="rbacUnsavedBadge" style="display:none;font-size:0.75rem;color:#f59e0b;font-weight:700;">⚠️ يوجد تغييرات غير محفوظة</span>
+            <button class="st-btn st-btn-outline" onclick="rbacResetDefaults()">↩️ استعادة الافتراضي</button>
+            <button class="st-btn st-btn-primary" onclick="rbacSave()">💾 حفظ التغييرات</button>
+          </div>
+        </div>
+
+        <!-- ═══ Sidebar Group Config ═══ -->
+        <div class="st-section" id="groupConfigSection" style="animation-delay:.35s">
+          <div class="st-section-title">
+            🔧 قائمة الإعدادات الجانبية
+            <span class="rbac-badge-admin">👑 للمديرين فقط</span>
+          </div>
+
+          <!-- Hide from role -->
+          <div class="st-row">
+            <div class="st-row-label">
+              إخفاء القسم عن المستخدمين العاديين
+              <span class="st-row-sub">إخفاء مجموعة "الإعدادات" بالكامل من الشريط الجانبي للمستخدمين غير الإداريين</span>
+            </div>
+            <label class="st-toggle">
+              <input type="checkbox" id="groupHideFromUsers">
+              <span class="st-toggle-slider"></span>
+            </label>
+          </div>
+
+          <!-- Visible pages list -->
+          <div class="st-row" style="flex-direction:column;align-items:flex-start;gap:10px;">
+            <div class="st-row-label">
+              الصفحات الظاهرة تحت القسم
+              <span class="st-row-sub">اختر الصفحات التي تظهر تحت عنوان "الإعدادات" في الشريط الجانبي</span>
+            </div>
+            <div id="groupPagesContainer" style="width:100%;"></div>
+          </div>
+
+          <div class="rbac-actions">
+            <button class="st-btn st-btn-outline" onclick="resetGroupConfig()">↩️ استعادة الافتراضي</button>
+            <button class="st-btn st-btn-primary" onclick="saveGroupConfig()">💾 حفظ الإعدادات</button>
+          </div>
+        </div>
+        <!-- ════════════════════════════ -->
+
+      </div>
+    </main>
+  </div>
+</div>
+
+<div id="stToast"></div>
+<script src="js/ui.js"></script>
+<script>
+  /* ── Dark mode ── */
+  function initDarkMode() {
+    var isDark = localStorage.getItem('linkedoff_darkMode') === 'true';
+    document.body.classList.toggle('dark-mode', isDark);
+    var btn = document.getElementById('darkModeBtn');
+    if (btn) btn.textContent = isDark ? '☀️' : '🌙';
+  }
+
+  function toggleDarkMode() {
+    var isDark = document.body.classList.toggle('dark-mode');
+    localStorage.setItem('linkedoff_darkMode', isDark);
+    var btn = document.getElementById('darkModeBtn');
+    if (btn) btn.textContent = isDark ? '☀️' : '🌙';
+  }
+
+  /* ── Toast ── */
+  function toast(msg, color) {
+    var t = document.getElementById('stToast');
+    t.textContent = msg;
+    t.style.background = color || '#00A859';
+    t.style.opacity = '1';
+    t.style.transform = 'translateX(-50%) translateY(0)';
+    setTimeout(function () {
+      t.style.opacity = '0';
+      t.style.transform = 'translateX(-50%) translateY(20px)';
+    }, 2200);
+  }
+
+  /* ── User chip ── */
+  (function () {
+    try {
+      var user = JSON.parse(localStorage.getItem('linkedoff_user') || 'null');
+      if (!user) return;
+      var name    = user.name || user.email || '';
+      var initial = name.trim().charAt(0).toUpperCase() || '?';
+      var actions = document.querySelector('.topbar-actions');
+      if (!actions) return;
+      var chip = document.createElement('div');
+      chip.id = 'topbarUserChip';
+      chip.innerHTML = '<span class="avatar">' + initial + '</span><span>' + name + '</span>';
+      actions.insertBefore(chip, actions.firstChild);
+    } catch(e) {}
+  })();
+
+  /* ── Guard: admin only ── */
+  document.addEventListener('DOMContentLoaded', function () {
+    initDarkMode();
+    if (window.RBAC && RBAC.getRole() !== 'admin') {
+      window.location.replace('search.html');
+      return;
+    }
+    buildRbacTable();
+    initGroupConfigPanel();
+  });
+
+  /* ══════════════════════════════════════════════════════
+     RBAC Page Access Panel
+     ══════════════════════════════════════════════════════ */
+
+  var RBAC_PAGES = [
+    { file: 'search.html',              icon: '🔍', name: 'البحث عن الوظائف'   },
+    { file: 'dashboard.html',           icon: '📊', name: 'لوحة التحكم'        },
+    { file: 'analytics.html',           icon: '📈', name: 'تحليلات السوق'       },
+    { file: 'saved.html',               icon: '💾', name: 'الوظائف المحفوظة'   },
+    { file: 'history.html',             icon: '📬', name: 'سجل الإرسال'        },
+    { file: 'about.html',               icon: '👤', name: 'عن المطوّر'         },
+    { file: 'pricing.html',             icon: '💳', name: 'الباقات'            },
+    { file: 'actros.html',              icon: '🚛', name: 'إدارة أكتروس'       },
+    { file: 'settings.html',            icon: '🔧', name: 'إعدادات الحساب'     },
+    { file: 'users.html',               icon: '👥', name: 'إعدادات المستخدمين' },
+    { file: 'settings-pages.html',      icon: '📄', name: 'إعدادات الصفحات'    },
+    { file: 'engines-interactive.html', icon: '⚙️', name: 'إعدادات المحركات'   },
+    { file: 'settings-api.html',        icon: '🔑', name: 'إعدادات الـ API'     },
+  ];
+
+  var RBAC_LS_KEY = 'linkedoff_rbac_config';
+
+  function getRbacStored() {
+    try {
+      return JSON.parse(localStorage.getItem(RBAC_LS_KEY) || 'null') || { pageAccess: {}, featureAccess: {} };
+    } catch (e) { return { pageAccess: {}, featureAccess: {} }; }
+  }
+
+  function rbacIsAdminOnly(file) {
+    var stored = getRbacStored();
+    if (stored.pageAccess && stored.pageAccess[file] !== undefined) {
+      return stored.pageAccess[file] === 'admin';
+    }
+    var cfg = (window.APP_CONFIG && APP_CONFIG.pageAccess) || {};
+    return cfg[file] === 'admin';
+  }
+
+  function buildRbacRow(id, icon, name, adminOnly) {
+    var userCanAccess = !adminOnly;
+    var pillClass = userCanAccess ? 'rbac-pill--on' : 'rbac-pill--off';
+    var pillIcon  = userCanAccess ? '✅' : '🔴';
+    var pillText  = userCanAccess ? 'مسموح' : 'محظور';
+
+    var tr = document.createElement('tr');
+    if (adminOnly) tr.classList.add('rbac-row-blocked');
+
+    tr.innerHTML =
+      '<td>' +
+        '<div class="rbac-page-cell">' +
+          '<div class="rbac-page-name-row">' +
+            '<span style="font-size:16px">' + icon + '</span>' +
+            '<span>' + name + '</span>' +
+          '</div>' +
+          '<div class="rbac-page-file">' + id + '</div>' +
+        '</div>' +
+      '</td>' +
+      '<td class="rbac-td-center">' +
+        '<span class="rbac-always-check" title="المدير يملك وصولاً دائماً">👑</span>' +
+      '</td>' +
+      '<td class="rbac-td-center">' +
+        '<label class="rbac-pill ' + pillClass + '">' +
+          '<input type="checkbox" data-key="' + id + '"' +
+            (userCanAccess ? ' checked' : '') +
+            ' onchange="rbacOnToggleChange(this)">' +
+          '<span class="rbac-pill-icon">' + pillIcon + '</span>' +
+          '<span class="rbac-pill-text">' + pillText + '</span>' +
+        '</label>' +
+      '</td>';
+
+    return tr;
+  }
+
+  function buildRbacTable() {
+    var tbody = document.getElementById('rbacTableBody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    RBAC_PAGES.forEach(function (page) {
+      tbody.appendChild(buildRbacRow(page.file, page.icon, page.name, rbacIsAdminOnly(page.file)));
+    });
+  }
+
+  function rbacOnToggleChange(checkbox) {
+    var on   = checkbox.checked;
+    var pill = checkbox.closest('.rbac-pill');
+
+    if (pill) {
+      pill.className = 'rbac-pill ' + (on ? 'rbac-pill--on' : 'rbac-pill--off');
+      var icon = pill.querySelector('.rbac-pill-icon');
+      var text = pill.querySelector('.rbac-pill-text');
+      if (icon) icon.textContent = on ? '✅' : '🔴';
+      if (text) text.textContent = on ? 'مسموح' : 'محظور';
+    }
+
+    var tr = checkbox.closest('tr');
+    if (tr) tr.classList.toggle('rbac-row-blocked', !on);
+
+    var badge = document.getElementById('rbacUnsavedBadge');
+    if (badge) badge.style.display = 'inline';
+  }
+
+  function rbacSave() {
+    var config = getRbacStored();
+    config.pageAccess = {};
+
+    document.querySelectorAll('#rbacTableBody input[type="checkbox"]').forEach(function (cb) {
+      var key = cb.getAttribute('data-key');
+      if (!cb.checked) {
+        config.pageAccess[key] = 'admin';
+      }
+    });
+
+    localStorage.setItem(RBAC_LS_KEY, JSON.stringify(config));
+
+    var badge = document.getElementById('rbacUnsavedBadge');
+    if (badge) badge.style.display = 'none';
+
+    toast('✅ تم حفظ الصلاحيات بنجاح');
+  }
+
+  function rbacResetDefaults() {
+    if (!confirm('هل تريد حذف كل التخصيصات والرجوع للإعدادات الافتراضية؟')) return;
+    var config = getRbacStored();
+    config.pageAccess = {};
+    localStorage.setItem(RBAC_LS_KEY, JSON.stringify(config));
+    buildRbacTable();
+
+    var badge = document.getElementById('rbacUnsavedBadge');
+    if (badge) badge.style.display = 'none';
+
+    toast('✅ تم استعادة الإعدادات الافتراضية');
+  }
+
+  /* ══════════════════════════════════════════════════════
+     Sidebar Group Config (which pages appear + hide for roles)
+     ══════════════════════════════════════════════════════ */
+
+  var GROUP_CFG_KEY = 'linkedoff_settings_group_cfg';
+
+  var GROUP_PAGES = [
+    { file: 'settings.html',            icon: '👤', name: 'إعدادات الحساب'     },
+    { file: 'users.html',               icon: '👥', name: 'إعدادات المستخدمين' },
+    { file: 'settings-pages.html',      icon: '📄', name: 'إعدادات الصفحات'    },
+    { file: 'settings-datasource.html', icon: '🗄️', name: 'مصادر البيانات'     },
+    { file: 'actros-settings.html',     icon: '🚛', name: 'إعدادات أكتروس'     },
+    { file: 'engines-interactive.html', icon: '⚙️', name: 'إعدادات المحركات'   },
+    { file: 'settings-api.html',        icon: '🔑', name: 'إعدادات الـ API'     },
+  ];
+
+  function getGroupConfig() {
+    try {
+      var stored = JSON.parse(localStorage.getItem(GROUP_CFG_KEY) || 'null');
+      if (stored) return stored;
+    } catch (e) {}
+    return {
+      visiblePages: GROUP_PAGES.map(function(p) { return p.file; }),
+      hideForRoles: []
+    };
+  }
+
+  function initGroupConfigPanel() {
+    var cfg = getGroupConfig();
+
+    /* hide-from-users toggle */
+    var hideToggle = document.getElementById('groupHideFromUsers');
+    if (hideToggle) hideToggle.checked = cfg.hideForRoles && cfg.hideForRoles.indexOf('user') !== -1;
+
+    /* page checkboxes */
+    var container = document.getElementById('groupPagesContainer');
+    if (!container) return;
+    container.innerHTML = '';
+
+    GROUP_PAGES.forEach(function(page) {
+      var isVisible = !cfg.visiblePages || cfg.visiblePages.indexOf(page.file) !== -1;
+      var row = document.createElement('div');
+      row.className = 'group-page-row';
+      row.innerHTML =
+        '<div class="group-page-info">' +
+          '<span style="font-size:18px;">' + page.icon + '</span>' +
+          '<div>' +
+            '<div class="page-name">' + page.name + '</div>' +
+            '<div class="page-file">' + page.file + '</div>' +
+          '</div>' +
+        '</div>' +
+        '<label class="st-toggle">' +
+          '<input type="checkbox" data-page-toggle="' + page.file + '"' + (isVisible ? ' checked' : '') + '>' +
+          '<span class="st-toggle-slider"></span>' +
+        '</label>';
+      container.appendChild(row);
+    });
+  }
+
+  function saveGroupConfig() {
+    var hideToggle = document.getElementById('groupHideFromUsers');
+    var hideForRoles = (hideToggle && hideToggle.checked) ? ['user'] : [];
+
+    var visiblePages = [];
+    document.querySelectorAll('[data-page-toggle]').forEach(function(cb) {
+      if (cb.checked) visiblePages.push(cb.getAttribute('data-page-toggle'));
+    });
+
+    var cfg = { visiblePages: visiblePages, hideForRoles: hideForRoles };
+    localStorage.setItem(GROUP_CFG_KEY, JSON.stringify(cfg));
+    toast('✅ تم حفظ إعدادات القائمة الجانبية');
+  }
+
+  function resetGroupConfig() {
+    if (!confirm('هل تريد استعادة الإعدادات الافتراضية لقائمة الإعدادات؟')) return;
+    localStorage.removeItem(GROUP_CFG_KEY);
+    initGroupConfigPanel();
+    toast('✅ تم استعادة الإعدادات الافتراضية');
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,851 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>مصادر البيانات - LinkedOFF KSA</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/enhancements.css">
+  <link rel="stylesheet" href="css/responsive.css">
+
+  <!-- ═══ EARLY AUTH GUARD ═══ -->
+  <style>body { visibility: hidden; }</style>
+  <script>
+    (function () {
+      try {
+        var user = JSON.parse(localStorage.getItem('linkedoff_user') || 'null');
+        var sess = JSON.parse(localStorage.getItem('linkedoff_session') || 'null');
+        if (!user || !sess || !sess.token || Date.now() > Number(sess.expiresAtMs || 0)) {
+          window.location.replace('login.html');
+        } else {
+          document.addEventListener('DOMContentLoaded', function () {
+            document.body.style.visibility = 'visible';
+          });
+        }
+      } catch (e) { window.location.replace('login.html'); }
+    })();
+  </script>
+  <!-- ════════════════════════ -->
+
+  <script src="js/auth.js"></script>
+  <script>startSessionEnforcer();</script>
+
+  <style>
+    /* ─── DataSource Page Styles ──────────────────────────────────── */
+
+    /* Page header */
+    .ds-page-header {
+      margin-bottom: 28px;
+    }
+    .ds-page-title {
+      font-size: 1.4rem; font-weight: 900; color: var(--text, #f0f0f0);
+      margin-bottom: 6px;
+    }
+    .ds-page-sub {
+      font-size: 0.88rem; color: var(--muted, #888); line-height: 1.6;
+    }
+
+    /* Active source banner */
+    .ds-active-banner {
+      display: flex; align-items: center; gap: 14px;
+      padding: 16px 20px; border-radius: 16px;
+      background: rgba(0,168,89,.08);
+      border: 1px solid rgba(0,168,89,.22);
+      margin-bottom: 28px;
+    }
+    .ds-active-icon { font-size: 28px; }
+    .ds-active-label { font-size: 11px; color: var(--muted, #888); margin-bottom: 3px; }
+    .ds-active-name  { font-size: 15px; font-weight: 700; color: #00A859; }
+
+    /* Source selector grid */
+    .ds-sources-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+    .ds-source-card {
+      background: rgba(255,255,255,.03);
+      border: 2px solid rgba(255,255,255,.08);
+      border-radius: 16px; padding: 20px 18px;
+      cursor: pointer; transition: all .2s;
+      display: flex; flex-direction: column; gap: 10px;
+      position: relative;
+    }
+    .ds-source-card:hover {
+      border-color: rgba(255,255,255,.2);
+      background: rgba(255,255,255,.05);
+    }
+    .ds-source-card.active {
+      border-color: #00A859;
+      background: rgba(0,168,89,.06);
+    }
+    .ds-source-card.active::after {
+      content: '✓';
+      position: absolute; top: 12px; left: 14px;
+      width: 22px; height: 22px; border-radius: 50%;
+      background: #00A859; color: #fff;
+      font-size: 12px; font-weight: 900;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .ds-source-icon  { font-size: 30px; }
+    .ds-source-title { font-size: 14px; font-weight: 700; color: var(--text, #f0f0f0); }
+    .ds-source-desc  { font-size: 12px; color: var(--muted, #888); line-height: 1.5; }
+    .ds-source-badge {
+      display: inline-block; font-size: 10px; padding: 2px 8px;
+      border-radius: 8px; font-weight: 700; width: fit-content;
+    }
+    .ds-source-badge.ready  { background: rgba(0,168,89,.12); color: #00A859; border: 1px solid rgba(0,168,89,.25); }
+    .ds-source-badge.config { background: rgba(251,191,36,.12); color: #fbbf24; border: 1px solid rgba(251,191,36,.25); }
+    .ds-source-badge.future { background: rgba(148,163,184,.1); color: #94a3b8; border: 1px solid rgba(148,163,184,.2); }
+
+    /* Config panel */
+    .ds-config-panel {
+      background: rgba(255,255,255,.03);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 16px; padding: 24px;
+      margin-bottom: 24px;
+    }
+    .ds-config-panel-title {
+      font-size: 14px; font-weight: 700; color: var(--text, #f0f0f0);
+      margin-bottom: 18px; display: flex; align-items: center; gap: 8px;
+    }
+
+    /* Form fields */
+    .ds-field { margin-bottom: 16px; }
+    .ds-label {
+      display: block; font-size: 12px; font-weight: 700;
+      color: var(--muted, #aaa); margin-bottom: 7px; letter-spacing: .3px;
+    }
+    .ds-input {
+      width: 100%; padding: 11px 14px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,.1);
+      background: rgba(255,255,255,.04);
+      color: var(--text, #f0f0f0);
+      font-family: 'Cairo', sans-serif; font-size: 14px;
+      outline: none; transition: border-color .2s;
+      box-sizing: border-box;
+    }
+    .ds-input:focus { border-color: var(--primary, #00A859); }
+    .ds-input::placeholder { color: rgba(255,255,255,.2); }
+    .ds-input[dir="ltr"] { direction: ltr; text-align: left; }
+    .ds-field-hint {
+      font-size: 11px; color: var(--muted, #888); margin-top: 5px; line-height: 1.5;
+    }
+
+    /* Buttons */
+    .ds-btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 10px 20px; border-radius: 12px;
+      font-family: 'Cairo', sans-serif; font-size: 14px; font-weight: 700;
+      cursor: pointer; border: none; transition: all .2s; white-space: nowrap;
+    }
+    .ds-btn-primary {
+      background: linear-gradient(135deg, #00A859, #00D66F);
+      color: #fff; box-shadow: 0 3px 12px rgba(0,168,89,.3);
+    }
+    .ds-btn-primary:hover { transform: translateY(-1px); box-shadow: 0 5px 18px rgba(0,168,89,.45); }
+    .ds-btn-secondary {
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.12);
+      color: var(--text, #f0f0f0);
+    }
+    .ds-btn-secondary:hover { background: rgba(255,255,255,.1); }
+    .ds-btn-test {
+      background: rgba(96,165,250,.1);
+      border: 1px solid rgba(96,165,250,.25);
+      color: #60a5fa;
+    }
+    .ds-btn-test:hover { background: rgba(96,165,250,.2); }
+    .ds-btn:disabled { opacity: .5; cursor: not-allowed; transform: none !important; }
+
+    .ds-btn-row {
+      display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px;
+    }
+
+    /* Connection test result */
+    .ds-test-result {
+      margin-top: 14px; padding: 12px 16px;
+      border-radius: 12px; font-size: 13px; font-weight: 700;
+      display: none;
+    }
+    .ds-test-result.ok  { background: rgba(0,168,89,.1); color: #00A859; border: 1px solid rgba(0,168,89,.25); }
+    .ds-test-result.err { background: rgba(239,68,68,.1); color: #ef4444; border: 1px solid rgba(239,68,68,.25); }
+
+    /* Local: no-config state */
+    .ds-no-config {
+      text-align: center; padding: 32px 20px; color: var(--muted, #888);
+    }
+    .ds-no-config-icon { font-size: 42px; margin-bottom: 12px; }
+    .ds-no-config-text { font-size: 13px; line-height: 1.7; }
+
+    /* Apps Script template section */
+    .ds-template-toggle {
+      display: flex; align-items: center; gap: 10px;
+      padding: 14px 20px; cursor: pointer;
+      background: rgba(251,191,36,.05);
+      border: 1px solid rgba(251,191,36,.15);
+      border-radius: 14px; margin-bottom: 14px;
+      font-size: 13px; font-weight: 700; color: #fbbf24;
+      user-select: none; transition: background .2s;
+    }
+    .ds-template-toggle:hover { background: rgba(251,191,36,.09); }
+    .ds-template-chevron { margin-right: auto; transition: transform .22s; }
+    .ds-template-toggle.open .ds-template-chevron { transform: rotate(90deg); }
+
+    .ds-template-body {
+      display: none;
+      background: rgba(255,255,255,.02);
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 14px; padding: 20px;
+      margin-bottom: 16px;
+    }
+    .ds-template-body.open { display: block; }
+
+    .ds-steps { list-style: none; padding: 0; margin: 0 0 18px; }
+    .ds-steps li {
+      display: flex; gap: 12px; align-items: flex-start;
+      padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,.05);
+      font-size: 13px; color: var(--muted, #aaa); line-height: 1.6;
+    }
+    .ds-steps li:last-child { border-bottom: none; }
+    .ds-step-num {
+      width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;
+      background: rgba(0,168,89,.15); border: 1px solid rgba(0,168,89,.3);
+      color: #00A859; font-size: 11px; font-weight: 900;
+      display: flex; align-items: center; justify-content: center;
+      margin-top: 1px;
+    }
+
+    .ds-code-block {
+      background: #0d0d1a; border: 1px solid rgba(255,255,255,.1);
+      border-radius: 12px; padding: 16px;
+      font-family: 'Courier New', monospace; font-size: 12px;
+      color: #a8d8a8; direction: ltr; text-align: left;
+      overflow-x: auto; white-space: pre; line-height: 1.6;
+      max-height: 380px;
+      position: relative;
+    }
+    .ds-copy-btn {
+      position: absolute; top: 10px; right: 10px;
+      background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.12);
+      color: var(--muted, #aaa); border-radius: 8px; padding: 5px 12px;
+      font-size: 11px; font-weight: 700; cursor: pointer;
+      font-family: 'Cairo', sans-serif;
+      transition: all .2s;
+    }
+    .ds-copy-btn:hover { background: rgba(255,255,255,.14); color: #fff; }
+
+    /* Toast */
+    .ds-toast {
+      position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+      background: #1e293b; border: 1px solid rgba(255,255,255,.12);
+      color: #f0f0f0; padding: 12px 24px; border-radius: 30px;
+      font-size: 14px; font-weight: 700; font-family: 'Cairo', sans-serif;
+      z-index: 9999; opacity: 0; pointer-events: none;
+      transition: opacity .25s, transform .25s;
+      white-space: nowrap;
+    }
+    .ds-toast.show { opacity: 1; transform: translateX(-50%) translateY(-6px); }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      .ds-sources-grid { grid-template-columns: 1fr 1fr; }
+      .ds-btn-row { flex-direction: column; }
+      .ds-btn { justify-content: center; }
+    }
+    @media (max-width: 380px) {
+      .ds-sources-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body class="app-page" data-page="settings-datasource">
+<div class="app-shell">
+  <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar(false)"></div>
+  <aside class="app-sidebar" id="appSidebar" aria-label="القائمة الجانبية">
+    <div class="sidebar-brand">
+      <a href="search.html" class="brand-link">
+        <span class="brand-mark">💼</span>
+        <span class="brand-text">LinkedOFF</span>
+        <span class="brand-sub">AceAlBastoni</span>
+      </a>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="search.html"              class="nav-item"><span class="nav-ic">🔍</span><span>البحث عن الوظائف</span></a>
+      <a href="dashboard.html"           class="nav-item"><span class="nav-ic">📊</span><span>لوحة التحكم</span></a>
+      <a href="analytics.html"           class="nav-item"><span class="nav-ic">📈</span><span>تحليلات السوق</span></a>
+      <a href="saved.html"               class="nav-item"><span class="nav-ic">💾</span><span>الوظائف المحفوظة</span></a>
+      <a href="history.html"             class="nav-item"><span class="nav-ic">📬</span><span>سجل الإرسال</span></a>
+      <a href="about.html"               class="nav-item"><span class="nav-ic">👤</span><span>عن المطوّر</span></a>
+      <a href="pricing.html"             class="nav-item"><span class="nav-ic">💳</span><span>الباقات</span></a>
+      <a href="actros.html"              class="nav-item"><span class="nav-ic">🚛</span><span>إدارة أكتروس</span></a>
+      <div class="sidebar-group" id="sidebarSettingsGroup">
+        <div class="sidebar-section-header" onclick="toggleSidebarGroup(this)"><span>🔧 الإعدادات</span><span class="group-chevron">›</span></div>
+        <a href="settings.html"           data-group-page="settings.html"           class="nav-item nav-sub-item"><span class="nav-ic">👤</span><span>إعدادات الحساب</span></a>
+        <a href="users.html"              data-group-page="users.html"              class="nav-item nav-sub-item"><span class="nav-ic">👥</span><span>إعدادات المستخدمين</span></a>
+        <a href="settings-pages.html"     data-group-page="settings-pages.html"     class="nav-item nav-sub-item"><span class="nav-ic">📄</span><span>إعدادات الصفحات</span></a>
+        <a href="settings-datasource.html" data-group-page="settings-datasource.html" class="nav-item nav-sub-item active"><span class="nav-ic">🗄️</span><span>مصادر البيانات</span></a>
+        <a href="settings-api.html"        data-group-page="settings-api.html"        class="nav-item nav-sub-item"><span class="nav-ic">🔑</span><span>إعدادات الـ API</span></a>
+        <a href="actros-settings.html" data-group-page="actros-settings.html" class="nav-item nav-sub-item"><span class="nav-ic">🚛</span><span>إعدادات أكتروس</span></a>
+        <a href="engines-interactive.html" data-group-page="engines-interactive.html" class="nav-item nav-sub-item"><span class="nav-ic">⚙️</span><span>إعدادات المحركات</span></a>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="sidebar-logout" type="button" onclick="performLogout('👋 تم تسجيل الخروج', false)">
+        <span class="nav-ic">🚪</span><span>تسجيل الخروج</span>
+      </button>
+    </div>
+  </aside>
+
+  <div class="app-main">
+    <header class="app-topbar">
+      <button class="sidebar-toggle" type="button" aria-label="فتح/إغلاق القائمة" onclick="toggleSidebar()">
+        <span class="toggle-bars"></span>
+      </button>
+      <div class="topbar-title">🗄️ مصادر البيانات</div>
+      <div class="topbar-actions">
+        <button id="darkModeBtn" onclick="toggleDarkMode()" title="وضع ليلي" style="
+          background:none;border:1px solid #ddd;border-radius:8px;
+          padding:6px 10px;cursor:pointer;font-size:18px;line-height:1;
+          transition:background .2s,border-color .2s;
+        ">🌙</button>
+      </div>
+    </header>
+
+    <main class="app-content">
+
+      <!-- Page Header -->
+      <div class="ds-page-header">
+        <div class="ds-page-title">⚙️ إدارة مصادر البيانات</div>
+        <div class="ds-page-sub">
+          اختر المصدر الذي يخزّن عليه النظام بياناته (المستخدمون، الإعدادات، سجل البحث...).
+          يمكنك التبديل بين المصادر في أي وقت وبدون فقدان البيانات المحلية.
+        </div>
+      </div>
+
+      <!-- Active source banner -->
+      <div class="ds-active-banner" id="dsActiveBanner">
+        <div class="ds-active-icon" id="dsActiveBannerIcon">💾</div>
+        <div>
+          <div class="ds-active-label">المصدر النشط حالياً</div>
+          <div class="ds-active-name" id="dsActiveBannerName">مخزن محلي (Local Storage)</div>
+        </div>
+      </div>
+
+      <!-- Source selector cards -->
+      <div class="ds-sources-grid" id="dsSourcesGrid">
+        <!-- Injected by JS -->
+      </div>
+
+      <!-- Config panel (changes per source) -->
+      <div class="ds-config-panel" id="dsConfigPanel">
+        <div class="ds-config-panel-title" id="dsConfigPanelTitle">⚙️ إعدادات المصدر</div>
+        <div id="dsConfigBody">
+          <!-- Injected by JS based on selected source -->
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="ds-toast" id="dsToast"></div>
+
+<!-- ─── Scripts ──────────────────────────────────────────────────────────── -->
+<script src="js/config.js"></script>
+<script src="js/rbac.js"></script>
+<script src="js/datastore.js"></script>
+
+<script>
+/* ════════════════════════════════════════════════════════════════════════════
+   DataSource Settings — UI Logic
+   ════════════════════════════════════════════════════════════════════════════ */
+
+// ── Source Metadata ─────────────────────────────────────────────────────────
+// (display info separate from adapter logic — keeps UI independent)
+const SOURCE_META = {
+  'local': {
+    icon: '💾',
+    title: 'مخزن محلي',
+    desc: 'يُخزّن البيانات في متصفحك مباشرةً. يعمل دون إنترنت ودون أي إعداد. مناسب للاستخدام الفردي.',
+    badge: 'جاهز',
+    badgeClass: 'ready',
+    configComponent: renderLocalConfig,
+  },
+  'google-sheets': {
+    icon: '📊',
+    title: 'Google Sheets',
+    desc: 'يُخزّن البيانات في جدول Google Sheets عبر Google Apps Script. مناسب للفرق الصغيرة.',
+    badge: 'يحتاج إعداد',
+    badgeClass: 'config',
+    configComponent: renderGoogleSheetsConfig,
+  },
+  'staging': {
+    icon: '🧪',
+    title: 'Staging (اختبار)',
+    desc: 'يُرسل البيانات إلى سيرفر REST API مخصص لبيئة الاختبار. للمطوّرين.',
+    badge: 'يحتاج إعداد',
+    badgeClass: 'config',
+    configComponent: renderRestConfig.bind(null, 'staging'),
+  },
+  'production': {
+    icon: '🏭',
+    title: 'Production (إنتاج)',
+    desc: 'يُرسل البيانات إلى سيرفر REST API لبيئة الإنتاج الفعلية. SQL Server / أي backend.',
+    badge: 'يحتاج إعداد',
+    badgeClass: 'config',
+    configComponent: renderRestConfig.bind(null, 'production'),
+  },
+};
+
+// ── State ────────────────────────────────────────────────────────────────────
+let selectedSource = DataStore.getActiveSource(); // highlighted card (may differ from active)
+
+// ── Init ─────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  renderSourceCards();
+  renderConfigPanel(selectedSource);
+  updateActiveBanner();
+});
+
+// ── Render source cards ───────────────────────────────────────────────────────
+function renderSourceCards() {
+  const grid   = document.getElementById('dsSourcesGrid');
+  const active = DataStore.getActiveSource();
+  grid.innerHTML = '';
+
+  Object.entries(SOURCE_META).forEach(([name, meta]) => {
+    const card = document.createElement('div');
+    card.className = `ds-source-card${name === active ? ' active' : ''}`;
+    card.id        = `dsCard_${name}`;
+    card.onclick   = () => selectSource(name);
+    card.innerHTML = `
+      <div class="ds-source-icon">${meta.icon}</div>
+      <div class="ds-source-title">${meta.title}</div>
+      <div class="ds-source-desc">${meta.desc}</div>
+      <span class="ds-source-badge ${meta.badgeClass}">${meta.badge}</span>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+function updateActiveBanner() {
+  const active = DataStore.getActiveSource();
+  const meta   = SOURCE_META[active];
+  if (!meta) return;
+  document.getElementById('dsActiveBannerIcon').textContent = meta.icon;
+  document.getElementById('dsActiveBannerName').textContent = meta.title;
+}
+
+// ── Select source card (UI only — not applying yet) ──────────────────────────
+function selectSource(name) {
+  selectedSource = name;
+
+  // Update card active states
+  document.querySelectorAll('.ds-source-card').forEach(c => c.classList.remove('active'));
+  const card = document.getElementById(`dsCard_${name}`);
+  if (card) card.classList.add('active');
+
+  // Render config panel for this source
+  renderConfigPanel(name);
+}
+
+// ── Render config panel ───────────────────────────────────────────────────────
+function renderConfigPanel(sourceName) {
+  const meta = SOURCE_META[sourceName];
+  if (!meta) return;
+  document.getElementById('dsConfigPanelTitle').textContent = `${meta.icon} إعدادات: ${meta.title}`;
+  document.getElementById('dsConfigBody').innerHTML = meta.configComponent(sourceName);
+  // Attach save handler
+  const saveBtn = document.getElementById('dsSaveBtn');
+  if (saveBtn) saveBtn.onclick = () => applySource(sourceName);
+  const testBtn = document.getElementById('dsTestBtn');
+  if (testBtn) testBtn.onclick = () => testConnection(sourceName);
+}
+
+// ── Config component: Local ───────────────────────────────────────────────────
+function renderLocalConfig() {
+  const isActive = DataStore.getActiveSource() === 'local';
+  return `
+    <div class="ds-no-config">
+      <div class="ds-no-config-icon">💾</div>
+      <div class="ds-no-config-text">
+        المخزن المحلي لا يحتاج إلى أي إعداد.<br>
+        البيانات تُخزَّن في <code style="background:rgba(255,255,255,.06);padding:2px 6px;border-radius:4px;">localStorage</code> بمتصفحك.
+      </div>
+    </div>
+    <div class="ds-btn-row" style="justify-content:center;">
+      <button class="ds-btn ds-btn-test" id="dsTestBtn">🔌 اختبار الاتصال</button>
+      ${!isActive ? `<button class="ds-btn ds-btn-primary" id="dsSaveBtn">✅ تفعيل هذا المصدر</button>` : `<span style="color:#00A859;font-weight:700;font-size:13px;">✓ هذا هو المصدر النشط حالياً</span>`}
+    </div>
+    <div class="ds-test-result" id="dsTestResult"></div>
+  `;
+}
+
+// ── Config component: Google Sheets ──────────────────────────────────────────
+function renderGoogleSheetsConfig() {
+  const cfg      = DataStore.getAdapterConfig('google-sheets');
+  const isActive = DataStore.getActiveSource() === 'google-sheets';
+  return `
+    ${renderAppsScriptGuide()}
+    <div class="ds-field">
+      <label class="ds-label" for="gsScriptUrl">رابط Web App (Apps Script Deployment URL)</label>
+      <input class="ds-input" id="gsScriptUrl" type="url" dir="ltr"
+        placeholder="https://script.google.com/macros/s/XXXXX/exec"
+        value="${escHtml(cfg.scriptUrl || '')}">
+      <div class="ds-field-hint">
+        انسخ رابط النشر من: Apps Script → نشر → إدارة عمليات النشر.
+        تأكد من ضبط الوصول على "الجميع" (Everyone).
+      </div>
+    </div>
+    <div class="ds-btn-row">
+      <button class="ds-btn ds-btn-test" id="dsTestBtn">🔌 اختبار الاتصال</button>
+      <button class="ds-btn ds-btn-secondary" onclick="saveGoogleSheetsConfig()">💾 حفظ الإعدادات</button>
+      ${!isActive ? `<button class="ds-btn ds-btn-primary" id="dsSaveBtn">✅ تفعيل هذا المصدر</button>` : `<span style="color:#00A859;font-weight:700;font-size:13px;">✓ هذا هو المصدر النشط</span>`}
+    </div>
+    <div class="ds-test-result" id="dsTestResult"></div>
+  `;
+}
+
+function saveGoogleSheetsConfig() {
+  const url = document.getElementById('gsScriptUrl')?.value.trim() || '';
+  DataStore.saveAdapterConfig('google-sheets', { scriptUrl: url });
+  toast('✓ تم حفظ إعدادات Google Sheets');
+}
+
+// ── Config component: REST API (staging / production) ─────────────────────────
+function renderRestConfig(adapterName) {
+  const cfg      = DataStore.getAdapterConfig(adapterName);
+  const meta     = SOURCE_META[adapterName];
+  const isActive = DataStore.getActiveSource() === adapterName;
+  const label    = meta?.title || adapterName;
+  return `
+    <div class="ds-field">
+      <label class="ds-label" for="restApiUrl_${adapterName}">رابط API الأساسي (Base URL)</label>
+      <input class="ds-input" id="restApiUrl_${adapterName}" type="url" dir="ltr"
+        placeholder="https://api.example.com"
+        value="${escHtml(cfg.apiUrl || '')}">
+      <div class="ds-field-hint">
+        مثال: <code style="background:rgba(255,255,255,.06);padding:1px 5px;border-radius:4px;direction:ltr;">https://api.myapp.com</code>
+        — يجب أن يوفّر السيرفر endpoint على
+        <code style="background:rgba(255,255,255,.06);padding:1px 5px;border-radius:4px;direction:ltr;">/api/health</code>.
+      </div>
+    </div>
+    <div class="ds-field">
+      <label class="ds-label" for="restApiKey_${adapterName}">مفتاح API (Bearer Token) — اختياري</label>
+      <input class="ds-input" id="restApiKey_${adapterName}" type="password" dir="ltr"
+        placeholder="sk-..."
+        value="${escHtml(cfg.apiKey || '')}">
+      <div class="ds-field-hint">
+        إذا كان السيرفر يتطلب مصادقة، أدخل الـ Bearer Token هنا. يُحفظ محلياً فقط.
+      </div>
+    </div>
+    <div class="ds-field">
+      <label class="ds-label" for="restNote_${adapterName}">ملاحظة (اختياري)</label>
+      <input class="ds-input" id="restNote_${adapterName}" type="text"
+        placeholder="مثال: سيرفر Azure - SQL Server 2022"
+        value="${escHtml(cfg.note || '')}">
+    </div>
+    <div class="ds-btn-row">
+      <button class="ds-btn ds-btn-test" id="dsTestBtn">🔌 اختبار الاتصال</button>
+      <button class="ds-btn ds-btn-secondary" onclick="saveRestConfig('${adapterName}')">💾 حفظ الإعدادات</button>
+      ${!isActive ? `<button class="ds-btn ds-btn-primary" id="dsSaveBtn">✅ تفعيل هذا المصدر</button>` : `<span style="color:#00A859;font-weight:700;font-size:13px;">✓ هذا هو المصدر النشط</span>`}
+    </div>
+    <div class="ds-test-result" id="dsTestResult"></div>
+    ${renderApiContract()}
+  `;
+}
+
+function saveRestConfig(adapterName) {
+  const apiUrl = document.getElementById(`restApiUrl_${adapterName}`)?.value.trim() || '';
+  const apiKey = document.getElementById(`restApiKey_${adapterName}`)?.value.trim() || '';
+  const note   = document.getElementById(`restNote_${adapterName}`)?.value.trim() || '';
+  DataStore.saveAdapterConfig(adapterName, { apiUrl, apiKey, note });
+  toast(`✓ تم حفظ إعدادات ${SOURCE_META[adapterName]?.title || adapterName}`);
+}
+
+// ── Apply (activate) the selected source ─────────────────────────────────────
+function applySource(name) {
+  // Auto-save config before applying (if fields exist)
+  if (name === 'google-sheets') saveGoogleSheetsConfig();
+  if (name === 'staging' || name === 'production') saveRestConfig(name);
+
+  DataStore.setActiveSource(name);
+  toast(`✅ تم تفعيل: ${SOURCE_META[name]?.title || name}`);
+  setTimeout(() => {
+    renderSourceCards();
+    renderConfigPanel(name);
+    updateActiveBanner();
+  }, 400);
+}
+
+// ── Test connection ───────────────────────────────────────────────────────────
+async function testConnection(sourceName) {
+  // Save config first so the adapter uses fresh values
+  if (sourceName === 'google-sheets') saveGoogleSheetsConfig();
+  if (sourceName === 'staging' || sourceName === 'production') saveRestConfig(sourceName);
+
+  const btn = document.getElementById('dsTestBtn');
+  const box = document.getElementById('dsTestResult');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ جاري الاختبار...'; }
+  if (box) { box.style.display = 'none'; }
+
+  // Temporarily switch adapter to test (without changing the stored active source)
+  const adapter = window.DS_ADAPTERS?.[sourceName];
+  const result  = adapter ? await adapter.testConnection() : { ok: false, message: 'Adapter not found' };
+
+  if (btn) { btn.disabled = false; btn.innerHTML = '🔌 اختبار الاتصال'; }
+  if (box) {
+    box.style.display = 'block';
+    box.className     = `ds-test-result ${result.ok ? 'ok' : 'err'}`;
+    box.textContent   = result.ok ? `✓ ${result.message}` : `✗ ${result.message}`;
+  }
+}
+
+// ── Apps Script Guide (collapsible) ──────────────────────────────────────────
+function renderAppsScriptGuide() {
+  return `
+    <div class="ds-template-toggle" onclick="toggleTemplate(this)" style="margin-bottom:16px;">
+      <span>📋</span>
+      <span>خطوات إعداد Google Apps Script</span>
+      <span class="ds-template-chevron">›</span>
+    </div>
+    <div class="ds-template-body" id="dsTemplateBody">
+      <ol class="ds-steps">
+        <li><span class="ds-step-num">1</span><span>افتح <a href="https://sheets.google.com" target="_blank" style="color:#60a5fa;">Google Sheets</a> وأنشئ جدول جديد باسم <b>LinkedOFF DataStore</b>.</span></li>
+        <li><span class="ds-step-num">2</span><span>من القائمة العلوية: <b>الإضافات ← Apps Script</b>. احذف الكود الموجود والصق الكود التالي كاملاً.</span></li>
+        <li><span class="ds-step-num">3</span><span>اضغط <b>نشر ← نشر جديد</b>. النوع: <b>تطبيق ويب</b>. المنفّذ: <b>أنا</b>. الوصول: <b>الجميع</b>. ثم انسخ الرابط.</span></li>
+        <li><span class="ds-step-num">4</span><span>الصق الرابط في الحقل أدناه واضغط <b>اختبار الاتصال</b>.</span></li>
+        <li><span class="ds-step-num">5</span><span>⚠️ عند كل تعديل في الكود أعد النشر كـ <b>نسخة جديدة</b> واستبدل الرابط.</span></li>
+      </ol>
+      <div style="position:relative;">
+        <div class="ds-code-block" id="dsAppsScriptCode">${escHtml(APPS_SCRIPT_TEMPLATE)}</div>
+        <button class="ds-copy-btn" onclick="copyTemplate()">📋 نسخ</button>
+      </div>
+    </div>
+  `;
+}
+
+function toggleTemplate(el) {
+  el.classList.toggle('open');
+  const body = document.getElementById('dsTemplateBody');
+  if (body) body.classList.toggle('open');
+}
+
+function copyTemplate() {
+  navigator.clipboard.writeText(APPS_SCRIPT_TEMPLATE).then(() => toast('✓ تم نسخ كود Apps Script'));
+}
+
+// ── REST API contract reference (collapsible) ─────────────────────────────────
+function renderApiContract() {
+  return `
+    <div class="ds-template-toggle" onclick="this.classList.toggle('open');this.nextElementSibling.classList.toggle('open')" style="margin-top:16px;">
+      <span>📡</span>
+      <span>عقد REST API المطلوب تطبيقه على السيرفر</span>
+      <span class="ds-template-chevron">›</span>
+    </div>
+    <div class="ds-template-body">
+      <div class="ds-code-block">${escHtml(REST_API_CONTRACT)}</div>
+    </div>
+  `;
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function escHtml(str) {
+  return String(str)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+let _toastTimer;
+function toast(msg, ms = 2800) {
+  const el = document.getElementById('dsToast');
+  if (!el) return;
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => el.classList.remove('show'), ms);
+}
+
+// ── Google Apps Script Template ───────────────────────────────────────────────
+const APPS_SCRIPT_TEMPLATE = `/**
+ * LinkedOFF KSA — Google Apps Script DataStore
+ * ─────────────────────────────────────────────
+ * Deploy as Web App:
+ *   Execute as: Me
+ *   Access:     Anyone
+ *
+ * Sheets created automatically:
+ *   users   — user registry
+ *   configs — JSON config blobs (rbac, group, etc.)
+ */
+
+function doGet(e) {
+  try {
+    const action = e.parameter.action;
+    switch (action) {
+      case 'ping':
+        return json({ ok: true, sheetName: SpreadsheetApp.getActiveSpreadsheet().getName() });
+      case 'getUsers':
+        return json({ users: sheetToObjects('users') });
+      case 'getRbacConfig':
+        return json({ config: getConfig('rbac') });
+      case 'getGroupConfig':
+        return json({ config: getConfig('group') });
+      default:
+        return json({ ok: false, error: 'Unknown action: ' + action });
+    }
+  } catch (err) {
+    return json({ ok: false, error: err.message });
+  }
+}
+
+function doPost(e) {
+  try {
+    const body   = JSON.parse(e.postData.contents);
+    const action = body.action;
+    switch (action) {
+      case 'saveUser':
+        return json(upsertRow('users', body.user, 'email'));
+      case 'deleteUser':
+        return json(deleteRow('users', 'email', body.email));
+      case 'saveRbacConfig':
+        return json(saveConfig('rbac', body.config));
+      case 'saveGroupConfig':
+        return json(saveConfig('group', body.config));
+      default:
+        return json({ ok: false, error: 'Unknown action: ' + action });
+    }
+  } catch (err) {
+    return json({ ok: false, error: err.message });
+  }
+}
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
+function json(data) {
+  return ContentService
+    .createTextOutput(JSON.stringify(data))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function getSheet(name) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  return ss.getSheetByName(name) || ss.insertSheet(name);
+}
+
+function sheetToObjects(sheetName) {
+  const sheet = getSheet(sheetName);
+  const rows  = sheet.getDataRange().getValues();
+  if (rows.length < 2) return [];
+  const headers = rows[0];
+  return rows.slice(1).map(row => {
+    const obj = {};
+    headers.forEach((h, i) => { obj[h] = row[i]; });
+    return obj;
+  });
+}
+
+function upsertRow(sheetName, obj, keyField) {
+  const sheet   = getSheet(sheetName);
+  const rows    = sheet.getDataRange().getValues();
+  let   headers = rows.length > 0 ? rows[0] : Object.keys(obj);
+
+  if (rows.length === 0) {
+    sheet.appendRow(headers);
+  } else {
+    // Add any missing columns
+    Object.keys(obj).forEach(k => {
+      if (!headers.includes(k)) { headers.push(k); sheet.getRange(1, headers.length).setValue(k); }
+    });
+    const keyIdx = headers.indexOf(keyField);
+    if (keyIdx >= 0) {
+      for (let i = 1; i < rows.length; i++) {
+        if (rows[i][keyIdx] === obj[keyField]) {
+          const updated = headers.map(h => obj[h] !== undefined ? obj[h] : rows[i][headers.indexOf(h)]);
+          sheet.getRange(i + 1, 1, 1, updated.length).setValues([updated]);
+          return { ok: true };
+        }
+      }
+    }
+  }
+  sheet.appendRow(headers.map(h => obj[h] !== undefined ? obj[h] : ''));
+  return { ok: true };
+}
+
+function deleteRow(sheetName, keyField, keyValue) {
+  const sheet  = getSheet(sheetName);
+  const rows   = sheet.getDataRange().getValues();
+  if (rows.length < 2) return { ok: true };
+  const keyIdx = rows[0].indexOf(keyField);
+  for (let i = rows.length - 1; i >= 1; i--) {
+    if (rows[i][keyIdx] === keyValue) { sheet.deleteRow(i + 1); return { ok: true }; }
+  }
+  return { ok: false, error: 'Row not found' };
+}
+
+function getConfig(name) {
+  const sheet = getSheet('configs');
+  const rows  = sheet.getDataRange().getValues();
+  for (let i = 1; i < rows.length; i++) {
+    if (rows[i][0] === name) {
+      try { return JSON.parse(rows[i][1]); } catch { return null; }
+    }
+  }
+  return null;
+}
+
+function saveConfig(name, value) {
+  const sheet = getSheet('configs');
+  const rows  = sheet.getDataRange().getValues();
+  const json  = JSON.stringify(value);
+  if (rows.length === 0) { sheet.appendRow(['name', 'value']); sheet.appendRow([name, json]); return { ok: true }; }
+  for (let i = 1; i < rows.length; i++) {
+    if (rows[i][0] === name) { sheet.getRange(i + 1, 2).setValue(json); return { ok: true }; }
+  }
+  sheet.appendRow([name, json]);
+  return { ok: true };
+}`;
+
+// ── REST API Contract Reference ───────────────────────────────────────────────
+const REST_API_CONTRACT = `# LinkedOFF KSA — REST API Contract
+# ────────────────────────────────────────────────────────────────────
+# Implement these endpoints on your backend (Node.js, .NET, Python, etc.)
+# All responses: Content-Type: application/json
+# Auth header (if apiKey set): Authorization: Bearer <token>
+
+GET  /api/health
+  → 200 { ok: true, status: "ok", version: "..." }
+
+GET  /api/users
+  → 200 { users: [{ id, email, name, role, addedAt, source }, ...] }
+
+POST /api/users              body: { email, name, role, addedAt?, source? }
+  → 200 { ok: true }
+
+DELETE /api/users/:email
+  → 200 { ok: true }
+
+GET  /api/config/rbac
+  → 200 { config: { pageAccess: { "page.html": "admin" | "user" } } }
+
+POST /api/config/rbac        body: { pageAccess: { ... } }
+  → 200 { ok: true }
+
+GET  /api/config/group
+  → 200 { config: { visiblePages: [...], hideForRoles: [...] } }
+
+POST /api/config/group       body: { visiblePages: [...], hideForRoles: [...] }
+  → 200 { ok: true }
+
+# ────────────────────────────────────────────────────────────────────
+# Error response (any endpoint):
+  → 4xx/5xx { ok: false, error: "رسالة الخطأ" }`;
+
+</script>
+<script src="js/ui.js"></script>
+</body>
+</html>
