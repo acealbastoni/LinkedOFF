@@ -659,16 +659,46 @@ async function searchAllPages(keyword, filters = {}) {
 
 // ── Search results page navigation ────────────────────────────────────
 
-/** Render a page slice from _searchAllResults */
-function renderSearchResultPage_(pg) {
+/** Render a page slice from _searchAllResults.
+ *  fullRedraw=false (default during progressive search): only appends new cards,
+ *  never touches existing ones — so expanded "عرض المزيد" state is preserved.
+ *  fullRedraw=true  (page navigation): full replace, restores expanded state. */
+function renderSearchResultPage_(pg, fullRedraw) {
     _searchCurrentPage = pg;
     const start     = (pg - 1) * SEARCH_PAGE_SIZE;
     const slice     = _searchAllResults.slice(start, start + SEARCH_PAGE_SIZE);
     const container = document.getElementById('jobsContainer');
-    if (container) {
-        container.innerHTML = slice.length
-            ? slice.map(j => createJobCard(j, false)).join('')
-            : '';
+    if (!container) return;
+
+    if (!slice.length) { container.innerHTML = ''; return; }
+
+    if (fullRedraw) {
+        // Save which cards were expanded before destroying the DOM
+        const expandedIds = new Set(
+            [...container.querySelectorAll('.job-description.expanded')]
+                .map(d => d.closest('.job-card')?.getAttribute('data-job-id'))
+                .filter(Boolean)
+        );
+        container.innerHTML = slice.map(j => createJobCard(j, false)).join('');
+        // Restore expanded state
+        expandedIds.forEach(id => {
+            const desc = container.querySelector(`.job-card[data-job-id="${id}"] .job-description`);
+            const btn  = container.querySelector(`.job-card[data-job-id="${id}"] .toggle-description-btn`);
+            if (desc) { desc.classList.add('expanded'); if (btn) btn.textContent = '⬆️ إخفاء التفاصيل'; }
+        });
+    } else {
+        // Smart append: only insert cards not yet in the DOM (preserves expanded state)
+        slice.forEach(j => {
+            if (!container.querySelector(`.job-card[data-job-id="${j.dkey}"]`)) {
+                container.insertAdjacentHTML('beforeend', createJobCard(j, false));
+            }
+        });
+        // Remove stale cards that don't belong to this page slice
+        container.querySelectorAll('.job-card').forEach(card => {
+            if (!slice.some(j => String(j.dkey) === card.getAttribute('data-job-id'))) {
+                card.remove();
+            }
+        });
     }
 }
 
@@ -700,7 +730,7 @@ function renderSearchResultPagination_() {
 function changeSearchPage_(pg) {
     const maxPg = Math.max(1, Math.ceil(_searchAllResults.length / SEARCH_PAGE_SIZE));
     if (pg < 1 || pg > maxPg) return;
-    renderSearchResultPage_(pg);
+    renderSearchResultPage_(pg, true); // full redraw on page navigation
     renderSearchResultPagination_();
     const container = document.getElementById('jobsContainer');
     if (container) container.scrollIntoView({ behavior: 'smooth', block: 'start' });
