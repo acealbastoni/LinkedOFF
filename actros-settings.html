@@ -46,12 +46,17 @@
       padding: 14px 20px;
       border-bottom: 1px solid rgba(255,255,255,.07);
       font-size: 14px; font-weight: 700;
+      color: var(--text, #f0f0f0);
+    }
+    .as-card-body code {
+      background: rgba(255,255,255,.08); color: #34d399;
+      padding: 2px 7px; border-radius: 6px; font-size: 11px; font-family: monospace;
     }
     .as-head-icon {
       width: 34px; height: 34px; border-radius: 10px; flex-shrink: 0;
       display: flex; align-items: center; justify-content: center; font-size: 16px;
     }
-    .as-card-body { padding: 20px; }
+    .as-card-body { padding: 20px; color: var(--text, #f0f0f0); }
 
     /* Form grid */
     .as-grid  { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
@@ -61,7 +66,7 @@
 
     .as-field { display: flex; flex-direction: column; gap: 6px; }
     .as-field label {
-      font-size: 12px; font-weight: 700; color: var(--muted, #888);
+      font-size: 12px; font-weight: 700; color: var(--muted, rgba(255,255,255,.65));
       display: flex; align-items: center; gap: 4px;
     }
     .as-field label .req { color: #ef4444; }
@@ -75,7 +80,7 @@
     }
     .as-field input:focus, .as-field select:focus { border-color: var(--primary, #00A859); }
     .as-field input::placeholder { color: rgba(255,255,255,.2); }
-    .as-field .as-hint { font-size: 11px; color: var(--muted, #888); line-height: 1.5; }
+    .as-hint { font-size: 11px; color: var(--muted, rgba(255,255,255,.6)); line-height: 1.5; }
 
     /* Input group with unit */
     .as-ig {
@@ -127,7 +132,7 @@
       display: flex; align-items: center; justify-content: center; gap: 7px;
       width: 100%; padding: 10px 16px; border-radius: 11px; margin-top: 10px;
       border: 1px dashed rgba(255,255,255,.15);
-      background: transparent; color: var(--muted, #888);
+      background: transparent; color: var(--muted, rgba(255,255,255,.6));
       font-family: 'Cairo', sans-serif; font-size: 13px; font-weight: 700;
       cursor: pointer; transition: all .2s;
     }
@@ -174,9 +179,9 @@
       width: 18px; height: 18px; cursor: pointer;
       accent-color: var(--primary, #00A859); flex-shrink: 0;
     }
-    .as-perm-name  { font-size: 13px; font-weight: 700; }
-    .as-perm-email { font-size: 11px; color: var(--muted, #888); }
-    .as-perm-empty { color: var(--muted,#888); font-size: 13px; text-align:center; padding:16px; }
+    .as-perm-name  { font-size: 13px; font-weight: 700; color: var(--text, #f0f0f0); }
+    .as-perm-email { font-size: 11px; color: var(--muted, rgba(255,255,255,.6)); }
+    .as-perm-empty { color: var(--muted, rgba(255,255,255,.5)); font-size: 13px; text-align:center; padding:16px; }
 
     /* Responsive */
     @media (max-width: 640px) {
@@ -396,6 +401,143 @@
         </div>
       </div>
 
+      <!-- 8. Google Sheets Sync -->
+      <div class="as-card" id="syncCard">
+        <div class="as-card-head">
+          <div class="as-head-icon" style="background:rgba(52,211,153,.12);color:#34d399;">📊</div>
+          <div>مزامنة Google Sheets</div>
+        </div>
+        <div class="as-card-body">
+          <div class="as-hint" style="margin-bottom:18px;">
+            اربط الصفحة بـ Google Sheets لحفظ بيانات الشهر تلقائياً.
+            البيانات تُحفظ أولاً في localStorage، ثم تُرسل للشيت بضغطة زر.
+          </div>
+
+          <!-- Sync URL -->
+          <div class="as-field as-s2" style="margin-bottom:14px;">
+            <label>🔗 رابط الـ Apps Script (Deployment URL)</label>
+            <div style="display:flex;gap:8px;align-items:stretch;">
+              <input type="url" id="syncUrl" placeholder="https://script.google.com/macros/s/..." dir="ltr" style="flex:1;">
+              <button onclick="testSyncConnection()" id="syncTestBtn"
+                style="padding:0 16px;border-radius:11px;border:1px solid rgba(52,211,153,.3);
+                       background:rgba(52,211,153,.08);color:#34d399;font-family:'Cairo',sans-serif;
+                       font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;transition:all .2s;">
+                🔗 اختبار
+              </button>
+            </div>
+            <div class="as-hint">
+              ⓘ افتح <strong>script.google.com</strong> ← مشروع جديد ← الصق كود <code>actros-sync.gs</code>
+              ← Deploy ← Web App ← Execute as: Me ← Anyone ← انسخ الـ URL هنا
+            </div>
+          </div>
+          <div id="syncTestResult" style="font-size:12px;font-weight:700;margin-bottom:14px;display:none;"></div>
+
+          <!-- Reference box -->
+          <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);
+                      border-radius:12px;padding:14px 16px;margin-bottom:4px;">
+            <div style="font-size:11px;font-weight:800;letter-spacing:.5px;color:rgba(255,255,255,.4);
+                        text-transform:uppercase;margin-bottom:12px;">📌 مراجع السيرفيس</div>
+            <div style="display:flex;flex-direction:column;gap:9px;">
+
+              <!-- Source file -->
+              <div style="display:flex;align-items:center;gap:10px;">
+                <span style="font-size:18px;">📄</span>
+                <div>
+                  <div style="font-size:12px;color:rgba(255,255,255,.45);margin-bottom:1px;">ملف السورس كود</div>
+                  <code style="font-size:13px;color:#34d399;background:rgba(52,211,153,.08);
+                                padding:2px 8px;border-radius:6px;letter-spacing:.3px;">actros-sync.gs</code>
+                </div>
+              </div>
+
+              <!-- Sheet ID -->
+              <div style="display:flex;align-items:center;gap:10px;">
+                <span style="font-size:18px;">🗂️</span>
+                <div>
+                  <div style="font-size:12px;color:rgba(255,255,255,.45);margin-bottom:1px;">Sheet ID</div>
+                  <a href="https://docs.google.com/spreadsheets/d/12DOdU_mhknF4v4c6I5Q0w779zrCbiuLwzb_B3EaSFOg"
+                     target="_blank" rel="noopener"
+                     style="font-size:12px;color:#60a5fa;font-family:monospace;word-break:break-all;
+                            text-decoration:none;letter-spacing:.2px;"
+                     title="افتح الـ Spreadsheet">
+                    12DOdU_mhknF4v4c6I5Q0w779zrCbiuLwzb_B3EaSFOg ↗
+                  </a>
+                </div>
+              </div>
+
+              <!-- Apps Script -->
+              <div style="display:flex;align-items:center;gap:10px;">
+                <span style="font-size:18px;">⚙️</span>
+                <div>
+                  <div style="font-size:12px;color:rgba(255,255,255,.45);margin-bottom:1px;">Google Apps Script</div>
+                  <a href="https://script.google.com/home/projects/1WZ-oNIsG8HTxbxkkQPQQzNWGBUn1K9Umfasm2ZmUXh-xJlOwlDR8Kkch/edit" target="_blank" rel="noopener"
+                     style="font-size:13px;color:#60a5fa;text-decoration:none;">
+                    script.google.com ↗
+                  </a>
+                </div>
+              </div>
+
+              <!-- Sheets -->
+              <div style="display:flex;align-items:center;gap:10px;">
+                <span style="font-size:18px;">📊</span>
+                <div>
+                  <div style="font-size:12px;color:rgba(255,255,255,.45);margin-bottom:1px;">الجداول المستخدمة في الشيت</div>
+                  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:3px;">
+                    <code style="font-size:12px;color:#fbbf24;background:rgba(251,191,36,.08);
+                                  padding:2px 7px;border-radius:5px;">actros_entries</code>
+                    <code style="font-size:12px;color:#fbbf24;background:rgba(251,191,36,.08);
+                                  padding:2px 7px;border-radius:5px;">user_settings</code>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Sync Mode + Permission (admin only) -->
+          <div id="syncPermCard" style="display:none;">
+            <div style="border-top:1px solid rgba(255,255,255,.07);margin:16px 0;"></div>
+
+            <!-- وضع المزامنة -->
+            <div style="font-size:13px;font-weight:700;margin-bottom:10px;color:var(--text,#f0f0f0);">⚙️ وضع المزامنة</div>
+            <div class="as-hint" style="margin-bottom:14px;">يطبق على النظام ككل — يتحكم فيه المدير فقط.</div>
+            <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:20px;">
+              <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
+                <input type="radio" name="syncMode" value="manual" style="margin-top:4px;accent-color:#34d399;">
+                <div>
+                  <div style="font-weight:700;font-size:13px;color:var(--text,#f0f0f0);">🔄 يدوي</div>
+                  <div class="as-hint">زر مزامنة ظاهر — المستخدم يضغطه متى أراد</div>
+                </div>
+              </label>
+              <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
+                <input type="radio" name="syncMode" value="auto" style="margin-top:4px;accent-color:#34d399;">
+                <div>
+                  <div style="font-weight:700;font-size:13px;color:var(--text,#f0f0f0);">⚡ تلقائي</div>
+                  <div class="as-hint">كل إضافة أو تعديل أو حذف يُزامن فوراً — بدون زر</div>
+                </div>
+              </label>
+              <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
+                <input type="radio" name="syncMode" value="off" style="margin-top:4px;accent-color:#34d399;">
+                <div>
+                  <div style="font-weight:700;font-size:13px;color:var(--text,#f0f0f0);">🚫 معطل</div>
+                  <div class="as-hint">لا مزامنة إطلاقاً — البيانات محلية فقط</div>
+                </div>
+              </label>
+            </div>
+
+            <div style="border-top:1px solid rgba(255,255,255,.07);margin:16px 0;"></div>
+
+            <!-- صلاحية المزامنة -->
+            <div style="font-size:13px;font-weight:700;margin-bottom:10px;color:var(--text,#f0f0f0);">🔐 صلاحية المزامنة</div>
+            <div class="as-hint" style="margin-bottom:14px;">
+              حدد المستخدمين الذين يملكون صلاحية المزامنة (يدوي أو تلقائي). المدراء يملكونها دائماً.
+            </div>
+            <div class="as-perm-list" id="syncPermList">
+              <div class="as-perm-empty">⏳ جارٍ التحميل...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Save -->
       <button class="as-save-btn" onclick="saveSettings()">💾 حفظ الإعدادات</button>
 
@@ -430,6 +572,9 @@ const DEFAULT_SETTINGS = {
   helperSalary:   0,
   otherExpenses:  [],        // [{ id, name, amount, period: 'monthly'|'daily' }]
   ownerNumbers:   ['+966566114725'],
+  syncUrl:        '',        // Google Apps Script Deployment URL
+  syncAllowList:  [],        // emails allowed to sync (besides admins)
+  syncMode:       'manual',  // 'manual' | 'auto' | 'off'
 };
 
 // ── Load / Save ───────────────────────────────────────────────────────────────
@@ -438,9 +583,11 @@ function loadSettings() {
   catch { return { ...DEFAULT_SETTINGS }; }
 }
 
-function saveSettings() {
-  localStorage.setItem(SETTINGS_KEY, JSON.stringify(gatherForm()));
+async function saveSettings() {
+  const s = gatherForm();
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
   asToast('✓ تم حفظ الإعدادات بنجاح');
+  await pushSettingsToCloud(s); // sync to cloud silently after local save
 }
 
 // ── Gather form values ────────────────────────────────────────────────────────
@@ -459,6 +606,9 @@ function gatherForm() {
     otherExpenses:  gatherOtherExpenses(),
     ownerNumbers:   gatherOwnerNumbers(),
     deleteAllowList: gatherDeleteAllowList(),
+    syncUrl:         val('syncUrl'),
+    syncAllowList:   gatherSyncAllowList(),
+    syncMode:        document.querySelector('input[name="syncMode"]:checked')?.value || 'manual',
   };
 }
 
@@ -483,6 +633,10 @@ function populateForm(s) {
 
   document.getElementById('ownerNumbersList').innerHTML = '';
   (s.ownerNumbers?.length ? s.ownerNumbers : ['+966566114725']).forEach(n => addOwnerNumber(n));
+
+  setV('syncUrl', s.syncUrl || '');
+  const modeEl = document.querySelector(`input[name="syncMode"][value="${s.syncMode || 'manual'}"]`);
+  if (modeEl) modeEl.checked = true;
 }
 
 function setV(id, v) { const el = document.getElementById(id); if (el) el.value = v ?? ''; }
@@ -597,8 +751,107 @@ function gatherDeleteAllowList(){
   return Array.from(document.querySelectorAll('.del-perm-cb:checked')).map(cb=>cb.value);
 }
 
+// ── Sync Permission ───────────────────────────────────────────────────────────
+function renderSyncPermCard(){
+  const card=document.getElementById('syncPermCard');
+  if(!card) return;
+  if(!isCurrentUserAdmin()){card.style.display='none';return;}
+  card.style.display='';
+  const adminEmails=(window.APP_CONFIG&&window.APP_CONFIG.adminEmails)||[];
+  const s=loadSettings();
+  const allowList=s.syncAllowList||[];
+  const users=getRegisteredUsers().filter(u=>u&&u.email&&u.role!=='admin'&&!adminEmails.includes(u.email));
+  const list=document.getElementById('syncPermList');
+  if(!users.length){
+    list.innerHTML='<div class="as-perm-empty">لا يوجد مستخدمون مسجلون بعد.</div>';
+    return;
+  }
+  list.innerHTML=users.map(u=>`
+    <label class="as-perm-item">
+      <input type="checkbox" class="sync-perm-cb" value="${escHtml(u.email)}"${allowList.includes(u.email)?' checked':''}>
+      <div>
+        <div class="as-perm-name">${escHtml(u.name||u.email)}</div>
+        <div class="as-perm-email">${escHtml(u.email)}</div>
+      </div>
+    </label>`).join('');
+}
+
+function gatherSyncAllowList(){
+  return Array.from(document.querySelectorAll('.sync-perm-cb:checked')).map(cb=>cb.value);
+}
+
+// ── Cloud settings: push / pull ───────────────────────────────────────────────
+function _cloudUser() {
+  try { return JSON.parse(localStorage.getItem('linkedoff_user') || 'null'); } catch { return null; }
+}
+
+async function pushSettingsToCloud(s) {
+  try {
+    if (!s.syncUrl) return;
+    const user = _cloudUser();
+    if (!user?.email) return;
+    await fetch(s.syncUrl, {
+      method:  'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'saveSettings', email: user.email, settingsJson: JSON.stringify(s) }),
+    });
+  } catch { /* silent — don't block save */ }
+}
+
+async function pullSettingsFromCloud() {
+  try {
+    const s = loadSettings();
+    if (!s.syncUrl) return null;
+    const user = _cloudUser();
+    if (!user?.email) return null;
+    const resp = await fetch(s.syncUrl, {
+      method:  'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'getSettings', email: user.email }),
+    });
+    const data = await resp.json();
+    if (data.ok && data.settings) {
+      // syncUrl stays from local (bootstrap) — all other settings from cloud
+      const merged = { ...data.settings, syncUrl: s.syncUrl };
+      localStorage.setItem(SETTINGS_KEY, JSON.stringify(merged));
+      return merged;
+    }
+  } catch { /* silent */ }
+  return null;
+}
+
+// ── Test Sync Connection ───────────────────────────────────────────────────────
+async function testSyncConnection(){
+  const url=val('syncUrl');
+  if(!url){asToast('⚠️ أدخل الـ URL أولاً');return;}
+  const btn=document.getElementById('syncTestBtn');
+  const res=document.getElementById('syncTestResult');
+  btn.textContent='⏳ جارٍ...'; btn.disabled=true;
+  res.style.display=''; res.style.color='var(--muted,#888)'; res.textContent='جارٍ اختبار الاتصال...';
+  try{
+    const r=await fetch(url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:'ping'})});
+    const d=await r.json();
+    if(d.ok){
+      res.style.color='#34d399'; res.textContent='✅ الاتصال ناجح — '+d.message;
+      asToast('✅ الاتصال بالشيت ناجح');
+    } else {
+      res.style.color='#ef4444'; res.textContent='❌ الخادم أعاد خطأ: '+(d.error||'unknown');
+    }
+  }catch(e){
+    res.style.color='#ef4444'; res.textContent='❌ فشل الاتصال: '+e.message;
+  }finally{
+    btn.textContent='🔗 اختبار'; btn.disabled=false;
+  }
+}
+
 // ── Init ──────────────────────────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', () => { populateForm(loadSettings()); renderDeletePermCard(); });
+document.addEventListener('DOMContentLoaded', async () => {
+  populateForm(loadSettings());          // show local settings immediately (no flicker)
+  renderDeletePermCard();
+  renderSyncPermCard();
+  const cloud = await pullSettingsFromCloud();   // pull from cloud
+  if (cloud) { populateForm(cloud); renderDeletePermCard(); renderSyncPermCard(); }
+});
 </script>
 <script src="js/ui.js"></script>
 </body>

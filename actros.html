@@ -93,7 +93,7 @@
     }
     .ac-table-head {
       display: grid;
-      grid-template-columns: 80px 1fr 60px 90px 62px 80px 1fr auto;
+      grid-template-columns: 34px 72px 1fr 100px 1fr auto;
       padding: 10px 16px;
       background: rgba(255,255,255,.03);
       border-bottom: 1px solid rgba(255,255,255,.07);
@@ -102,7 +102,7 @@
     }
     .ac-row {
       display: grid;
-      grid-template-columns: 80px 1fr 60px 90px 62px 80px 1fr auto;
+      grid-template-columns: 34px 72px 1fr 100px 1fr auto;
       padding: 12px 16px; align-items: center; gap: 10px;
       border-bottom: 1px solid rgba(255,255,255,.04);
       font-size: 13px; transition: background .15s;
@@ -182,6 +182,21 @@
     }
     .ac-gen-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(10,102,194,.45); }
 
+    /* ── Sync button ──────────────────────────────────── */
+    .ac-sync-btn {
+      width: 100%; padding: 11px 18px; border-radius: 12px; border: none;
+      background: rgba(52,211,153,.1); border: 1px solid rgba(52,211,153,.3);
+      color: #34d399; font-family: 'Cairo', sans-serif;
+      font-size: 13px; font-weight: 700; cursor: pointer;
+      transition: all .2s; display: flex; align-items: center; justify-content: center; gap: 7px;
+    }
+    .ac-sync-btn:hover { background: rgba(52,211,153,.18); border-color: rgba(52,211,153,.5); }
+    .ac-sync-btn:disabled { opacity: .5; cursor: not-allowed; }
+    .ac-sync-badge {
+      font-size: 11px; color: var(--muted, #888); text-align: center;
+      margin-top: 6px; min-height: 16px;
+    }
+
     /* ── Entry Form Modal ─────────────────────────────── */
     .ac-modal-overlay {
       display: none; position: fixed; inset: 0;
@@ -195,10 +210,74 @@
       border-radius: 20px; padding: 28px 24px;
       width: min(98vw, 680px); max-height: 92vh; overflow-y: auto;
     }
+    /* Modal header row (title + X button) */
+    .ac-modal-header {
+      display: flex; align-items: center; gap: 8px; margin-bottom: 20px;
+    }
     .ac-modal-title {
-      font-size: 16px; font-weight: 900; margin-bottom: 22px;
+      font-size: 16px; font-weight: 900; flex: 1;
       display: flex; align-items: center; gap: 8px;
     }
+    .ac-modal-close {
+      width: 30px; height: 30px; border-radius: 8px; border: none;
+      background: rgba(255,255,255,.07); color: var(--muted, #888);
+      font-size: 15px; cursor: pointer; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      transition: all .2s; font-family: monospace;
+    }
+    .ac-modal-close:hover { background: rgba(239,68,68,.15); color: #ef4444; }
+
+    /* Type selector tabs */
+    .ac-type-tabs {
+      display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 18px;
+      padding: 10px; border-radius: 14px;
+      background: rgba(255,255,255,.02);
+      border: 1px solid rgba(255,255,255,.07);
+    }
+    .ac-type-tab {
+      flex: 1; min-width: 80px; padding: 8px 6px;
+      border-radius: 10px; border: 1px solid rgba(255,255,255,.1);
+      background: transparent; color: var(--muted, #888);
+      font-family: 'Cairo', sans-serif; font-size: 12px; font-weight: 700;
+      cursor: pointer; transition: all .2s;
+      display: flex; align-items: center; justify-content: center; gap: 4px;
+      white-space: nowrap;
+    }
+    .ac-type-tab:hover { background: rgba(255,255,255,.06); color: var(--text,#f0f0f0); }
+    .ac-type-tab.active { background: rgba(0,168,89,.12); border-color: rgba(0,168,89,.4); color: #00A859; }
+    .ac-type-tab[data-type="breakdown"].active  { background:rgba(239,68,68,.1);  border-color:rgba(239,68,68,.4);  color:#ef4444; }
+    .ac-type-tab[data-type="diesel"].active     { background:rgba(251,191,36,.1); border-color:rgba(251,191,36,.4); color:#fbbf24; }
+    .ac-type-tab[data-type="driver_expense"].active { background:rgba(251,146,60,.1); border-color:rgba(251,146,60,.4); color:#fb923c; }
+    .ac-type-tab[data-type="other"].active      { background:rgba(148,163,184,.1); border-color:rgba(148,163,184,.3); color:#94a3b8; }
+
+    /* Direction toggle (for 'other' type) */
+    .ac-dir-toggle { display: flex; gap: 6px; }
+    .ac-dir-btn {
+      flex: 1; padding: 9px 6px; border-radius: 9px;
+      border: 1px solid rgba(255,255,255,.1);
+      background: transparent; color: var(--muted, #888);
+      font-family: 'Cairo', sans-serif; font-size: 12px; font-weight: 700;
+      cursor: pointer; transition: all .2s;
+    }
+    .ac-dir-btn.active[data-dir="expense"] { background:rgba(239,68,68,.1); border-color:rgba(239,68,68,.4); color:#ef4444; }
+    .ac-dir-btn.active[data-dir="income"]  { background:rgba(0,168,89,.1);  border-color:rgba(0,168,89,.4);  color:#00A859; }
+
+    /* Entry type chip on table rows */
+    .ac-type-chip {
+      width: 28px; height: 28px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; flex-shrink: 0;
+    }
+    .tc-trip     { background:rgba(0,168,89,.12); }
+    .tc-breakdown{ background:rgba(239,68,68,.1); }
+    .tc-diesel   { background:rgba(251,191,36,.1);}
+    .tc-driver   { background:rgba(251,146,60,.1);}
+    .tc-other-in { background:rgba(0,168,89,.12); }
+    .tc-other-ex { background:rgba(239,68,68,.1); }
+    .tc-legacy   { background:rgba(148,163,184,.08); }
+
+    /* Amount column */
+    .ac-row-amt { font-size: 12px; }
 
     /* Form grid */
     .ac-fg  { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
@@ -336,8 +415,9 @@
       .ac-stats  { grid-template-columns: 1fr 1fr; }
       .ac-table-head  { display: none; }
       .ac-row    { grid-template-columns: 1fr auto; }
-      .ac-row-date, .ac-row-desc, .ac-row-rev, .ac-row-diesel, .ac-row-cost, .ac-row-notes { grid-column: 1; }
-      .ac-row-actions { grid-column: 2; grid-row: 1 / 4; align-self: center; }
+      .ac-row > *:first-child { display: none; }
+      .ac-row-date, .ac-row-desc, .ac-row-amt, .ac-row-notes { grid-column: 1; }
+      .ac-row-actions { grid-column: 2; grid-row: 1 / 5; align-self: center; }
     }
     @media (max-width: 480px) {
       .ac-stats  { grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -559,7 +639,7 @@
 
         <!-- LEFT: entries list -->
         <div>
-          <button class="ac-add-btn" onclick="openEntryModal()">＋ إضافة يوم عمل</button>
+          <button class="ac-add-btn" onclick="openEntryModal()">＋ تسجيل معاملة جديدة</button>
           <div class="ac-day-nav" id="dayNav">
             <button class="ac-day-nav-btn" id="dayNavPrev" onclick="shiftDay(-1)">◄ السابق</button>
             <button class="ac-day-nav-all" id="dayNavAll" onclick="clearDayFilter()">📅 كل الشهر</button>
@@ -568,9 +648,8 @@
           </div>
           <div class="ac-table-wrap">
             <div class="ac-table-head">
-              <div>التاريخ</div><div>العميل / الوصف</div>
-              <div style="text-align:center">نقلات</div>
-              <div>الإيراد</div><div>ديزل (ل)</div><div>أعطال</div><div>ملاحظات</div><div></div>
+              <div></div><div>التاريخ</div><div>الوصف / التفاصيل</div>
+              <div>المبلغ</div><div>ملاحظات</div><div></div>
             </div>
             <div id="acEntriesList">
               <div class="ac-empty">
@@ -607,6 +686,15 @@
               <button class="ac-gen-btn" onclick="generateReport()">
                 📄 Generate — إنشاء التقرير
               </button>
+
+              <!-- Sync — visible only to authorized users -->
+              <div id="acSyncWrap" style="display:none;">
+                <button class="ac-sync-btn" id="acSyncBtn" onclick="syncToSheet()">
+                  🔄 مزامنة مع الشيت
+                </button>
+                <div id="acAutoIndicator" style="display:none;font-size:12px;font-weight:700;color:rgba(52,211,153,.85);letter-spacing:.3px;">⚡ مزامنة تلقائية</div>
+                <div class="ac-sync-badge" id="acSyncBadge"></div>
+              </div>
             </div>
           </div>
         </div>
@@ -619,60 +707,124 @@
 <!-- ═══════════ ENTRY FORM MODAL ════════════ -->
 <div class="ac-modal-overlay" id="entryModal">
   <div class="ac-modal">
-    <div class="ac-modal-title" id="entryModalTitle">➕ إضافة يوم عمل</div>
 
-    <div class="ac-fg">
-      <div class="ac-field"><label>التاريخ *</label><input type="date" id="fDate"></div>
-      <div class="ac-field"><label>اسم العميل / الجهة</label><input type="text" id="fClient" placeholder="شركة النيل للمقاولات..."></div>
-      <div class="ac-field ac-s2"><label>وصف / مسار النقلة</label><input type="text" id="fRoute" placeholder="القاهرة ← الإسكندرية — شحن بضاعة"></div>
+    <!-- Header with X close button -->
+    <div class="ac-modal-header">
+      <div class="ac-modal-title" id="entryModalTitle">➕ تسجيل معاملة</div>
+      <button class="ac-modal-close" onclick="closeEntryModal()" title="إغلاق (ESC)">✕</button>
+    </div>
+
+    <!-- Transaction type tabs -->
+    <div class="ac-type-tabs" id="entryTypeTabs">
+      <button class="ac-type-tab active" data-type="trip"          onclick="setEntryType('trip')">🚛 نقلة</button>
+      <button class="ac-type-tab"        data-type="breakdown"     onclick="setEntryType('breakdown')">🔧 عطل</button>
+      <button class="ac-type-tab"        data-type="diesel"        onclick="setEntryType('diesel')">⛽ ديزل</button>
+      <button class="ac-type-tab"        data-type="driver_expense" onclick="setEntryType('driver_expense')">👤 السائق</button>
+      <button class="ac-type-tab"        data-type="other"         onclick="setEntryType('other')">📌 أخرى</button>
+    </div>
+
+    <!-- Date (always visible) + Direction toggle (for 'other') -->
+    <div class="ac-fg" style="margin-bottom:16px;">
       <div class="ac-field">
-        <label>عدد النقلات *</label>
-        <div class="ac-ig"><input type="number" id="fTripsCount" value="1" min="0" step="1"><div class="ac-ig-unit">نقلة</div></div>
+        <label>التاريخ *</label>
+        <input type="date" id="fDate">
       </div>
-      <div class="ac-field">
-        <label>إجمالي إيراد النقلات *</label>
-        <div class="ac-ig"><input type="number" id="fRevenue" placeholder="0" min="0"><div class="ac-ig-unit">ج.م</div></div>
+      <div class="ac-field" id="fDirectionRow" style="display:none;">
+        <label>نوع المعاملة</label>
+        <div class="ac-dir-toggle">
+          <button class="ac-dir-btn active" data-dir="expense" onclick="setDirection('expense')">💸 مصروف</button>
+          <button class="ac-dir-btn"        data-dir="income"  onclick="setDirection('income')">💰 دخل</button>
+        </div>
       </div>
     </div>
 
-    <div class="ac-sep-line"></div>
-    <div class="ac-form-label">⛽ الوقود</div>
-    <div class="ac-fg3">
-      <div class="ac-field">
-        <label>ليترات الديزل</label>
-        <div class="ac-ig"><input type="number" id="fDieselL" placeholder="0" min="0" step="0.1"><div class="ac-ig-unit">لتر</div></div>
-      </div>
-      <div class="ac-field">
-        <label>سعر اللتر (اختياري)</label>
-        <div class="ac-ig"><input type="number" id="fDieselPrice" placeholder="من الإعدادات" min="0" step="0.01"><div class="ac-ig-unit">ج.م</div></div>
-        <div class="hint" style="font-size:11px;color:var(--muted,#888);">فارغ = سعر الإعدادات</div>
-      </div>
-      <div class="ac-field">
-        <label>تكلفة الوقود (تلقائي)</label>
-        <div class="ac-ig"><input type="number" id="fFuelCost" placeholder="0" readonly class="ac-auto-input"><div class="ac-ig-unit">ج.م</div></div>
+    <!-- ── TRIP section ───────────────────────────────── -->
+    <div class="ac-form-section" id="fs-trip">
+      <div class="ac-form-label">🚛 تفاصيل النقلة</div>
+      <div class="ac-fg">
+        <div class="ac-field"><label>العميل / الجهة</label><input type="text" id="fClient" placeholder="شركة النيل للمقاولات..."></div>
+        <div class="ac-field ac-s2"><label>وصف / مسار النقلة</label><input type="text" id="fRoute" placeholder="القاهرة ← الإسكندرية — شحن بضاعة"></div>
+        <div class="ac-field">
+          <label>عدد النقلات *</label>
+          <div class="ac-ig"><input type="number" id="fTripsCount" value="1" min="1" step="1"><div class="ac-ig-unit">نقلة</div></div>
+        </div>
+        <div class="ac-field">
+          <label>إجمالي الإيراد *</label>
+          <div class="ac-ig"><input type="number" id="fRevenue" placeholder="0" min="0"><div class="ac-ig-unit">ج.م</div></div>
+        </div>
       </div>
     </div>
 
+    <!-- ── BREAKDOWN section ──────────────────────────── -->
+    <div class="ac-form-section" id="fs-breakdown" style="display:none;">
+      <div class="ac-form-label">🔧 تفاصيل العطل / الصيانة</div>
+      <div class="ac-fg">
+        <div class="ac-field ac-s2">
+          <label>وصف العطل أو الصيانة *</label>
+          <input type="text" id="fBreakdownDesc" placeholder="ثقب إطار / تبديل قطعة غيار / صيانة دورية...">
+        </div>
+        <div class="ac-field">
+          <label>تكلفة الإصلاح *</label>
+          <div class="ac-ig"><input type="number" id="fBreakdown" placeholder="0" min="0"><div class="ac-ig-unit">ج.م</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── DIESEL section ─────────────────────────────── -->
+    <div class="ac-form-section" id="fs-diesel" style="display:none;">
+      <div class="ac-form-label">⛽ تفاصيل الوقود</div>
+      <div class="ac-fg3">
+        <div class="ac-field">
+          <label>ليترات الديزل *</label>
+          <div class="ac-ig"><input type="number" id="fDieselL" placeholder="0" min="0" step="0.1"><div class="ac-ig-unit">لتر</div></div>
+        </div>
+        <div class="ac-field">
+          <label>سعر اللتر (اختياري)</label>
+          <div class="ac-ig"><input type="number" id="fDieselPrice" placeholder="من الإعدادات" min="0" step="0.01"><div class="ac-ig-unit">ج.م</div></div>
+          <div class="hint" style="font-size:11px;color:var(--muted,#888);">فارغ = سعر الإعدادات</div>
+        </div>
+        <div class="ac-field">
+          <label>التكلفة الإجمالية (تلقائي)</label>
+          <div class="ac-ig"><input type="number" id="fFuelCost" placeholder="0" readonly class="ac-auto-input"><div class="ac-ig-unit">ج.م</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── DRIVER EXPENSE section ─────────────────────── -->
+    <div class="ac-form-section" id="fs-driver_expense" style="display:none;">
+      <div class="ac-form-label">👤 مصاريف السائق</div>
+      <div class="ac-fg">
+        <div class="ac-field ac-s2">
+          <label>وصف / بيان المصاريف</label>
+          <input type="text" id="fDriverExpDesc" placeholder="مصاريف طريق / أكل / مبيت / بدل يومي...">
+        </div>
+        <div class="ac-field">
+          <label>المبلغ *</label>
+          <div class="ac-ig"><input type="number" id="fOtherExp" placeholder="0" min="0"><div class="ac-ig-unit">ج.م</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── OTHER section ──────────────────────────────── -->
+    <div class="ac-form-section" id="fs-other" style="display:none;">
+      <div class="ac-form-label" id="fsOtherLabel">📌 معاملة أخرى</div>
+      <div class="ac-fg">
+        <div class="ac-field ac-s2">
+          <label>الوصف *</label>
+          <input type="text" id="fOtherDesc" placeholder="وصف المعاملة...">
+        </div>
+        <div class="ac-field">
+          <label>المبلغ *</label>
+          <div class="ac-ig"><input type="number" id="fOtherAmt" placeholder="0" min="0"><div class="ac-ig-unit">ج.م</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Notes (always visible) ──────────────────────── -->
     <div class="ac-sep-line"></div>
-    <div class="ac-form-label">💸 المصاريف</div>
-    <div class="ac-fg">
-      <div class="ac-field">
-        <label>مصاريف أعطال / صيانة</label>
-        <div class="ac-ig"><input type="number" id="fBreakdown" placeholder="0" min="0"><div class="ac-ig-unit">ج.م</div></div>
-      </div>
-      <div class="ac-field">
-        <label>مصاريف إضافية أخرى</label>
-        <div class="ac-ig"><input type="number" id="fOtherExp" placeholder="0" min="0"><div class="ac-ig-unit">ج.م</div></div>
-      </div>
-      <div class="ac-field">
-        <label>مصاريف السائق اليومية</label>
-        <div class="ac-ig"><input type="number" id="fDriverDaily" placeholder="من الإعدادات" min="0"><div class="ac-ig-unit">ج.م</div></div>
-        <div class="hint" style="font-size:11px;color:var(--muted,#888);">فارغ = قيمة الإعدادات</div>
-      </div>
-      <div class="ac-field">
-        <label>ملاحظات</label>
-        <input type="text" id="fNotes" placeholder="أي ملاحظة...">
-      </div>
+    <div class="ac-field">
+      <label>📝 ملاحظات</label>
+      <input type="text" id="fNotes" placeholder="أي ملاحظة إضافية...">
     </div>
 
     <div class="ac-modal-actions">
@@ -708,10 +860,8 @@
       <div style="overflow-x:auto;">
         <table class="ac-rtbl">
           <thead><tr>
-            <th>التاريخ</th><th>العميل / الوصف</th>
-            <th style="text-align:center">نقلات</th>
-            <th>الإيراد</th><th>ديزل (ل)</th><th>وقود</th>
-            <th>أعطال</th><th>مصاريف سائق</th><th>أخرى</th><th>ملاحظات</th>
+            <th>النوع</th><th>التاريخ</th><th>الوصف / التفاصيل</th>
+            <th>الإيراد</th><th>المصروف</th><th>ملاحظات</th>
           </tr></thead>
           <tbody id="rTableBody"></tbody>
         </table>
@@ -840,30 +990,48 @@ function updateDayNav(entries){
 
 // ── Calculations ──────────────────────────────────────────────────────────────
 function calcPnL(entries, s){
-  const workDays     = entries.length;
-  const totalRevenue = entries.reduce((a,e)=>a+(parseFloat(e.revenue)||0),0);
-  const totalTrips   = entries.reduce((a,e)=>a+(parseInt(e.tripsCount)||0),0);
-  const totalDieselL = entries.reduce((a,e)=>a+(parseFloat(e.dieselL)||0),0);
-  const totalFuelCost= entries.reduce((a,e)=>{
-    const p = parseFloat(e.dieselPriceOverride)||parseFloat(s.dieselPrice)||0;
-    return a+(parseFloat(e.dieselL)||0)*p;
-  },0);
-  const driverTripAmt   = totalRevenue*(parseFloat(s.driverTripPct)||0)/100;
-  const totalDriverDay  = entries.reduce((a,e)=>{
-    const d = (e.driverDailyExpOverride!==null&&e.driverDailyExpOverride!==undefined&&e.driverDailyExpOverride!=='')
-      ?parseFloat(e.driverDailyExpOverride)||0:parseFloat(s.driverDailyExp)||0;
-    return a+d;
-  },0);
-  const totalBreakdown  = entries.reduce((a,e)=>a+(parseFloat(e.breakdownCost)||0),0);
-  const totalOtherVar   = entries.reduce((a,e)=>a+(parseFloat(e.otherExp)||0),0);
-  const driverSalary    = parseFloat(s.driverSalary)||0;
-  const helperSalary    = parseFloat(s.helperSalary)||0;
-  let otherFixedTotal   = 0;
+  let workDays=0, totalTrips=0, totalRevenue=0;
+  let totalDieselL=0, totalFuelCost=0;
+  let totalDriverDay=0, totalBreakdown=0, totalOtherVar=0;
+  entries.forEach(e=>{
+    const t=e.type||'legacy';
+    if(t==='trip'||t==='legacy') workDays++;
+    if(t==='trip'){
+      totalRevenue += parseFloat(e.revenue)||0;
+      totalTrips   += parseInt(e.tripsCount)||0;
+    } else if(t==='diesel'){
+      const p=parseFloat(e.dieselPriceOverride)||parseFloat(s.dieselPrice)||0;
+      totalDieselL  += parseFloat(e.dieselL)||0;
+      totalFuelCost += (parseFloat(e.dieselL)||0)*p;
+    } else if(t==='breakdown'){
+      totalBreakdown += parseFloat(e.breakdownCost)||0;
+    } else if(t==='driver_expense'){
+      totalDriverDay += parseFloat(e.otherExp)||0;
+    } else if(t==='other'){
+      if(e.direction==='income') totalRevenue  += parseFloat(e.otherAmt)||0;
+      else                       totalOtherVar += parseFloat(e.otherAmt)||0;
+    } else { // legacy — backward compatible
+      totalRevenue  += parseFloat(e.revenue)||0;
+      totalTrips    += parseInt(e.tripsCount)||0;
+      const p=parseFloat(e.dieselPriceOverride)||parseFloat(s.dieselPrice)||0;
+      totalDieselL  += parseFloat(e.dieselL)||0;
+      totalFuelCost += (parseFloat(e.dieselL)||0)*p;
+      totalBreakdown+= parseFloat(e.breakdownCost)||0;
+      totalOtherVar += parseFloat(e.otherExp)||0;
+      const dd=(e.driverDailyExpOverride!=null&&e.driverDailyExpOverride!=='')
+        ?parseFloat(e.driverDailyExpOverride)||0:parseFloat(s.driverDailyExp)||0;
+      totalDriverDay+= dd;
+    }
+  });
+  const driverTripAmt  = totalRevenue*(parseFloat(s.driverTripPct)||0)/100;
+  const driverSalary   = parseFloat(s.driverSalary)||0;
+  const helperSalary   = parseFloat(s.helperSalary)||0;
+  let   otherFixedTotal= 0;
   (s.otherExpenses||[]).forEach(ex=>{
     otherFixedTotal += ex.period==='daily'?(parseFloat(ex.amount)||0)*workDays:(parseFloat(ex.amount)||0);
   });
-  const totalExpenses = totalFuelCost+driverTripAmt+totalDriverDay+totalBreakdown+totalOtherVar+driverSalary+helperSalary+otherFixedTotal;
-  const netProfit     = totalRevenue - totalExpenses;
+  const totalExpenses=totalFuelCost+driverTripAmt+totalDriverDay+totalBreakdown+totalOtherVar+driverSalary+helperSalary+otherFixedTotal;
+  const netProfit=totalRevenue-totalExpenses;
   return {workDays,totalTrips,totalRevenue,totalDieselL,totalFuelCost,driverTripAmt,totalDriverDay,totalBreakdown,totalOtherVar,driverSalary,helperSalary,otherFixedTotal,totalExpenses,netProfit};
 }
 
@@ -926,19 +1094,51 @@ function renderEntries(entries, s){
   const list=document.getElementById('acEntriesList');
   const canDel=canDeleteEntry();
   if(!entries.length){
-    list.innerHTML=`<div class="ac-empty"><div class="ei">📋</div><p>${selectedDay?'لا توجد بيانات لهذا اليوم.':'لا توجد بيانات في هذا الشهر.<br>اضغط "إضافة يوم عمل" لإدخال أول سجل.'}</p></div>`;
+    list.innerHTML=`<div class="ac-empty"><div class="ei">📋</div><p>${selectedDay?'لا توجد بيانات لهذا اليوم.':'لا توجد بيانات في هذا الشهر.<br>اضغط "تسجيل معاملة جديدة" لإدخال أول سجل.'}</p></div>`;
     return;
   }
   list.innerHTML=entries.map(e=>{
     const d=new Date(e.date+'T00:00:00');
     const ds=`${d.getDate()} ${MONTHS_AR[d.getMonth()]}`;
+    const t=e.type||'legacy';
+
+    // Type chip
+    const chipMap={trip:['tc-trip','🚛'],breakdown:['tc-breakdown','🔧'],diesel:['tc-diesel','⛽'],driver_expense:['tc-driver','👤'],legacy:['tc-legacy','📋']};
+    let chipClass,chipIcon;
+    if(t==='other'&&e.direction==='income'){chipClass='tc-other-in';chipIcon='📌';}
+    else if(t==='other'){chipClass='tc-other-ex';chipIcon='📌';}
+    else{[chipClass,chipIcon]=chipMap[t]||['tc-legacy','📋'];}
+
+    // Description
+    let desc='';
+    if(t==='trip')            desc=`${escHtml(e.client||'نقلة')}<small>${escHtml(e.route||'')}</small>`;
+    else if(t==='breakdown')  desc=escHtml(e.breakdownDesc||'عطل / صيانة');
+    else if(t==='diesel')     desc=`${fmt(e.dieselL,1)} لتر ديزل`;
+    else if(t==='driver_expense') desc=escHtml(e.driverExpDesc||'مصاريف سائق');
+    else if(t==='other')      desc=escHtml(e.otherDesc||'معاملة أخرى');
+    else desc=`${escHtml(e.client||'—')}<small>${escHtml(e.route||'')}</small>`;
+
+    // Amount
+    let amt='', amtClass='';
+    if(t==='trip'){amt=fmt(e.revenue)+' ج';amtClass='ac-row-rev';}
+    else if(t==='breakdown'){amt='- '+fmt(e.breakdownCost)+' ج';amtClass='ac-row-cost';}
+    else if(t==='diesel'){
+      const p=parseFloat(e.dieselPriceOverride)||parseFloat(s.dieselPrice)||0;
+      amt='- '+fmt((parseFloat(e.dieselL)||0)*p)+' ج';amtClass='ac-row-diesel';
+    }
+    else if(t==='driver_expense'){amt='- '+fmt(e.otherExp)+' ج';amtClass='ac-row-cost';}
+    else if(t==='other'){
+      const sign=e.direction==='income'?'':'- ';
+      amt=sign+fmt(e.otherAmt)+' ج';
+      amtClass=e.direction==='income'?'ac-row-rev':'ac-row-cost';
+    }
+    else{amt=fmt(e.revenue)+' ج';amtClass='ac-row-rev';}
+
     return `<div class="ac-row">
+      <div class="ac-type-chip ${chipClass}" title="${t}">${chipIcon}</div>
       <div class="ac-row-date">${ds}</div>
-      <div class="ac-row-desc">${escHtml(e.client||'—')}<small>${escHtml(e.route||'')}</small></div>
-      <div style="text-align:center">${e.tripsCount||1}</div>
-      <div class="ac-row-rev">${fmt(e.revenue)} ج</div>
-      <div class="ac-row-diesel">${fmt(e.dieselL,1)} ل</div>
-      <div class="ac-row-cost">${fmt(e.breakdownCost)} ج</div>
+      <div class="ac-row-desc">${desc}</div>
+      <div class="ac-row-amt ${amtClass}">${amt}</div>
       <div class="ac-row-notes" title="${escHtml(e.notes||'')}">${escHtml(e.notes||'—')}</div>
       <div class="ac-row-actions">
         <button class="ac-act ac-act-edit" onclick="editEntry('${e.id}')" title="تعديل">✎</button>
@@ -950,40 +1150,77 @@ function renderEntries(entries, s){
 
 // ── Entry modal ───────────────────────────────────────────────────────────────
 let _editId = null;
+let _currentType = 'trip';
+let _currentDirection = 'expense';
+
+function setEntryType(type){
+  _currentType = type;
+  document.querySelectorAll('.ac-type-tab').forEach(btn=>{
+    btn.classList.toggle('active', btn.dataset.type===type);
+  });
+  ['trip','breakdown','diesel','driver_expense','other'].forEach(t=>{
+    const el=document.getElementById('fs-'+t); if(el) el.style.display=(t===type)?'':'none';
+  });
+  document.getElementById('fDirectionRow').style.display=(type==='other')?'':'none';
+  const titles={trip:'🚛 تسجيل نقلة',breakdown:'🔧 تسجيل عطل / صيانة',diesel:'⛽ تسجيل وقود',driver_expense:'👤 مصاريف السائق',other:'📌 معاملة أخرى'};
+  if(!_editId) document.getElementById('entryModalTitle').textContent=titles[type]||'➕ تسجيل معاملة';
+}
+
+function setDirection(dir){
+  _currentDirection=dir;
+  document.querySelectorAll('.ac-dir-btn').forEach(btn=>btn.classList.toggle('active',btn.dataset.dir===dir));
+  const lbl=document.getElementById('fsOtherLabel');
+  if(lbl) lbl.textContent=dir==='income'?'📌 دخل متنوع':'📌 مصروف متنوع';
+}
 
 function openEntryModal(id=null){
   _editId = id;
-  const s = loadSettings();
+  // Clear all fields
+  ['fClient','fRoute','fBreakdownDesc','fDriverExpDesc','fOtherDesc','fNotes'].forEach(fid=>{
+    const el=document.getElementById(fid); if(el) el.value='';
+  });
+  ['fRevenue','fBreakdown','fDieselL','fDieselPrice','fFuelCost','fOtherExp','fOtherAmt'].forEach(fid=>{
+    const el=document.getElementById(fid); if(el) el.value='';
+  });
+  document.getElementById('fTripsCount').value=1;
+  document.getElementById('fDate').value=new Date().toISOString().slice(0,10);
+
   if(id){
-    const e = loadEntries().find(x=>x.id===id);
+    const e=loadEntries().find(x=>x.id===id);
     if(!e) return;
-    document.getElementById('entryModalTitle').textContent='✎ تعديل يوم عمل';
-    document.getElementById('fDate').value        = e.date||'';
-    document.getElementById('fClient').value      = e.client||'';
-    document.getElementById('fRoute').value       = e.route||'';
-    document.getElementById('fTripsCount').value  = e.tripsCount||1;
-    document.getElementById('fRevenue').value     = e.revenue||'';
-    document.getElementById('fDieselL').value     = e.dieselL||'';
-    document.getElementById('fDieselPrice').value = e.dieselPriceOverride||'';
-    document.getElementById('fBreakdown').value   = e.breakdownCost||'';
-    document.getElementById('fOtherExp').value    = e.otherExp||'';
-    document.getElementById('fDriverDaily').value = e.driverDailyExpOverride??'';
-    document.getElementById('fNotes').value       = e.notes||'';
+    document.getElementById('entryModalTitle').textContent='✎ تعديل السجل';
+    document.getElementById('fDate').value=e.date||'';
+    document.getElementById('fNotes').value=e.notes||'';
+    const t=e.type||'legacy';
+    if(t==='trip'||t==='legacy'){
+      setEntryType('trip');
+      document.getElementById('fClient').value=e.client||'';
+      document.getElementById('fRoute').value=e.route||'';
+      document.getElementById('fTripsCount').value=e.tripsCount||1;
+      document.getElementById('fRevenue').value=e.revenue||'';
+    } else if(t==='breakdown'){
+      setEntryType('breakdown');
+      document.getElementById('fBreakdownDesc').value=e.breakdownDesc||'';
+      document.getElementById('fBreakdown').value=e.breakdownCost||'';
+    } else if(t==='diesel'){
+      setEntryType('diesel');
+      document.getElementById('fDieselL').value=e.dieselL||'';
+      document.getElementById('fDieselPrice').value=e.dieselPriceOverride||'';
+      calcFuelPreview();
+    } else if(t==='driver_expense'){
+      setEntryType('driver_expense');
+      document.getElementById('fDriverExpDesc').value=e.driverExpDesc||'';
+      document.getElementById('fOtherExp').value=e.otherExp||'';
+    } else if(t==='other'){
+      setEntryType('other');
+      setDirection(e.direction||'expense');
+      document.getElementById('fOtherDesc').value=e.otherDesc||'';
+      document.getElementById('fOtherAmt').value=e.otherAmt||'';
+    }
   } else {
-    document.getElementById('entryModalTitle').textContent='➕ إضافة يوم عمل';
-    document.getElementById('fDate').value        = new Date().toISOString().slice(0,10);
-    document.getElementById('fClient').value      = '';
-    document.getElementById('fRoute').value       = '';
-    document.getElementById('fTripsCount').value  = 1;
-    document.getElementById('fRevenue').value     = '';
-    document.getElementById('fDieselL').value     = '';
-    document.getElementById('fDieselPrice').value = '';
-    document.getElementById('fBreakdown').value   = '';
-    document.getElementById('fOtherExp').value    = '';
-    document.getElementById('fDriverDaily').value = s.driverDailyExp||'';
-    document.getElementById('fNotes').value       = '';
+    setEntryType('trip');
+    setDirection('expense');
   }
-  calcFuelPreview();
   document.getElementById('entryModal').classList.add('open');
 }
 function closeEntryModal(){ document.getElementById('entryModal').classList.remove('open'); _editId=null; }
@@ -997,27 +1234,43 @@ function calcFuelPreview(){
 }
 
 function saveEntry(){
-  const date = document.getElementById('fDate').value;
+  const date=document.getElementById('fDate').value;
   if(!date){acToast('⚠️ حدد التاريخ');return;}
-  const dd = document.getElementById('fDriverDaily').value;
-  const entry = {
-    id:      _editId||uid(), date,
-    client:  document.getElementById('fClient').value.trim(),
-    route:   document.getElementById('fRoute').value.trim(),
-    tripsCount: parseInt(document.getElementById('fTripsCount').value)||1,
-    revenue:    parseFloat(document.getElementById('fRevenue').value)||0,
-    dieselL:    parseFloat(document.getElementById('fDieselL').value)||0,
-    dieselPriceOverride: document.getElementById('fDieselPrice').value?parseFloat(document.getElementById('fDieselPrice').value):null,
-    breakdownCost: parseFloat(document.getElementById('fBreakdown').value)||0,
-    otherExp:      parseFloat(document.getElementById('fOtherExp').value)||0,
-    driverDailyExpOverride: dd!==''?parseFloat(dd)||0:null,
-    notes: document.getElementById('fNotes').value.trim(),
-  };
+  const notes=document.getElementById('fNotes').value.trim();
+  let entry={id:_editId||uid(), date, type:_currentType, notes};
+
+  if(_currentType==='trip'){
+    entry.client=document.getElementById('fClient').value.trim();
+    entry.route=document.getElementById('fRoute').value.trim();
+    entry.tripsCount=parseInt(document.getElementById('fTripsCount').value)||1;
+    entry.revenue=parseFloat(document.getElementById('fRevenue').value)||0;
+    if(!entry.revenue){acToast('⚠️ أدخل قيمة الإيراد');return;}
+  } else if(_currentType==='breakdown'){
+    entry.breakdownDesc=document.getElementById('fBreakdownDesc').value.trim();
+    entry.breakdownCost=parseFloat(document.getElementById('fBreakdown').value)||0;
+    if(!entry.breakdownCost){acToast('⚠️ أدخل تكلفة الإصلاح');return;}
+  } else if(_currentType==='diesel'){
+    entry.dieselL=parseFloat(document.getElementById('fDieselL').value)||0;
+    const dp=document.getElementById('fDieselPrice').value;
+    entry.dieselPriceOverride=dp?parseFloat(dp):null;
+    if(!entry.dieselL){acToast('⚠️ أدخل كمية الديزل');return;}
+  } else if(_currentType==='driver_expense'){
+    entry.driverExpDesc=document.getElementById('fDriverExpDesc').value.trim();
+    entry.otherExp=parseFloat(document.getElementById('fOtherExp').value)||0;
+    if(!entry.otherExp){acToast('⚠️ أدخل المبلغ');return;}
+  } else if(_currentType==='other'){
+    entry.direction=_currentDirection;
+    entry.otherDesc=document.getElementById('fOtherDesc').value.trim();
+    entry.otherAmt=parseFloat(document.getElementById('fOtherAmt').value)||0;
+    if(!entry.otherAmt){acToast('⚠️ أدخل المبلغ');return;}
+  }
+
   const entries=loadEntries(), idx=entries.findIndex(e=>e.id===entry.id);
   if(idx>=0) entries[idx]=entry; else entries.push(entry);
   saveEntries(entries);
   closeEntryModal(); renderAll();
   acToast(idx>=0?'✓ تم التعديل':'✓ تم الحفظ');
+  if ((loadSettings().syncMode || 'manual') === 'auto' && canSync()) autoSync();
 }
 
 function deleteEntry(id){
@@ -1025,6 +1278,7 @@ function deleteEntry(id){
   if(!confirm('هل أنت متأكد من حذف هذا السجل؟')) return;
   saveEntries(loadEntries().filter(e=>e.id!==id));
   renderAll(); acToast('🗑 تم الحذف');
+  if ((loadSettings().syncMode || 'manual') === 'auto' && canSync()) autoSync();
 }
 
 // ── Generate report ───────────────────────────────────────────────────────────
@@ -1051,22 +1305,45 @@ function generateReport(){
   ].map(x=>`<div class="ac-rpt-stat"><div class="ac-rpt-stat-val" style="color:${x.c}">${x.val}</div><div class="ac-rpt-stat-lbl">${x.lbl}</div></div>`).join('');
 
   // ── Daily entries table ────────────────────────────────────────────────────
+  const typeLabels={trip:'🚛 نقلة',breakdown:'🔧 عطل',diesel:'⛽ ديزل',driver_expense:'👤 سائق',other:'📌 أخرى',legacy:'📋 نقلة'};
   document.getElementById('rTableBody').innerHTML = entries.map(e=>{
-    const price=(parseFloat(e.dieselPriceOverride)||parseFloat(s.dieselPrice)||0);
-    const fc=(parseFloat(e.dieselL)||0)*price;
-    const dd=(e.driverDailyExpOverride!==null&&e.driverDailyExpOverride!==undefined&&e.driverDailyExpOverride!=='')
-      ?parseFloat(e.driverDailyExpOverride)||0:parseFloat(s.driverDailyExp)||0;
+    const t=e.type||'legacy';
     const d=new Date(e.date+'T00:00:00'), ds=`${d.getDate()} ${MONTHS_AR[d.getMonth()]}`;
+    let descCell='';
+    if(t==='trip')            descCell=`${escHtml(e.client||'—')}${e.route?'<br><small style="color:var(--muted,#888)">'+escHtml(e.route)+'</small>':''}`;
+    else if(t==='breakdown')  descCell=escHtml(e.breakdownDesc||'—');
+    else if(t==='diesel')     descCell=`${fmt(e.dieselL,1)} لتر`;
+    else if(t==='driver_expense') descCell=escHtml(e.driverExpDesc||'—');
+    else if(t==='other')      descCell=escHtml(e.otherDesc||'—');
+    else descCell=`${escHtml(e.client||'—')}${e.route?'<br><small style="color:var(--muted,#888)">'+escHtml(e.route)+'</small>':''}`;
+    let revCell='—', expCell='—';
+    if(t==='trip'){
+      revCell=`<span style="color:#00A859;font-weight:700">${fmt(e.revenue)}</span>`;
+    } else if(t==='breakdown'){
+      expCell=`<span style="color:#ef4444">${fmt(e.breakdownCost)}</span>`;
+    } else if(t==='diesel'){
+      const p=parseFloat(e.dieselPriceOverride)||parseFloat(s.dieselPrice)||0;
+      expCell=`<span style="color:#fbbf24">${fmt((parseFloat(e.dieselL)||0)*p)}</span>`;
+    } else if(t==='driver_expense'){
+      expCell=`<span style="color:#fb923c">${fmt(e.otherExp)}</span>`;
+    } else if(t==='other'){
+      if(e.direction==='income') revCell=`<span style="color:#00A859;font-weight:700">${fmt(e.otherAmt)}</span>`;
+      else expCell=`<span style="color:#ef4444">${fmt(e.otherAmt)}</span>`;
+    } else { // legacy
+      const p=parseFloat(e.dieselPriceOverride)||parseFloat(s.dieselPrice)||0;
+      const fc=(parseFloat(e.dieselL)||0)*p;
+      const dd=(e.driverDailyExpOverride!=null&&e.driverDailyExpOverride!=='')
+        ?parseFloat(e.driverDailyExpOverride)||0:parseFloat(s.driverDailyExp)||0;
+      const totalExp=fc+dd+(parseFloat(e.breakdownCost)||0)+(parseFloat(e.otherExp)||0);
+      revCell=`<span style="color:#00A859;font-weight:700">${fmt(e.revenue)}</span>`;
+      expCell=`<span style="color:#ef4444">${fmt(totalExp)}</span>`;
+    }
     return `<tr>
+      <td style="font-size:11px;white-space:nowrap">${typeLabels[t]||'📋 سجل'}</td>
       <td>${escHtml(ds)}</td>
-      <td>${escHtml(e.client||'—')}${e.route?'<br><small style="color:var(--muted,#888)">'+escHtml(e.route)+'</small>':''}</td>
-      <td class="ltr" style="text-align:center">${e.tripsCount||1}</td>
-      <td class="ltr" style="color:#00A859;font-weight:700">${fmt(e.revenue)}</td>
-      <td class="ltr">${fmt(e.dieselL,1)}</td>
-      <td class="ltr" style="color:#fbbf24">${fmt(fc)}</td>
-      <td class="ltr" style="color:#ef4444">${fmt(e.breakdownCost)}</td>
-      <td class="ltr">${fmt(dd)}</td>
-      <td class="ltr">${fmt(e.otherExp)}</td>
+      <td>${descCell}</td>
+      <td class="ltr">${revCell}</td>
+      <td class="ltr">${expCell}</td>
       <td style="font-size:11px;color:var(--muted,#888)">${escHtml(e.notes||'')}</td>
     </tr>`;
   }).join('');
@@ -1144,23 +1421,46 @@ function buildPrintHTML(s,pnl,ml,entries){
   const fe=n=>f(n)+' ج.م';
   const tr=(ll,lv)=>`<tr><td style="color:#6b7280;padding:5px 0;border-bottom:1px solid #f3f4f6">${ll}</td><td style="font-weight:700;color:#991b1b;direction:ltr;text-align:left;padding:5px 0;border-bottom:1px solid #f3f4f6">${lv}</td></tr>`;
 
+  const ptypeLabels={trip:'🚛 نقلة',breakdown:'🔧 عطل',diesel:'⛽ ديزل',driver_expense:'👤 سائق',other:'📌 أخرى',legacy:'📋 نقلة'};
   const rowsHtml=entries.map(e=>{
-    const price=parseFloat(e.dieselPriceOverride)||parseFloat(s.dieselPrice)||0;
-    const fc=(parseFloat(e.dieselL)||0)*price;
-    const dd=(e.driverDailyExpOverride!==null&&e.driverDailyExpOverride!==undefined&&e.driverDailyExpOverride!=='')
-      ?parseFloat(e.driverDailyExpOverride)||0:parseFloat(s.driverDailyExp)||0;
+    const t=e.type||'legacy';
     const d=new Date(e.date+'T00:00:00');
     const ds=`${d.getDate()} ${MONTHS_AR[d.getMonth()]}`;
+    let descCell='';
+    if(t==='trip')            descCell=`${escHtml(e.client||'—')}${e.route?'<br><small style="color:#9ca3af">'+escHtml(e.route)+'</small>':''}`;
+    else if(t==='breakdown')  descCell=escHtml(e.breakdownDesc||'—');
+    else if(t==='diesel')     descCell=`${f(e.dieselL,1)} لتر`;
+    else if(t==='driver_expense') descCell=escHtml(e.driverExpDesc||'—');
+    else if(t==='other')      descCell=escHtml(e.otherDesc||'—');
+    else descCell=`${escHtml(e.client||'—')}${e.route?'<br><small style="color:#9ca3af">'+escHtml(e.route)+'</small>':''}`;
+    let revCell='—', expCell='—';
+    if(t==='trip'){
+      revCell=`<span style="color:#065f46;font-weight:700">${f(e.revenue)}</span>`;
+    } else if(t==='breakdown'){
+      expCell=`<span style="color:#991b1b">${f(e.breakdownCost)}</span>`;
+    } else if(t==='diesel'){
+      const price=parseFloat(e.dieselPriceOverride)||parseFloat(s.dieselPrice)||0;
+      expCell=`<span style="color:#92400e">${f((parseFloat(e.dieselL)||0)*price)}</span>`;
+    } else if(t==='driver_expense'){
+      expCell=`<span style="color:#92400e">${f(e.otherExp)}</span>`;
+    } else if(t==='other'){
+      if(e.direction==='income') revCell=`<span style="color:#065f46;font-weight:700">${f(e.otherAmt)}</span>`;
+      else expCell=`<span style="color:#991b1b">${f(e.otherAmt)}</span>`;
+    } else { // legacy
+      const price=parseFloat(e.dieselPriceOverride)||parseFloat(s.dieselPrice)||0;
+      const fc=(parseFloat(e.dieselL)||0)*price;
+      const dd=(e.driverDailyExpOverride!=null&&e.driverDailyExpOverride!=='')
+        ?parseFloat(e.driverDailyExpOverride)||0:parseFloat(s.driverDailyExp)||0;
+      const totalExp=fc+dd+(parseFloat(e.breakdownCost)||0)+(parseFloat(e.otherExp)||0);
+      revCell=`<span style="color:#065f46;font-weight:700">${f(e.revenue)}</span>`;
+      expCell=`<span style="color:#991b1b">${f(totalExp)}</span>`;
+    }
     return `<tr>
+      <td style="font-size:10px;white-space:nowrap">${ptypeLabels[t]||'📋 سجل'}</td>
       <td>${escHtml(ds)}</td>
-      <td style="max-width:130px">${escHtml(e.client||'—')}${e.route?'<br><small style="color:#9ca3af">'+escHtml(e.route)+'</small>':''}</td>
-      <td style="text-align:center">${e.tripsCount||1}</td>
-      <td style="color:#065f46;font-weight:700;direction:ltr">${f(e.revenue)}</td>
-      <td style="direction:ltr">${f(e.dieselL,1)}</td>
-      <td style="color:#92400e;direction:ltr">${f(fc)}</td>
-      <td style="color:#991b1b;direction:ltr">${f(e.breakdownCost)}</td>
-      <td style="direction:ltr">${f(dd)}</td>
-      <td style="direction:ltr">${f(e.otherExp)}</td>
+      <td style="max-width:130px">${descCell}</td>
+      <td style="direction:ltr">${revCell}</td>
+      <td style="direction:ltr">${expCell}</td>
       <td style="font-size:10px;color:#9ca3af">${escHtml(e.notes||'')}</td>
     </tr>`;
   }).join('');
@@ -1232,9 +1532,8 @@ function buildPrintHTML(s,pnl,ml,entries){
     <div class="sec-t">📅 تفاصيل أيام العمل</div>
     <table>
       <thead><tr>
-        <th>التاريخ</th><th>العميل / الوصف</th><th>نقلات</th>
-        <th>الإيراد</th><th>ديزل (ل)</th><th>وقود</th>
-        <th>أعطال</th><th>مصاريف سائق</th><th>أخرى</th><th>ملاحظات</th>
+        <th>النوع</th><th>التاريخ</th><th>الوصف / التفاصيل</th>
+        <th>الإيراد</th><th>المصروف</th><th>ملاحظات</th>
       </tr></thead>
       <tbody>${rowsHtml}</tbody>
     </table>
@@ -1313,13 +1612,166 @@ function buildWaText(s,p,ml){
   ].filter(l=>l!==false&&l!==null&&l!==undefined).join('\n');
 }
 
-// Close on overlay click
-['entryModal','reportModal'].forEach(id=>{
-  document.getElementById(id).addEventListener('click',function(e){if(e.target===this)(id==='entryModal'?closeEntryModal:closeReportModal)();});
-});
+// ── Sync module ───────────────────────────────────────────────────────────────
+/*
+ * AC_SYNC — abstraction layer for remote storage.
+ * Current adapter : Google Sheets via Apps Script.
+ * Future adapter  : swap syncMonth/getMonth internals to call a REST API or
+ *                   real database — the UI (syncToSheet) stays unchanged.
+ */
+const AC_SYNC = {
+
+  async syncMonth(month, entries) {
+    const s = loadSettings();
+    if (!s.syncUrl) throw new Error('لم يتم تحديد رابط المزامنة — تحقق من الإعدادات');
+    // vehicleId = لوحة الترخيص (لو فارغة: اسم السيارة، لو فارغ: actros)
+    const vehicleId = (s.vehiclePlate || s.vehicleName || 'actros').trim();
+    const resp = await fetch(s.syncUrl, {
+      method:  'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // avoid CORS preflight
+      body:    JSON.stringify({ action: 'syncMonth', vehicleId, month, entries }),
+    });
+    if (!resp.ok) throw new Error('HTTP ' + resp.status + ' — ' + resp.statusText);
+    const data = await resp.json();
+    if (!data.ok) throw new Error(data.error || 'خطأ غير معروف من السيرفر');
+    return data;
+  },
+
+  // Future: pull data back from sheet
+  async getMonth(month) {
+    const s = loadSettings();
+    if (!s.syncUrl) throw new Error('لم يتم تحديد رابط المزامنة');
+    const vehicleId = (s.vehiclePlate || s.vehicleName || 'actros').trim();
+    const resp = await fetch(s.syncUrl, {
+      method:  'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body:    JSON.stringify({ action: 'getMonth', vehicleId, month }),
+    });
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const data = await resp.json();
+    if (!data.ok) throw new Error(data.error || 'خطأ');
+    return data;
+  },
+};
+
+function canSync() {
+  try {
+    const s = loadSettings();
+    if (!s.syncUrl || s.syncMode === 'off') return false;
+    const user = JSON.parse(localStorage.getItem('linkedoff_user') || 'null');
+    if (!user) return false;
+    if (window.RBAC && window.RBAC.getRole() === 'admin') return true;
+    return (s.syncAllowList || []).includes(user.email);
+  } catch { return false; }
+}
+
+function updateSyncBadge() {
+  const el = document.getElementById('acSyncBadge');
+  if (!el) return;
+  try {
+    const d = JSON.parse(localStorage.getItem('actros_last_sync') || 'null');
+    el.textContent = d ? 'آخر مزامنة: ' + d.at + ' (' + d.count + ' سجل)' : '';
+  } catch { el.textContent = ''; }
+}
+
+function renderSyncBtn() {
+  const wrap = document.getElementById('acSyncWrap');
+  if (!wrap) return;
+  const ok   = canSync();
+  wrap.style.display = ok ? '' : 'none';
+  if (!ok) return;
+  const mode    = loadSettings().syncMode || 'manual';
+  const btn     = document.getElementById('acSyncBtn');
+  const autoInd = document.getElementById('acAutoIndicator');
+  if (mode === 'auto') {
+    if (btn)     btn.style.display     = 'none';
+    if (autoInd) autoInd.style.display = '';
+  } else {
+    if (btn)     btn.style.display     = '';
+    if (autoInd) autoInd.style.display = 'none';
+  }
+  updateSyncBadge();
+}
+
+// ── Auto-sync (silent, triggered after every save/delete in auto mode) ──────────
+async function autoSync() {
+  if (!canSync()) return;
+  if ((loadSettings().syncMode || 'manual') !== 'auto') return;
+  const month   = document.getElementById('monthSelect').value;
+  const entries = getAllMonthEntries();
+  const badge   = document.getElementById('acSyncBadge');
+  if (badge) badge.textContent = '⏳ جارٍ المزامنة...';
+  try {
+    const res = await AC_SYNC.syncMonth(month, entries);
+    const now = new Date().toLocaleString('ar-EG', {
+      hour: '2-digit', minute: '2-digit', month: 'short', day: 'numeric'
+    });
+    localStorage.setItem('actros_last_sync', JSON.stringify({ at: now, month, count: res.synced }));
+    updateSyncBadge();
+  } catch (ex) {
+    if (badge) badge.textContent = '⚠️ فشلت المزامنة: ' + ex.message;
+    setTimeout(updateSyncBadge, 4000);
+  }
+}
+
+async function syncToSheet() {
+  if (!canSync()) { acToast('⛔ لا تملك صلاحية المزامنة'); return; }
+  const s = loadSettings();
+  if (!s.syncUrl) { acToast('⚠️ حدد رابط المزامنة في إعدادات أكتروس أولاً'); return; }
+  const month   = document.getElementById('monthSelect').value;
+  const entries = getAllMonthEntries();
+  if (!entries.length) { acToast('⚠️ لا توجد بيانات للمزامنة في هذا الشهر'); return; }
+  const btn  = document.getElementById('acSyncBtn');
+  const orig = btn.innerHTML;
+  btn.innerHTML = '⏳ جارٍ المزامنة...'; btn.disabled = true;
+  try {
+    const res = await AC_SYNC.syncMonth(month, entries);
+    const now = new Date().toLocaleString('ar-EG', {
+      hour: '2-digit', minute: '2-digit', month: 'short', day: 'numeric'
+    });
+    localStorage.setItem('actros_last_sync', JSON.stringify({ at: now, month, count: res.synced }));
+    updateSyncBadge();
+    acToast('✅ تمت المزامنة — ' + res.synced + ' سجل', 3500);
+  } catch (ex) {
+    acToast('❌ فشلت المزامنة: ' + ex.message, 5000);
+  } finally {
+    btn.innerHTML = orig; btn.disabled = false;
+  }
+}
+
+// reportModal closes on overlay click; entryModal closes ONLY via X button or ESC
+document.getElementById('reportModal').addEventListener('click',function(e){if(e.target===this)closeReportModal();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeEntryModal();closeReportModal();}});
+
+// ── Cloud settings pull (keeps localStorage in sync with user account) ─────────
+async function pullSettingsFromCloud() {
+  try {
+    const s = loadSettings();
+    if (!s.syncUrl) return false;
+    const user = JSON.parse(localStorage.getItem('linkedoff_user') || 'null');
+    if (!user?.email) return false;
+    const resp = await fetch(s.syncUrl, {
+      method:  'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ action: 'getSettings', email: user.email }),
+    });
+    const data = await resp.json();
+    if (data.ok && data.settings) {
+      const merged = { ...data.settings, syncUrl: s.syncUrl };
+      localStorage.setItem('actros_settings', JSON.stringify(merged));
+      return true;
+    }
+  } catch { /* silent */ }
+  return false;
+}
 
 // ── Init ──────────────────────────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', ()=>{ buildMonthPicker(); renderAll(); });
+document.addEventListener('DOMContentLoaded', async () => {
+  buildMonthPicker(); renderAll(); renderSyncBtn();
+  // Pull latest settings from cloud (background) then re-render if updated
+  const updated = await pullSettingsFromCloud();
+  if (updated) { renderAll(); renderSyncBtn(); }
+});
 </script>
 <script src="js/ui.js"></script>
 </body>
