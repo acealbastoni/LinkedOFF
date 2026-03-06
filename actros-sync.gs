@@ -22,6 +22,7 @@
 const SHEET_ID            = '12DOdU_mhknF4v4c6I5Q0w779zrCbiuLwzb_B3EaSFOg';
 const SHEET_NAME          = 'actros_entries';
 const USER_SETTINGS_SHEET = 'user_settings';
+const USERS_SHEET         = 'users';
 
 // Column order (header row)
 const COLS = [
@@ -42,6 +43,7 @@ function doPost(e) {
       case 'getMonth':     return getMonth(data);
       case 'saveSettings': return saveUserSettings(data);
       case 'getSettings':  return getUserSettings(data);
+      case 'getUsers':     return getUsers();
       default:             return err('Unknown action: ' + data.action);
     }
   } catch (ex) {
@@ -241,4 +243,60 @@ function getMonth(data) {
   }
 
   return ok({ entries, month, vehicleId, count: entries.length });
+}
+
+// ── users sheet (auto-creates if needed) ───────────────────────────────────────
+function getUsersSheet() {
+  const ss = SpreadsheetApp.openById(SHEET_ID);
+  let sh = ss.getSheetByName(USERS_SHEET);
+  if (!sh) {
+    sh = ss.insertSheet(USERS_SHEET);
+    const hdr = sh.getRange(1, 1, 1, 5);
+    hdr.setValues([['id', 'email', 'name', 'role', 'createdAt']]);
+    hdr.setFontWeight('bold');
+    hdr.setBackground('#e8eaf6');
+    sh.setFrozenRows(1);
+    sh.setColumnWidth(1, 160);
+    sh.setColumnWidth(2, 240);
+    sh.setColumnWidth(3, 200);
+    sh.setColumnWidth(4, 100);
+    sh.setColumnWidth(5, 180);
+    sh.getRange('A2:B1000').setNumberFormat('@'); // id + email as plain text
+  }
+  return sh;
+}
+
+// ── getUsers ── return all rows from users sheet (header-aware) ───────────────
+function getUsers() {
+  const sh      = getUsersSheet();
+  const lastRow = sh.getLastRow();
+  if (lastRow <= 1) return ok({ users: [], count: 0 });
+
+  // Read header row to map columns dynamically
+  const lastCol = sh.getLastColumn();
+  const headers = sh.getRange(1, 1, 1, lastCol).getValues()[0]
+    .map(h => String(h || '').trim().toLowerCase());
+
+  const idx = {
+    id:        headers.indexOf('id'),
+    email:     headers.findIndex(h => h === 'email' || h === 'البريد'),
+    name:      headers.findIndex(h => h === 'name'  || h === 'الاسم'),
+    role:      headers.findIndex(h => h === 'role'  || h === 'الدور'),
+    createdAt: headers.findIndex(h => h === 'createdat' || h === 'created_at' || h === 'createdat' || h === 'تاريخ'),
+  };
+
+  if (idx.email === -1) return err('عمود email غير موجود في شيت users');
+
+  const rows  = sh.getRange(2, 1, lastRow - 1, lastCol).getValues();
+  const users = rows
+    .filter(r => String(r[idx.email] || '').trim())
+    .map(r => ({
+      id:        idx.id        >= 0 ? String(r[idx.id]        || '').trim() : '',
+      email:                          String(r[idx.email]      || '').trim().toLowerCase(),
+      name:      idx.name      >= 0 ? String(r[idx.name]      || '').trim() : '',
+      role:      idx.role      >= 0 ? String(r[idx.role]      || 'user').trim() : 'user',
+      createdAt: idx.createdAt >= 0 ? String(r[idx.createdAt] || '').trim() : '',
+    }));
+
+  return ok({ users, count: users.length });
 }

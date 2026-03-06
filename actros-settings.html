@@ -165,8 +165,36 @@
     }
     .as-toast.show { opacity: 1; transform: translateX(-50%) translateY(-6px); }
 
+    /* Collapsible card */
+    .as-card-collapsible .as-card-head { cursor: pointer; user-select: none; }
+    .as-card-collapsible .as-card-head:hover { background: rgba(255,255,255,.02); }
+    .as-chevron {
+      margin-right: auto; font-size: 12px; color: var(--muted,#888);
+      transition: transform .25s; flex-shrink: 0;
+    }
+    .as-card-collapsible.collapsed .as-chevron { transform: rotate(-90deg); }
+    .as-card-collapsible.collapsed .as-card-body { display: none; }
+
+    /* Perm search */
+    .as-perm-search {
+      width: 100%; padding: 9px 13px; border-radius: 10px;
+      border: 1px solid rgba(255,255,255,.1);
+      background: rgba(255,255,255,.04);
+      color: var(--text,#f0f0f0); font-family: 'Cairo',sans-serif; font-size: 13px;
+      outline: none; transition: border-color .2s; margin-bottom: 12px; box-sizing: border-box;
+    }
+    .as-perm-search:focus { border-color: var(--primary,#00A859); }
+    .as-perm-search::placeholder { color: rgba(255,255,255,.25); }
+
     /* Delete permission card */
-    .as-perm-list { display: flex; flex-direction: column; gap: 10px; }
+    .as-perm-list {
+      display: flex; flex-direction: column; gap: 10px;
+      max-height: 280px; overflow-y: auto;
+      padding-left: 4px;
+    }
+    .as-perm-list::-webkit-scrollbar { width: 4px; }
+    .as-perm-list::-webkit-scrollbar-track { background: transparent; }
+    .as-perm-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,.15); border-radius: 4px; }
     .as-perm-item {
       display: flex; align-items: center; gap: 12px;
       padding: 12px 14px; border-radius: 11px;
@@ -385,16 +413,20 @@
       </div>
 
       <!-- 7. Delete Permission (admin only) -->
-      <div class="as-card" id="deletePermCard">
-        <div class="as-card-head">
+      <div class="as-card as-card-collapsible" id="deletePermCard">
+        <div class="as-card-head" onclick="toggleCard('deletePermCard')">
           <div class="as-head-icon" style="background:rgba(239,68,68,.12);color:#ef4444;">🔐</div>
           <div>صلاحية الحذف</div>
+          <span class="as-chevron">▾</span>
         </div>
         <div class="as-card-body">
           <div class="as-hint" style="margin-bottom:14px;">
             حدد المستخدمين الذين يملكون صلاحية حذف سجلات أيام العمل.
             المدراء يملكون الصلاحية دائماً.
           </div>
+          <input class="as-perm-search" type="text"
+                 placeholder="🔍 ابحث بالاسم أو البريد..."
+                 oninput="filterPermList(this,'deletePermList')">
           <div class="as-perm-list" id="deletePermList">
             <div class="as-perm-empty">⏳ جارٍ التحميل...</div>
           </div>
@@ -494,7 +526,7 @@
           </div>
 
           <!-- Sync Mode + Permission (admin only) -->
-          <div id="syncPermCard" style="display:none;">
+          <div id="syncPermCard" style="display:none;" class="as-card-collapsible">
             <div style="border-top:1px solid rgba(255,255,255,.07);margin:16px 0;"></div>
 
             <!-- وضع المزامنة -->
@@ -527,12 +559,21 @@
             <div style="border-top:1px solid rgba(255,255,255,.07);margin:16px 0;"></div>
 
             <!-- صلاحية المزامنة -->
-            <div style="font-size:13px;font-weight:700;margin-bottom:10px;color:var(--text,#f0f0f0);">🔐 صلاحية المزامنة</div>
-            <div class="as-hint" style="margin-bottom:14px;">
-              حدد المستخدمين الذين يملكون صلاحية المزامنة (يدوي أو تلقائي). المدراء يملكونها دائماً.
+            <div style="display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;"
+                 onclick="toggleCard('syncPermInner')">
+              <div style="font-size:13px;font-weight:700;color:var(--text,#f0f0f0);flex:1;">🔐 صلاحية المزامنة</div>
+              <span class="as-chevron" id="syncPermChevron">▾</span>
             </div>
-            <div class="as-perm-list" id="syncPermList">
-              <div class="as-perm-empty">⏳ جارٍ التحميل...</div>
+            <div id="syncPermInner">
+              <div class="as-hint" style="margin:10px 0 14px;">
+                حدد المستخدمين الذين يملكون صلاحية المزامنة (يدوي أو تلقائي). المدراء يملكونها دائماً.
+              </div>
+              <input class="as-perm-search" type="text"
+                     placeholder="🔍 ابحث بالاسم أو البريد..."
+                     oninput="filterPermList(this,'syncPermList')">
+              <div class="as-perm-list" id="syncPermList">
+                <div class="as-perm-empty">⏳ جارٍ التحميل...</div>
+              </div>
             </div>
           </div>
         </div>
@@ -703,6 +744,29 @@ function asToast(msg, ms = 2600) {
   const el = document.getElementById('asToast');
   el.textContent = msg; el.classList.add('show');
   clearTimeout(_tt); _tt = setTimeout(() => el.classList.remove('show'), ms);
+}
+
+// ── Collapsible cards ─────────────────────────────────────────────────────────
+function toggleCard(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (id === 'syncPermInner') {
+    // plain div — toggle display + chevron manually
+    const collapsed = el.style.display === 'none';
+    el.style.display = collapsed ? '' : 'none';
+    const ch = document.getElementById('syncPermChevron');
+    if (ch) ch.style.transform = collapsed ? '' : 'rotate(-90deg)';
+  } else {
+    el.classList.toggle('collapsed');
+  }
+}
+
+// ── Perm search filter ────────────────────────────────────────────────────────
+function filterPermList(inp, listId) {
+  const q = inp.value.trim().toLowerCase();
+  document.querySelectorAll('#' + listId + ' .as-perm-item').forEach(item => {
+    item.style.display = (!q || item.textContent.toLowerCase().includes(q)) ? '' : 'none';
+  });
 }
 
 // ── Delete Permission ─────────────────────────────────────────────────────────

@@ -735,16 +735,29 @@
     }
   }
 
-  /* ── Sync from API (Google Spreadsheet) ─────── */
+  /* ── Sync from API (Google Spreadsheet → users sheet) ─────── */
   async function syncFromAPI() {
     var btn = document.getElementById('syncApiBtn');
     if (btn) { btn.disabled = true; btn.textContent = '⏳ جاري الجلب...'; }
 
     try {
-      umToast('⏳ جاري جلب المستخدمين من الشبكة...', 'info');
+      umToast('⏳ جاري جلب المستخدمين من Google Sheets...', 'info');
 
-      var data = await window.authRequest('listUsers');
-      if (!data || !Array.isArray(data.users)) throw new Error('البيانات المُستلمة غير صحيحة');
+      // Get actros sync URL from actros_settings
+      var actrosSettings = {};
+      try { actrosSettings = JSON.parse(localStorage.getItem('actros_settings') || '{}'); } catch (e) {}
+      var syncUrl = actrosSettings.syncUrl || '';
+      if (!syncUrl) throw new Error('لم يتم تحديد رابط المزامنة — تحقق من إعدادات أكتروس');
+
+      var resp = await fetch(syncUrl, {
+        method:  'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body:    JSON.stringify({ action: 'getUsers' })
+      });
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      var data = await resp.json();
+      if (!data.ok) throw new Error(data.error || 'خطأ من السيرفر');
+      if (!Array.isArray(data.users)) throw new Error('البيانات المُستلمة غير صحيحة');
 
       var list    = umLoad();
       var added   = 0;
